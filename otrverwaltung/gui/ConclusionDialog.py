@@ -14,7 +14,9 @@
 #with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-import gtk, pango
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Pango, Gdk
 import os.path
 import os
 
@@ -22,7 +24,7 @@ from otrverwaltung.constants import Action, Status, Cut_action
 from otrverwaltung.gui.widgets.FolderChooserComboBox import FolderChooserComboBox
 from otrverwaltung import path
 
-class ConclusionDialog(gtk.Dialog, gtk.Buildable):
+class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     """ The dialog is organized in boxes:
             box_filenames - Shows the filename and the statuses of a decode/cut action.
             box_buttons - Play button, Cut-Play button, Put uncut file in trash, box_rename, box_rating
@@ -43,20 +45,21 @@ class ConclusionDialog(gtk.Dialog, gtk.Buildable):
     __gtype_name__ = "ConclusionDialog"
 
     def __init__(self):
+        Gtk.Dialog.__init__(self)
         pass
 
     def do_parser_finished(self, builder):
         self.builder = builder
         self.builder.connect_signals(self)
                    
-        self.builder.get_object('check_create_cutlist').modify_font(pango.FontDescription("bold"))
+        self.builder.get_object('check_create_cutlist').modify_font(Pango.FontDescription("bold"))
           
         self.combobox_archive = FolderChooserComboBox(add_empty_entry=True)        
-        self.builder.get_object('box_archive').pack_end(self.combobox_archive)
+        self.builder.get_object('box_archive').pack_end(self.combobox_archive, False, False, 0)
              
         for combobox in ['combobox_external_rating', 'combobox_own_rating']:
-            cell = gtk.CellRendererText()
-            cell.set_property('ellipsize', pango.ELLIPSIZE_END)
+            cell = Gtk.CellRendererText()
+            cell.set_property('ellipsize', Pango.EllipsizeMode.END)
             self.builder.get_object(combobox).pack_start(cell, True)
             self.builder.get_object(combobox).add_attribute(cell, 'text', 0)
 
@@ -185,21 +188,21 @@ class ConclusionDialog(gtk.Dialog, gtk.Buildable):
                     rename_list = [self.file_conclusion.cut.rename]
                 else:
                     rename_list = []
-                
+
                 rename_list.append(self.rename_by_schema(os.path.basename(self.file_conclusion.cut_video)))
                 rename_list.append(os.path.basename(self.file_conclusion.cut_video))
-                print rename_list
-                
+                print (rename_list)
+
                 if self.file_conclusion.cut.cutlist.filename:
                     rename_list.append(self.file_conclusion.cut.cutlist.filename)
-                    
-                    self.builder.get_object('comboboxentry_rename').child.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color("#FFFF84"))
-                    self.builder.get_object('comboboxentry_rename').child.modify_text(gtk.STATE_NORMAL, gtk.gdk.Color("black"))
+
+                    self.builder.get_object('comboboxentry_rename').child.modify_base(Gtk.StateType.NORMAL, Gdk.Color("#FFFF84"))
+                    self.builder.get_object('comboboxentry_rename').child.modify_text(Gtk.StateType.NORMAL, Gdk.Color("black"))
                 else:
-                    self.builder.get_object('comboboxentry_rename').child.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color("white"))
-                    self.builder.get_object('comboboxentry_rename').child.modify_text(gtk.STATE_NORMAL, gtk.gdk.Color("black"))
-                
-                self.gui.set_model_from_list(self.builder.get_object('comboboxentry_rename'), rename_list)     
+                    self.builder.get_object('comboboxentry_rename').child.modify_base(Gtk.StateType.NORMAL, Gdk.Color("white"))
+                    self.builder.get_object('comboboxentry_rename').child.modify_text(Gtk.StateType.NORMAL, Gdk.Color("black"))
+
+                self.gui.set_model_from_list(self.builder.get_object('comboboxentry_rename'), rename_list)
                 self.builder.get_object('comboboxentry_rename').set_active(0)
 
                 archive_to = self.file_conclusion.cut.archive_to
@@ -263,78 +266,78 @@ class ConclusionDialog(gtk.Dialog, gtk.Buildable):
 
     def _on_combobox_external_rating_changed(self, widget, data=None):
         rating = widget.get_active() - 1 
-        print "[Conclusion] cut.my_rating = ", rating
+        print ("[Conclusion] cut.my_rating = ", rating)
         self.file_conclusion.cut.my_rating = rating
 
     def _on_check_delete_uncut_toggled(self, widget, data=None):
-        print "[Conclusion] cut.delete_uncut = ", widget.get_active()
+        print ("[Conclusion] cut.delete_uncut = ", widget.get_active())
         self.file_conclusion.cut.delete_uncut = widget.get_active()
    
     def _on_comboboxentry_rename_changed(self, widget, data=None):
-        print "[Conclusion] cut.rename = ", widget.child.get_text()
+        print ("[Conclusion] cut.rename = ", widget.child.get_text())
         self.file_conclusion.cut.rename = widget.child.get_text()
     
     def _on_combobox_archive_changed(self, widget, data=None):
         if self.file_conclusion != Action.DECODE:
             archive_to = self.combobox_archive.get_active_path()            
-            print "[Conclusion] cut.archive_to = ", archive_to
+            print ("[Conclusion] cut.archive_to = ", archive_to)
             self.file_conclusion.cut.archive_to = archive_to
     
     # box_create_cutlist           
     def _on_check_create_cutlist_toggled(self, widget, data=None):
         create_cutlist = widget.get_active()
-        print "[Conclusion] cut.create_cutlist = ", create_cutlist
+        print ("[Conclusion] cut.create_cutlist = ", create_cutlist)
         self.file_conclusion.cut.create_cutlist = create_cutlist
         self.builder.get_object('box_create_cutlist_options').set_sensitive(create_cutlist)
         self.builder.get_object('check_upload_cutlist').set_sensitive(create_cutlist)
     
     def _on_check_upload_cutlist_toggled(self, widget, data=None):
         upload_cutlist = widget.get_active()
-        print "[Conclusion] cut.upload_cutlist = ", upload_cutlist
+        print ("[Conclusion] cut.upload_cutlist = ", upload_cutlist)
         self.file_conclusion.cut.upload_cutlist = upload_cutlist
     
     def _on_combobox_own_rating_changed(self, widget, data=None):
         ratingbyauthor = widget.get_active() - 1 
-        print "[Conclusion] cut.cutlist.ratingbyauthor = ", ratingbyauthor
+        print ("[Conclusion] cut.cutlist.ratingbyauthor = ", ratingbyauthor)
         self.file_conclusion.cut.cutlist.ratingbyauthor = ratingbyauthor
         
     def _on_check_wrong_content_toggled(self, widget, data=None):
-        print "[Conclusion] cut.cutlist.wrong_content = ", widget.get_active()
+        print ("[Conclusion] cut.cutlist.wrong_content = ", widget.get_active())
         self.file_conclusion.cut.cutlist.wrong_content = widget.get_active()
 
     def _on_entry_actual_content_changed(self, widget, data=None):
-        print "[Conclusion] cut.cutlist.actualcontent = ", widget.get_text()
+        print ("[Conclusion] cut.cutlist.actualcontent = ", widget.get_text())
         self.file_conclusion.cut.cutlist.actualcontent = widget.get_text()
 
     def _on_check_missing_beginning_toggled(self, widget, data=None):
-        print "[Conclusion] cut.cutlist.missing_beginning = ", widget.get_active()
+        print ("[Conclusion] cut.cutlist.missing_beginning = ", widget.get_active())
         self.file_conclusion.cut.cutlist.missing_beginning = widget.get_active()
 
     def _on_check_missing_ending_toggled(self, widget, data=None):
-        print "[Conclusion] cut.cutlist.missing_ending = ", widget.get_active()        
+        print ("[Conclusion] cut.cutlist.missing_ending = ", widget.get_active())
         self.file_conclusion.cut.cutlist.missing_ending = widget.get_active()
 
     def _on_check_other_error_toggled(self, widget, data=None):
-        print "[Conclusion] cut.cutlist.other_error = ", widget.get_active()
+        print ("[Conclusion] cut.cutlist.other_error = ", widget.get_active())
         self.file_conclusion.cut.cutlist.other_error = widget.get_active()
 
     def _on_entry_other_error_description_changed(self, widget, data=None):
-        print "[Conclusion] cut.cutlist.othererrordescription = ", widget.get_text()
+        print ("[Conclusion] cut.cutlist.othererrordescription = ", widget.get_text())
         self.file_conclusion.cut.cutlist.othererrordescription = widget.get_text()
 
     def _on_entry_suggested_changed(self, widget, data=None):
-        print "[Conclusion] cut.cutlist.suggested_filename = ", widget.get_text()
+        print ("[Conclusion] cut.cutlist.suggested_filename = ", widget.get_text())
         self.file_conclusion.cut.cutlist.suggested_filename = widget.get_text()
 
     def _on_entry_comment_changed(self, widget, data=None):
-        print "[Conclusion] cut.cutlist.usercomment = ", widget.get_text()
+        print ("[Conclusion] cut.cutlist.usercomment = ", widget.get_text())
         self.file_conclusion.cut.cutlist.usercomment = widget.get_text()
                 
                 
 def NewConclusionDialog(app, gui):
     glade_filename = path.getdatapath('ui', 'ConclusionDialog.glade')
     
-    builder = gtk.Builder()   
+    builder = Gtk.Builder()
     builder.add_from_file(glade_filename)
     dialog = builder.get_object("conclusion_dialog")
     dialog.app = app

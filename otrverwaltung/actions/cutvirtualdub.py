@@ -16,7 +16,9 @@
 ### END LICENSE
 
 
-from gtk import events_pending, main_iteration, RESPONSE_OK
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 import os
 import subprocess
 import time
@@ -30,6 +32,7 @@ from otrverwaltung import fileoperations
 class CutVirtualdub(Cut):
 
     def __init__(self, app, gui):
+        Cut.__init__(self, app, gui)
         self.update_list = True
         self.app = app
         self.config = app.config
@@ -39,7 +42,7 @@ class CutVirtualdub(Cut):
         # clean up
         pass
         
-    def cut_file_by_cutlist(self, filename, cutlist=None,  program_config_value=None):
+    def cut_file_by_cutlist(self, filename, cutlist=None, program_config_value=None):
         return self.__cut_file_virtualdub(filename, program_config_value, cutlist.cuts_frames)
 
     def create_cutlist(self,  filename, program_config_value):
@@ -123,8 +126,8 @@ class CutVirtualdub(Cut):
                 return None, "VirtualDub konnte nicht aufgerufen werden: " + config_value
 
         self.gui.main_window.set_tasks_progress(50)
-        while events_pending():
-                main_iteration(False)
+        while Gtk.events_pending():
+                Gtk.main_iteration()
 
         f = open("/tmp/tmp.vcf", "w")
 
@@ -172,7 +175,7 @@ class CutVirtualdub(Cut):
                             # copy part
                             f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (frame_start_keyframe, frames_duration-(frame_start_keyframe-frame_start)))
                     else:
-                        print 'reiner Smart Rendering Part'
+                        print('reiner Smart Rendering Part')
                         try: # get next keyframe after the interval
                             next_keyframe = self.get_keyframe_after_frame(keyframes, frame_start+frames_duration-2)
                         except ValueError:
@@ -194,7 +197,7 @@ class CutVirtualdub(Cut):
                             f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (frame_start+frames_duration-1, 1))
                             f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (frame_start+frames_duration-1, 1))
                     else:
-                        print 'reines Kopieren'
+                        print('reines Kopieren')
                         f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (frame_start, frames_duration))
                         
             cut_video = self.generate_filename(filename,1)
@@ -229,8 +232,8 @@ class CutVirtualdub(Cut):
         while vdub.poll() == None:
             time.sleep(1)
 
-            while events_pending():
-                main_iteration(False)
+            while Gtk.events_pending():
+                Gtk.main_iteration()
 
         fileoperations.remove_file('/tmp/tmp.vcf')
 
@@ -255,7 +258,7 @@ class CutVirtualdub(Cut):
             if "VirtualDub.subset.AddRange" in line:
                 try:
                     start, duration = line[line.index('(') + 1 : line.index(')')].split(',')
-                except (IndexError, ValueError), message:
+                except (IndexError, ValueError) as message:
                     return None, "Konnte Schnitte nicht lesen, um Cutlist zu erstellen. (%s)" % message
 
                 if format == Format.HQ or format == Format.HD:

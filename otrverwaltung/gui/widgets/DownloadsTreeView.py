@@ -14,24 +14,25 @@
 #with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-import gtk
-import gobject
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, GdkPixbuf, Gdk, GObject
 
 from otrverwaltung.constants import DownloadStatus, DownloadTypes
 from otrverwaltung import path
 
-class DownloadsTreeView(gtk.TreeView):
+class DownloadsTreeView(Gtk.TreeView):
 
     def __init__(self):
-        gtk.TreeView.__init__(self)
+        Gtk.TreeView.__init__(self)
         
-        self.liststore = gtk.ListStore(object)        
+        self.liststore = Gtk.ListStore(object)
         self.set_model(self.liststore)
         
         self.set_headers_visible(False)
         
         rend = CellRendererDownload()        
-        column = gtk.TreeViewColumn('col', rend, download=0)       
+        column = Gtk.TreeViewColumn('col', rend, download=0)
         self.append_column(column)
         
         self.set_rules_hint(True)
@@ -49,24 +50,25 @@ class DownloadsTreeView(gtk.TreeView):
             if row[0] in args:
                 del self.liststore[row.iter]
                 
-class CellRendererDownload(gtk.GenericCellRenderer):
+class CellRendererDownload(Gtk.CellRenderer):
     __gtype_name__ = "CellRendererDownload"
 
     __gproperties__ = {
-        'download': (gobject.TYPE_PYOBJECT, 'Download', 'Download', gobject.PARAM_READWRITE)
+        'download': (GObject.TYPE_PYOBJECT, 'Download', 'Download', GObject.PARAM_READWRITE)
     }
     
     def __init__(self):
-        self.__gobject_init__()
+        Gtk.CellRenderer.__init__(self)
+        #self.__gobject_init__()
 
-        self.set_property('mode', gtk.CELL_RENDERER_MODE_ACTIVATABLE)
+        self.set_property('mode', Gtk.CellRendererMode.ACTIVATABLE)
 
         self.statuses = {
-            DownloadStatus.RUNNING : gtk.gdk.pixbuf_new_from_file(path.getdatapath('media', 'download_start.png')),
-            DownloadStatus.STOPPED : gtk.gdk.pixbuf_new_from_file(path.getdatapath('media', 'download_stop.png')),
-            DownloadStatus.ERROR : gtk.gdk.pixbuf_new_from_file(path.getdatapath('media', 'error.png')),
-            DownloadStatus.FINISHED : gtk.gdk.pixbuf_new_from_file(path.getdatapath('media', 'finished.png')),
-            DownloadStatus.SEEDING : gtk.gdk.pixbuf_new_from_file(path.getdatapath('media', 'finished.png'))
+            DownloadStatus.RUNNING: GdkPixbuf.Pixbuf.new_from_file(path.getdatapath('media', 'download_start.png')),
+            DownloadStatus.STOPPED: GdkPixbuf.Pixbuf.new_from_file(path.getdatapath('media', 'download_stop.png')),
+            DownloadStatus.ERROR: GdkPixbuf.Pixbuf.new_from_file(path.getdatapath('media', 'error.png')),
+            DownloadStatus.FINISHED: GdkPixbuf.Pixbuf.new_from_file(path.getdatapath('media', 'finished.png')),
+            DownloadStatus.SEEDING: GdkPixbuf.Pixbuf.new_from_file(path.getdatapath('media', 'finished.png'))
         }
         
         self.types = {
@@ -76,10 +78,10 @@ class CellRendererDownload(gtk.GenericCellRenderer):
             DownloadTypes.OTR_CUT : 'OTR-Download mit Schneiden'
         }
 
-        self.cellrenderer_pixbuf = gtk.CellRendererPixbuf()        
-        self.cellrenderer_filename = gtk.CellRendererText()
-        self.cellrenderer_info = gtk.CellRendererText()
-        self.cellrenderer_progress = gtk.CellRendererProgress()
+        self.cellrenderer_pixbuf = Gtk.CellRendererPixbuf()
+        self.cellrenderer_filename = Gtk.CellRendererText()
+        self.cellrenderer_info = Gtk.CellRendererText()
+        self.cellrenderer_progress = Gtk.CellRendererProgress()
         
     def on_get_size(self, widget, cell_area=None):
         complete_width, complete_height = 0, 0
@@ -96,16 +98,33 @@ class CellRendererDownload(gtk.GenericCellRenderer):
     def on_render(self, window, widget, background_area, cell_area, expose_area, flags):               
         x, y, w, h = cell_area.x, cell_area.y, cell_area.width, cell_area.height
         
-        area = gtk.gdk.Rectangle(x + 2, y, 16, 20)
+        #area = Gdk.Rectangle(x, y, 16, 20)
+        area = Gdk.Rectangle()
+        area.x = x + 2
+        area.y = y
+        area.width = 16
+        area.height = 20
         self.cellrenderer_pixbuf.render(window, widget, background_area, area, expose_area, flags)
     
-        area = gtk.gdk.Rectangle(x + 20, y, w - 25, 16)
+        #area = Gdk.Rectangle(x + 20, y, w - 25, 16)
+        area.x = x + 20
+        area.y = y
+        area.width = w - 25
+        area.height = 16
         self.cellrenderer_filename.render(window, widget, background_area, area, expose_area, flags)
         
-        area = gtk.gdk.Rectangle(x + 20, y + 22, w - 25, 16)
+        #area = Gdk.Rectangle(x + 20, y + 22, w - 25, 16)
+        area.x = x + 20
+        area.y = y + 22
+        area.width = w - 25
+        area.height = 16
         self.cellrenderer_info.render(window, widget, background_area, area, expose_area, flags)
                     
-        area = gtk.gdk.Rectangle(x + 20, y + 45, w - 25, 18)
+        #area = Gdk.Rectangle(x + 20, y + 45, w - 25, 18)
+        area.x = x + 20
+        area.y = y + 45
+        area.width = w - 25
+        area.height = 18
         self.cellrenderer_progress.render(window, widget, background_area, area, expose_area, flags)                
         
     def on_activate(self, event, widget, path, background_area, cell_area, flags):

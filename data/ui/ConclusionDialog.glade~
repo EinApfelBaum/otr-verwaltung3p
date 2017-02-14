@@ -400,7 +400,6 @@
                   <object class="GtkBox" id="box_archive">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="margin_bottom">1</property>
                     <property name="spacing">5</property>
                     <child>
                       <object class="GtkLabel" id="label6">
@@ -486,7 +485,6 @@
               <object class="GtkBox" id="box_create_cutlist">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkSeparator" id="hseparator2">
                     <property name="visible">True</property>
@@ -547,13 +545,11 @@
                   <object class="GtkBox" id="box_create_cutlist_options">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="orientation">vertical</property>
                     <property name="spacing">8</property>
                     <child>
                       <object class="GtkBox" id="vbox18">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="orientation">vertical</property>
                         <property name="spacing">3</property>
                         <child>
                           <object class="GtkLabel" id="label46">
@@ -681,7 +677,6 @@
                       <object class="GtkBox" id="vbox15">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="orientation">vertical</property>
                         <property name="spacing">3</property>
                         <child>
                           <object class="GtkLabel" id="label45">

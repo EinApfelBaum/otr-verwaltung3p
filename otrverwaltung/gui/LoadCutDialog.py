@@ -14,7 +14,9 @@
 #with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-import gtk
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 import os
 import re
 
@@ -25,12 +27,13 @@ from otrverwaltung import path
 from otrverwaltung.gui.widgets.CutlistsTreeView import CutlistsTreeView
 from otrverwaltung.GeneratorTask import GeneratorTask
 
-class LoadCutDialog(gtk.Dialog, gtk.Buildable):
+class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
     """ Dialog, um Cutlists lokal oder von cutlist.at zu laden """ 
     
     __gtype_name__ = "LoadCutDialog"
 
     def __init__(self):
+        Gtk.Dialog.__init__(self)
         self.download_error = False
 
     def do_parser_finished(self, builder):
@@ -97,7 +100,7 @@ class LoadCutDialog(gtk.Dialog, gtk.Buildable):
 
             
     def _error_cb(self, error):
-        print "Error: %s" % error
+        print ("Error: %s" % error)
         self.builder.get_object('label_status').set_markup("<b>%s</b>" % error)
         self.download_error = True
     
@@ -154,7 +157,7 @@ class LoadCutDialog(gtk.Dialog, gtk.Buildable):
 def NewLoadCutDialog(app, gui):
     glade_filename = path.getdatapath('ui', 'LoadCutDialog.glade')
     
-    builder = gtk.Builder()   
+    builder = Gtk.Builder()
     builder.add_from_file(glade_filename)
     dialog = builder.get_object("load_cut_dialog")
     dialog.app = app

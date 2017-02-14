@@ -5,5 +5,4 @@
                         generic-name="AddDownloadDialog" parent="GtkDialog"
                         icon-name="widget-gtk-dialog"/>
   </glade-widget-classes>
-
 </glade-catalog>

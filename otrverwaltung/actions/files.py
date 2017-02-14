@@ -21,13 +21,15 @@ import re
 from otrverwaltung import fileoperations
 from otrverwaltung.actions.baseaction import BaseAction
 
+
 class Delete(BaseAction):
     def __init__(self, app, gui):
+        BaseAction.__init__(self)
         self.update_list = False
         self.__app = app
         self.__gui = gui
 
-    def do(self, filenames):
+    def do(self, filenames, cut_action=None):
         if len(filenames) == 1:
             message = "Es ist eine Datei ausgewählt. Soll diese Datei "
         else:
@@ -41,12 +43,14 @@ class Delete(BaseAction):
                 else:
                     fileoperations.move_file(f, self.__app.config.get('general', 'folder_trash_avis'))
 
+
 class RealDelete(BaseAction):
     def __init__(self, app, gui):
+        BaseAction.__init__(self)
         self.update_list = True
         self.__gui = gui            
 
-    def do(self, filenames):
+    def do(self, filenames, cut_action=None):
         if len(filenames) == 1:
             message = "Es ist eine Datei ausgewählt. Soll diese Datei "
         else:
@@ -56,13 +60,15 @@ class RealDelete(BaseAction):
             for f in filenames:           
                 fileoperations.remove_file(f)
 
+
 class Restore(BaseAction):
     def __init__(self, app, gui):
+        BaseAction.__init__(self)
         self.update_list = True
         self.__app = app
         self.__gui = gui
 
-    def do(self, filenames):
+    def do(self, filenames, cut_action=None):
         for f in filenames:
             if f.endswith("otrkey"):
                 fileoperations.move_file(f, self.__app.config.get('general', 'folder_new_otrkeys'))
@@ -72,13 +78,15 @@ class Restore(BaseAction):
                 fileoperations.move_file(f, self.__app.config.get('general', 'folder_uncut_avis'))
             else:
                 fileoperations.move_file(f, self.__app.config.get('general', 'folder_cut_avis'))
-    
+
+
 class Rename(BaseAction):
     def __init__(self, app, gui):
+        BaseAction.__init__(self)
         self.update_list = True
         self.__gui = gui
         
-    def do(self, filenames):
+    def do(self, filenames, cut_action=None):
         response, new_names = self.__gui.dialog_rename.init_and_run("Umbenennen", filenames)  
                 
         if response:
@@ -95,19 +103,21 @@ class Rename(BaseAction):
         else:
             self.update_list = False
 
+
 class NewFolder(BaseAction):
     def __init__(self, app, gui):
+        BaseAction.__init__(self)
         self.update_list = False
         self.__gui = gui
         
-    def do(self, filename):
+    def do(self, filename, cut_action=None):
         if isdir(filename):
-            dirname = filename
+            path = filename
         else:
-            dirname = dirname(filename)
+            path = dirname(filename)
 
         response, new_names = self.__gui.dialog_rename.init_and_run("Neuer Ordner", ["Neuer Ordner"])
 
         if response and new_names["Neuer Ordner"] != "":            
             self.update_list = True
-            mkdir(join(dirname, new_names["Neuer Ordner"]))
+            mkdir(join(path, new_names["Neuer Ordner"]))

@@ -23,7 +23,7 @@ class PlanningItem():
 class Planning(list):
 
     def __init__(self):
-        pass         
+        super().__init__()
         
     def append(self, *data):       
         item = PlanningItem(*data)
@@ -31,7 +31,8 @@ class Planning(list):
         return item    
                 
     def read_config(self, config_data):
-        for item in config_data.split(';'):                        
+        global values
+        for item in config_data.split(';'):
             try:
                 values = item.split(',')
                 
@@ -42,7 +43,7 @@ class Planning(list):
                 
                 self.append(values[0], int(values[1]), values[2])
             except AssertionError:
-                print "Assertion failed: ", values
+                print("Assertion failed: ", values)
                 continue
         
     def get_config(self):

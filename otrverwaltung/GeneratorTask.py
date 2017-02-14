@@ -14,7 +14,9 @@
 #with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-import gobject
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import GObject
 import threading
 
 class GeneratorTask(object):
@@ -30,11 +32,11 @@ class GeneratorTask(object):
             if self._stopped:
                 return
                 
-            if self.loop_callback is not None:           
-                gobject.idle_add(self._loop, ret)
+            if self.loop_callback is not None:
+                GObject.idle_add(self._loop, ret)
 
         if self.complete_callback is not None:
-            gobject.idle_add(self.complete_callback)
+            GObject.idle_add(self.complete_callback)
 
     def _loop(self, ret):
         if ret is None:

@@ -16,17 +16,19 @@
 
 import os
 
-import gtk
-import pango
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Pango
 
 from otrverwaltung.constants import Cut_action
 from otrverwaltung.gui.config_bindings import EntryBinding, FileChooserFolderBinding, CheckButtonBinding, ComboBoxEntryBinding, RadioButtonsBinding
 from otrverwaltung import path
 
-class PreferencesWindow(gtk.Window, gtk.Buildable):
+class PreferencesWindow(Gtk.Window, Gtk.Buildable):
     __gtype_name__ = "PreferencesWindow"
 
     def __init__(self):
+        Gtk.Window.__init__(self)
         pass
 
     def do_parser_finished(self, builder):  
@@ -44,47 +46,49 @@ class PreferencesWindow(gtk.Window, gtk.Buildable):
                     'labelDescTrashOtrkeys',
                     'labelDescTrashAvis']
         for label in labels:
-            self.builder.get_object(label).modify_font(pango.FontDescription("9"))                                     
-                    
+            self.builder.get_object(label).modify_font(Pango.FontDescription("9"))
+
+        ''' verschoben in die glade Datei
+
+        # cut options - cut via cutlist
         # avi + hq + mp4
         avidemux = ["avidemux", "avidemux2_cli"]
         virtualdub = [r"intern-vdub", r"/pfad/zu/vdub.exe"]
         smartmkvmerge = [r"SmartMKVmerge"]
-        self.gui.set_model_from_list(self.builder.get_object('combobox_avi'), avidemux + virtualdub + smartmkvmerge)
-        self.gui.set_model_from_list(self.builder.get_object('combobox_hq'), virtualdub + smartmkvmerge)
-        self.gui.set_model_from_list(self.builder.get_object('combobox_mp4'), virtualdub)
+        #self.gui.set_model_from_list(self.builder.get_object('combobox_avi'), avidemux + virtualdub + smartmkvmerge)
+        #self.gui.set_model_from_list(self.builder.get_object(''), virtualdub + smartmkvmerge)
+        #self.gui.set_model_from_list(self.builder.get_object('combobox_mp4'), virtualdub)
         
         # manually
         avidemux_man = [r"avidemux3_qt4",r"avidemux2_qt4",r"avidemux2_gtk"]
         virtualdub_man = [r"intern-VirtualDub", r"/pfad/zu/VirtualDub.exe"]
         cut_interface = [r"CutInterface"]
-        self.gui.set_model_from_list(self.builder.get_object('combobox_man_avi'), cut_interface + avidemux_man + virtualdub_man)
-        self.gui.set_model_from_list(self.builder.get_object('combobox_man_hq'), cut_interface + avidemux_man + virtualdub_man) 
-        self.gui.set_model_from_list(self.builder.get_object('combobox_man_mp4'), cut_interface + avidemux_man + virtualdub_man)
+        #self.gui.set_model_from_list(self.builder.get_object('combobox_man_avi'), cut_interface + avidemux_man + virtualdub_man)
+        #self.gui.set_model_from_list(self.builder.get_object('combobox_man_hq'), cut_interface + avidemux_man + virtualdub_man)
+        #self.gui.set_model_from_list(self.builder.get_object('combobox_man_mp4'), cut_interface + avidemux_man + virtualdub_man)
        
-        self.gui.set_model_from_list(self.builder.get_object('comboboxServer'), ["http://cutlist.at/"])
-        self.gui.set_model_from_list(self.builder.get_object('entry_decoder'), ['intern-otrdecoder','intern-easydecoder'])
+        #self.gui.set_model_from_list(self.builder.get_object('comboboxServer'), ["http://cutlist.at/"])
+        #self.gui.set_model_from_list(self.builder.get_object('entry_decoder'), ['intern-otrdecoder','intern-easydecoder'])
 
-        self.gui.set_model_from_list(self.builder.get_object('h264_codec_cbox'), ["ffdshow", "x264vfw", "komisar"])
+        #self.gui.set_model_from_list(self.builder.get_object(''), ["ffdshow", "x264vfw", "komisar"])
         
         # mkvmerge for ac3
         mkvmerge = ["mkvmerge", "/pfad/zu/mkvmerge"]
-        self.gui.set_model_from_list(self.builder.get_object('combobox_ac3'), mkvmerge)
+        #self.gui.set_model_from_list(self.builder.get_object('combobox_ac3'), mkvmerge)
         
         # smartmkvmerge
         smkv_first_audio = [ 'MP3 Spur kopieren', 
                                         'MP3 nach AAC konvertieren',  
                                         'nach 2-Kanal AAC konvertieren - von AC3 wenn vorhanden',  
                                         'nach Mehr-Kanal AAC konvertieren - von AC3 wenn vorhanden']
-        self.gui.set_model_from_list(self.builder.get_object('smkv_first_audio'), smkv_first_audio)
+        #self.gui.set_model_from_list(self.builder.get_object('smkv_first_audio'), smkv_first_audio)
         smkv_second_audio = [   'AC3 Spur kopieren', 
                                                 'AC3 Spur nach AAC konvertieren',  
                                                 'AC3 Spur entfernen']
-        self.gui.set_model_from_list(self.builder.get_object('smkv_second_audio'), smkv_second_audio)
-        
+        #self.gui.set_model_from_list(self.builder.get_object('smkv_second_audio'), smkv_second_audio)
+        '''
         
         # add bindings here.
-               
         EntryBinding(self.builder.get_object('entry_username'), self.app.config, 'general', 'cutlist_username')
         EntryBinding(self.builder.get_object('entryEMail'), self.app.config, 'general', 'email')
         EntryBinding(self.builder.get_object('entryPassword'), self.app.config, 'general', 'password', encode=True)       
@@ -145,19 +149,19 @@ class PreferencesWindow(gtk.Window, gtk.Buildable):
     #  Signal handlers
 
     def _on_button_set_file_clicked(self, entry, data=None):    
-        chooser = gtk.FileChooserDialog(title="Datei auswählen",
-                                        action=gtk.FILE_CHOOSER_ACTION_OPEN,
-                                        buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+        chooser = Gtk.FileChooserDialog(title="Datei auswählen",
+                                        action=Gtk.FileChooserAction.OPEN,
+                                        buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
                                         
-        if chooser.run() == gtk.RESPONSE_OK:
-            if type(entry) == gtk.ComboBoxEntry:
+        if chooser.run() == Gtk.ResponseType.OK:
+            if type(entry) == Gtk.ComboBoxText:
                 entry.child.set_text(chooser.get_filename())
             else:
                 entry.set_text(chooser.get_filename())
     
         chooser.destroy()
     
-    def _on_preferences_buttonClose_clicked(self, widget, data=None):    
+    def _on_preferences_buttonClose_clicked(self, widget, data=None):
         self.hide()    
 
     def _on_preferences_window_delete_event(self, window, event):        
@@ -167,7 +171,7 @@ class PreferencesWindow(gtk.Window, gtk.Buildable):
 def NewPreferencesWindow(app, gui):
     glade_filename = path.getdatapath('ui', 'PreferencesWindow.glade')
 
-    builder = gtk.Builder()   
+    builder = Gtk.Builder()
     builder.add_from_file(glade_filename)
     window = builder.get_object("preferences_window")
     window.app = app

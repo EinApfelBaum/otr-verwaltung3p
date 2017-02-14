@@ -22,7 +22,7 @@ def _encode_iterable(input):
     return 'l%se' % result
 
 def _encode_string(input):
-    if type(input) is unicode:
+    if type(input) is str:
         input = input.encode('utf8')
     return '%d:%s' % (len(input),input)
 
@@ -64,7 +64,8 @@ def _decode_dict(input):
             remainder = r[1]
         
         else:
-            raise ValueError("Invalid initial delimiter '%r' found while decoding a dictionary" % ramainder[0])
+            #raise ValueError("Invalid initial delimiter '%r' found while decoding a dictionary" % ramainder[0])
+            raise ValueError("Invalid initial delimiter '%r' found while decoding a dictionary")
     
     return (result,remainder[1:])
 
@@ -114,7 +115,7 @@ def _decode_string(input):
     size = int(input[:start-1])
     end = start+size
     if end-start > len(input[start:]):
-        print len(input[start:])
+        print(len(input[start:]))
         warn("String is smaller than %d" % size, stacklevel=2)
     return (input[start:end], input[end:])
 
@@ -133,7 +134,7 @@ def bencode(input):
     
     itype = type(input)
     
-    if itype == type(str()) or itype == type(unicode()):
+    if itype == type(str()) or itype == type(str()):
         return _encode_string(input.encode('utf8'))
     
     elif itype == type(float()):

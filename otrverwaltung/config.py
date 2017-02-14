@@ -20,6 +20,7 @@ import os.path
 
 from otrverwaltung import path
 
+
 class Config:
     """ Loads and saves configuration fields from/to file. """
     
@@ -37,13 +38,13 @@ class Config:
           
     def set(self, category, option, value):            
         if option in ['email', 'password']:
-            print "Set [%(category)s][%(option)s] to *****" % {"category": category, "option": option}   
+            print("Set [%(category)s][%(option)s] to *****" % {"category": category, "option": option})
         else:
-            print "Set [%(category)s][%(option)s] to %(value)s" % {"category": category, "option": option, "value": value}   
+            print("Set [%(category)s][%(option)s] to %(value)s" % {"category": category, "option": option, "value": value})
             
-        try:                       
+        try:
             for callback in self.__callbacks[category][option]:
-                callback(value)                
+                callback(value)
         except KeyError:
             pass
     
@@ -54,9 +55,9 @@ class Config:
         value = self.__fields[category][option]
 
         if option in ['email', 'password']:
-            print "Get [%(category)s][%(option)s]: *****" % {"category": category, "option": option}
+            print("Get [%(category)s][%(option)s]: *****" % {"category": category, "option": option})
         else:
-            print "Get [%(category)s][%(option)s]: %(value)s" % {"category": category, "option": option, "value": value}
+            print("Get [%(category)s][%(option)s]: %(value)s" % {"category": category, "option": option, "value": value})
        
         return value
           
@@ -71,12 +72,12 @@ class Config:
                 pass
             
             config_file = open(self.__config_file, "w")
-            print _("Writing to "), config_file            
+            print(("Writing to "), config_file)
             json.dump(self.__fields, config_file, sort_keys=True, indent=4)
             config_file.close()
-        except IOError, message:
-            print _("Config file not available. Dumping configuration:")
-            print json.dumps(self.__fields, sort_keys=True, indent=4)
+        except IOError as message:
+            print("Config file not available. Dumping configuration:")
+            print(json.dumps(self.__fields, sort_keys=True, indent=4))
        
     def load(self):
         """ Reads an existing configuration file. """
@@ -85,12 +86,12 @@ class Config:
             config = open(self.__config_file, 'r')        
             json_config = json.load(config)
             config.close()
-        except IOError, message:
-            print _("Config file not available. Using default configuration.")
+        except IOError as message:
+            print("Config file not available. Using default configuration.")
             json_config = {}
         
-        for category, options in self.__fields.iteritems():
-            for option, value in options.iteritems():
+        for category, options in self.__fields.items():
+            for option, value in options.items():
                 try:
                     self.set(category, option, json_config[category][option])
                 except KeyError:                
@@ -108,4 +109,3 @@ class Config:
                 return intern_program
             
         return value
-                

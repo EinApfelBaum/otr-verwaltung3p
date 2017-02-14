@@ -14,7 +14,10 @@
 #with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-import gtk, subprocess, os.path
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+import subprocess, os.path
 
 from otrverwaltung.pluginsystem import Plugin
 from otrverwaltung.GeneratorTask import GeneratorTask
@@ -36,23 +39,23 @@ class Details(Plugin):
         # Video-Format ...
         # Dauer        ...        
         padding = 3,3
-        table = gtk.Table(4, 2)
-        self.label_filetype = gtk.Label('')
-        self.label_aspect = gtk.Label('...')
-        self.label_video_format = gtk.Label('...')
-        self.label_length = gtk.Label('...')
+        table = Gtk.Table(4, 2)
+        self.label_filetype = Gtk.Label('')
+        self.label_aspect = Gtk.Label('...')
+        self.label_video_format = Gtk.Label('...')
+        self.label_length = Gtk.Label('...')
         
-        table.attach(self.label_filetype, 0, 2, 0, 1, gtk.FILL, gtk.FILL, *padding)        
-        table.attach(gtk.Label("Aspect-Ratio"), 0, 1, 1, 2, gtk.FILL, gtk.FILL, *padding)
-        table.attach(self.label_aspect, 1, 2, 1, 2, gtk.FILL, gtk.FILL, *padding)
-        table.attach(gtk.Label("Video-Format"), 0, 1, 2, 3, gtk.FILL, gtk.FILL, *padding)
-        table.attach(self.label_video_format, 1, 2, 2, 3, gtk.FILL, gtk.FILL, *padding)
-        table.attach(gtk.Label("Dauer"), 0, 1, 3, 4, gtk.FILL, gtk.FILL, *padding)
-        table.attach(self.label_length, 1, 2, 3, 4, gtk.FILL, gtk.FILL, *padding)
+        table.attach(self.label_filetype, 0, 2, 0, 1, Gtk.Align.FILL, Gtk.Align.FILL, *padding)
+        table.attach(Gtk.Label("Aspect-Ratio"), 0, 1, 1, 2, Gtk.Align.FILL, Gtk.Align.FILL, *padding)
+        table.attach(self.label_aspect, 1, 2, 1, 2, Gtk.Align.FILL, Gtk.Align.FILL, *padding)
+        table.attach(Gtk.Label("Video-Format"), 0, 1, 2, 3, Gtk.Align.FILL, Gtk.Align.FILL, *padding)
+        table.attach(self.label_video_format, 1, 2, 2, 3, Gtk.Align.FILL, Gtk.Align.FILL, *padding)
+        table.attach(Gtk.Label("Dauer"), 0, 1, 3, 4, Gtk.Align.FILL, Gtk.Align.FILL, *padding)
+        table.attach(self.label_length, 1, 2, 3, 4, Gtk.Align.FILL, Gtk.Align.FILL, *padding)
         table.show_all()
         
         # add to bottom bar
-        self.page_index = self.gui.main_window.builder.get_object('notebook_bottom').append_page(table, gtk.Label("Details"))
+        self.page_index = self.gui.main_window.builder.get_object('notebook_bottom').append_page(table, Gtk.Label("Details"))
         
     def disable(self):                
         treeselection = self.gui.main_window.builder.get_object('treeview_files').get_selection()

@@ -64,11 +64,11 @@ class PluginSystem:
         self.plugins = {} # value : plugin instance
         self.enabled_plugins = [plugin for plugin in enabled_plugins.split(':') if plugin] # list of names
 
-        print "[Plugins] Paths to search: ", plugin_paths
+        print("[Plugins] Paths to search: ", plugin_paths)
                                      
         for path in plugin_paths:                  
             if not os.path.isdir(path):
-                print "[Plugins] %s is not a directory." % path
+                print("[Plugins] %s is not a directory." % path)
                 continue
 
             sys.path.append(path)
@@ -79,8 +79,8 @@ class PluginSystem:
                 if extension == ".py":                        
                     try:
                         plugin_module = __import__(plugin_name)
-                    except Exception, error:
-                        print "[Plugins] Error in >%s< plugin: %s" % (plugin_name, error)
+                    except Exception as error:
+                        print("[Plugins] Error in >%s< plugin: %s" % (plugin_name, error))
                         continue
 
                     # instanciate plugin
@@ -93,15 +93,15 @@ class PluginSystem:
                     if plugin_name in plugins_config:
                         self.plugins[plugin_name].Config.update(plugins_config[plugin_name])
                     
-                    print "[Plugins] Found: ", plugin_name
+                    print("[Plugins] Found: ", plugin_name)
                         
         for plugin in self.enabled_plugins:
             if not plugin in self.plugins.keys():
-                print "[Plugins] Error: Plugin >%s< not found." % plugin
+                print("[Plugins] Error: Plugin >%s< not found." % plugin)
                 self.enabled_plugins.remove(plugin)                        
             else:
                 self.plugins[plugin].enable()
-                print "[Plugins] Enabled: ", plugin
+                print("[Plugins] Enabled: ", plugin)
 
     def enable(self, name):
         if name not in self.enabled_plugins:

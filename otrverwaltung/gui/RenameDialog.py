@@ -16,14 +16,17 @@
 
 from os.path import basename
 
-import gtk
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 from otrverwaltung import path
 
-class RenameDialog(gtk.Dialog, gtk.Buildable):
+class RenameDialog(Gtk.Dialog, Gtk.Buildable):
     __gtype_name__ = "RenameDialog"
 
     def __init__(self):
+        Gtk.Dialog.__init__(self)
         pass
 
     def do_parser_finished(self, builder):
@@ -33,7 +36,7 @@ class RenameDialog(gtk.Dialog, gtk.Buildable):
     def init_and_run(self, title, filenames):        
         entries = {}
         for f in filenames:
-            entries[f] = gtk.Entry()
+            entries[f] = Gtk.Entry()
             entries[f].set_text(basename(f))
             entries[f].set_activates_default(True)
             entries[f].show()
@@ -52,12 +55,12 @@ class RenameDialog(gtk.Dialog, gtk.Buildable):
         for f in entries:
             self.builder.get_object('vboxRename').remove(entries[f])
             
-        return response==gtk.RESPONSE_OK, new_names
+        return response==Gtk.ResponseType.OK, new_names
         
 def NewRenameDialog():
     glade_filename = path.getdatapath('ui', 'RenameDialog.glade')
     
-    builder = gtk.Builder()   
+    builder = Gtk.Builder()
     builder.add_from_file(glade_filename)
     dialog = builder.get_object("rename_dialog")
         

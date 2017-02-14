@@ -15,35 +15,38 @@
 ### END LICENSE
 
 
-import gobject
-import gtk
-import sys
 
-class SidebarButton(gtk.Button):
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gdk, GObject
+
+
+class SidebarButton(Gtk.Button):
     __gsignals__ = {
-        'element-clicked' : (gobject.SIGNAL_RUN_FIRST, None, (int,))
+        'element-clicked': (GObject.SIGNAL_RUN_FIRST, None, (int,))
     }
     
     def __init__(self, title, id, padding):
-        gtk.Button.__init__(self)
+        Gtk.Button.__init__(self)
         
         self.title = title
         self.active = False
         self.id = id
         self.search = None
  
-        self.set_relief(gtk.RELIEF_NONE)  
+        self.set_relief(Gtk.ReliefStyle.NONE)
         self.set_property('can_focus', False) # why?
  
         # HBox
         #   - [ Alignment(Label) | (image) ]
 
-        self.box = gtk.HBox()
+        self.box = Gtk.HBox()
 
-        a = gtk.Alignment(0.0, 0.5)
+        #a = Gtk.Alignment(0.0, 0.5)
+        a = Gtk.Alignment()
         a.set_property('left-padding', padding)
         
-        self.label = gtk.Label()
+        self.label = Gtk.Label()
         self.label.set_text(self.title)
         a.add(self.label)
 
@@ -56,7 +59,7 @@ class SidebarButton(gtk.Button):
         self.connect('clicked', on_clicked)
 
     def add_widget(self, widget):
-        self.box.pack_end(widget, expand=False)
+        self.box.pack_end(widget, False, False, 0)
 
     def update_text(self):
         if self.active:
@@ -77,24 +80,24 @@ class SidebarButton(gtk.Button):
         self.active = active_state
         self.update_text()        
 
-class Sidebar(gtk.EventBox):
+class Sidebar(Gtk.EventBox):
     __gsignals__ = {
-        'element-clicked' : (gobject.SIGNAL_RUN_FIRST, None, (int,))
+        'element-clicked': (GObject.SIGNAL_RUN_FIRST, None, (int,))
     }
 
     def __init__(self):
-        gtk.EventBox.__init__(self)
+        Gtk.EventBox.__init__(self)
         self.set_size_request(200, -1)
-        self.vbox = gtk.VBox()
+        self.vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.vbox.set_border_width(5)
-        self.vbox.show()
-        self.add(self.vbox)      
+        #self.vbox.show()
+        self.add(self.vbox)
 
         self.elements = []
 
         style = self.get_style()
-        self.color = gtk.gdk.color_parse('#AFAFAF')
-        self.modify_bg(gtk.STATE_NORMAL, self.color)
+        self.color = Gdk.color_parse('#AFAFAF')
+        self.modify_bg(Gtk.StateFlags.NORMAL, self.color)
 
     def on_element_clicked(self, element, id):
         self.set_active(id)
@@ -119,15 +122,16 @@ class Sidebar(gtk.EventBox):
                 element.set_search(None)
     
     def add_section(self, title):
-        a = gtk.Alignment(0.0, 0.5)
+        a = Gtk.Alignment()
         a.set_property('left-padding', 10)
         a.set_property('top-padding', 10)
         a.set_property('bottom-padding', 5)
         
-        label = gtk.Label()
+        label = Gtk.Label()
         label.set_markup('<span color="#6D6D6D"><b>%s</b></span>' % title)
         a.add(label)
-        self.vbox.pack_start(a, False, False)      
+
+        self.vbox.pack_start(a, False, False, 0)
     
     def add_element(self, id, title, intend=True):
         if intend:
@@ -137,6 +141,8 @@ class Sidebar(gtk.EventBox):
             
         self.elements.append(element)
         element.connect('element-clicked', self.on_element_clicked)
-        self.vbox.pack_start(element, False, False)
+
+        self.vbox.pack_start(element, False, False, 0)
         
         return element
+

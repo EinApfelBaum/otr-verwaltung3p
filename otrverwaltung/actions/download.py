@@ -14,7 +14,9 @@
 #with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-import gtk
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 import os.path
 from otrverwaltung.gui import AddDownloadDialog
 from otrverwaltung.downloader import Download
@@ -23,13 +25,14 @@ from otrverwaltung.constants import DownloadStatus
 
 from otrverwaltung.actions.baseaction import BaseAction
 
+
 def add_download(via_link, app, gui, link=None):
     if link:
         link = link.replace("otr://", "")
 
     dialog = AddDownloadDialog.NewAddDownloadDialog(gui, app.config, via_link, link)
         
-    if dialog.run() == gtk.RESPONSE_OK:           
+    if dialog.run() == Gtk.ResponseType.OK:
         options = dialog.get_download_options()
                 
         if options[0] == 'torrent':
@@ -54,72 +57,82 @@ def add_download(via_link, app, gui, link=None):
         download.start()
                                     
     dialog.destroy()
-    
+
+
 class Add(BaseAction):
     def __init__(self, app, gui):
+        BaseAction.__init__(self)
         self.update_list = False
         self.__app = app
         self.__gui = gui
 
-    def do(self):
+    def do(self, filename=None, cut_action=None):
         add_download(False, self.__app, self.__gui)
-        
-class AddLink(BaseAction):            
+
+
+class AddLink(BaseAction):
     def __init__(self, app, gui):
+        BaseAction.__init__(self)
         self.update_list = False
         self.__app = app
         self.__gui = gui
 
-    def do(self, link=None):
+    def do(self, link=None, cut_action=None):
         add_download(True, self.__app, self.__gui, link)
-        
+
+
 class Stop(BaseAction):
     def __init__(self, app, gui):
+        BaseAction.__init__(self)
         self.update_list = False
         self.__app = app
         self.__gui = gui
 
-    def do(self, downloads):
+    def do(self, downloads, cut_action=None):
         for download in downloads:
             download.stop()
-        
+
+
 class Start(BaseAction):
     def __init__(self, app, gui):
+        BaseAction.__init__(self)
         self.update_list = False
         self.__app = app
         self.__gui = gui
 
-    def do(self, downloads):
+    def do(self, downloads, cut_action=None):
         for download in downloads:
             download.start()
 
+
 class Remove(BaseAction):
     def __init__(self, app, gui):
+        BaseAction.__init__(self)
         self.update_list = False
         self.__app = app
         self.__gui = gui
 
-    def do(self, downloads):
+    def do(self, downloads, cut_action=None):
         downloads_count = len(downloads)
         if downloads_count == 1:
             question = "Soll der Download wirklich entfernt werden?"
         else:
             question = "Sollen %i Downloads wirklich entfernt werden?" % downloads_count
 
-        dialog = gtk.MessageDialog(self.__gui.main_window, 0, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO, question)
-        checkbutton = gtk.CheckButton('Die heruntergeladene Datei in den Müll verschieben\n(Fertige Downloads werden nicht verschoben)')
+        dialog = Gtk.MessageDialog(self.__gui.main_window, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, question)
+        checkbutton = Gtk.CheckButton('Die heruntergeladene Datei in den Müll verschieben\n(Fertige Downloads werden nicht verschoben)')
         checkbutton.set_active(True)
         checkbutton.show()
-        dialog.vbox.pack_end(checkbutton)
+        dialog.vbox.pack_end(checkbutton, False, False, 0)
         response = dialog.run()
 
-        if response == gtk.RESPONSE_YES:
+        if response == Gtk.ResponseType.OK:
             model = self.__gui.main_window.treeview_download.get_model()
 
             refs = []
             for row in model:
                 if row[0] in downloads:
-                    refs.append(gtk.TreeRowReference(model, row.path))
+                    refs.append(Gtk.TreeRowReference.new(model, row.path))
 
                     files = [
                         os.path.join(row[0].information['output'], row[0].filename + '.torrent'),

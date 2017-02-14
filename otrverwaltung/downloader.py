@@ -20,7 +20,7 @@ import time
 import os.path
 import base64
 import hashlib
-import urllib2
+import urllib.request as request
 
 from otrverwaltung.GeneratorTask import GeneratorTask
 from otrverwaltung.cutlists import Cutlist
@@ -149,11 +149,11 @@ class Download:
             if not os.path.exists(torrent_filename):
                 url = 'http://81.95.11.2/torrents/' + self.filename + '.torrent'
                 try:
-                    urllib2.urlretrieve(url, torrent_filename)
+                    request.urlretrieve(url, torrent_filename)
                     # read filename
                     f = open(torrent_filename, 'r')
                     line = f.readlines()[0]
-                except IOError, error:
+                except IOError as error:
                     self.information['status'] = DownloadStatus.ERROR
                     self.information['message_short'] = 'Torrentdatei konnte nicht geladen werden.'
                     yield "Torrentdatei konnte nicht heruntergeladen werden (%s)!" % error
@@ -172,7 +172,7 @@ class Download:
 
             try:
                 self.__process = subprocess.Popen(command, stdout=subprocess.PIPE)
-            except OSError, error:
+            except OSError as error:
                 self.information['status'] = DownloadStatus.ERROR
                 self.information['message_short'] = 'Aria2c ist nicht installiert.'
                 yield "Ist aria2c installiert? Der Befehl konnte nicht ausgeführt werden:\nFehlermeldung: %s" % error
@@ -263,7 +263,7 @@ class Download:
 
                 try:
                     self.__process = subprocess.Popen(command, stderr=subprocess.PIPE)
-                except OSError, error:
+                except OSError as error:
                     self.information['status'] = DownloadStatus.ERROR
                     self.information['message_short'] = 'Wget ist nicht installiert.'
                     yield "Ist Wget installiert? Der Befehl konnte nicht ausgeführt werden:\n%s" % error
@@ -333,7 +333,7 @@ class Download:
 
                     try:
                         self.__process = subprocess.Popen(command, stdout=subprocess.PIPE)
-                    except OSError, error:
+                    except OSError as error:
                         self.information['status'] = DownloadStatus.ERROR
                         self.information['message_short'] = 'Aria2c ist nicht installiert.'
                         yield "Ist aria2c installiert? Der Befehl konnte nicht ausgeführt werden:\n%s" % error
@@ -457,7 +457,7 @@ class Download:
 
             try:
                 self.__process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            except OSError, error:
+            except OSError as error:
                 self.information['status'] = DownloadStatus.ERROR
                 self.information['message_short'] = 'Dekoder nicht gefunden.'
                 yield "Der Pfad zum Dekoder scheint nicht korrekt zu sein. Der folgende Befehl konnte nicht ausgeführt werden\nFehlermeldung: %s" % error
@@ -499,7 +499,7 @@ class Download:
                     yield "Es ist ein veralteter Dekoder angegeben!\n"
                 elif "maximale Anzahl":
                     self.information['message_short'] = 'Maximale Anzahl der Dekodierungen erreicht.'
-                    yield unicode(stderr, 'iso-8859-1')
+                    yield str(stderr, 'iso-8859-1')
                 else:
                     self.information['message_short'] = stderr
                     yield stderr

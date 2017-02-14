@@ -30,30 +30,38 @@ def getdatapath(*args):
     is specified at installation time.
     """
     return os.path.join(os.path.dirname(__file__), data_dir, *args)
-      
+
+
 def get_storage_dir(filename=""):
     return os.path.join(BaseDirectory.xdg_data_home, "otrverwaltung", filename)
+
 
 def get_config_dir(filename=""):
     return os.path.join(BaseDirectory.xdg_config_home, "otrverwaltung", filename)
 
+
 def get_path(filename=""):
     return os.path.join(sys.path[0], "otrverwaltung", filename)
+
 
 def get_plugin_paths():
     plugins_home = get_storage_dir("plugins") 
     plugins_usr = '/usr/share/otrverwaltung/plugins'
     return plugins_home, plugins_usr
-    
+
+
 def get_gui_path(filename=''):
     return os.path.join(get_path(), "gui", filename)
-    
+
+
 def get_image_path(filename=""):
     return getdatapath("media", filename)
 
+
 def get_tools_path(filename=""):
     return getdatapath("tools", filename)
-    
+
+
 def get_internal_virtualdub_path(filename=""):
     if  os.path.expanduser("~") in os.path.abspath(sys.path[0]):
         # started from home dir

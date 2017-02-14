@@ -14,14 +14,17 @@
 #with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-import gtk
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, GdkPixbuf
 
 from otrverwaltung import path
 
-class PluginsDialog(gtk.Dialog, gtk.Buildable):
+class PluginsDialog(Gtk.Dialog, Gtk.Buildable):
     __gtype_name__ = "PluginsDialog"
 
     def __init__(self):
+        Gtk.Dialog.__init__(self)
         pass
 
     def do_parser_finished(self, builder):
@@ -68,20 +71,22 @@ class PluginsDialog(gtk.Dialog, gtk.Buildable):
         store, iter = self.builder.get_object('treeview_plugins').get_selection().get_selected()   
         name = store.get_value(iter, 3)       
         
-        dialog = gtk.Dialog(store.get_value(iter, 1) + " - Einstellungen", parent=self, flags=gtk.DIALOG_MODAL, buttons=(gtk.STOCK_CLOSE, gtk.RESPONSE_CLOSE))
+        dialog = Gtk.Dialog(store.get_value(iter, 1) + " - Einstellungen", parent=self, flags=Gtk.DialogFlags.MODAL,
+                            buttons=(Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE))
         dialog.set_border_width(2)
-        dialog.set_icon(gtk.gdk.pixbuf_new_from_file(path.get_image_path('icon3.png')))
+        dialog.set_icon(GdkPixbuf.Pixbuf.pixbuf_new_from_file(path.get_image_path('icon3.png')))
         
         dialog = self.gui.app.plugin_system.plugins[name].configurate(dialog)
         
         dialog.show_all()
         dialog.run()
         dialog.hide()
-        
+
+
 def NewPluginsDialog(gui):
     glade_filename = path.getdatapath('ui', 'PluginsDialog.glade')
     
-    builder = gtk.Builder()   
+    builder = Gtk.Builder()
     builder.add_from_file(glade_filename)
     dialog = builder.get_object("plugins_dialog")
     dialog.gui = gui

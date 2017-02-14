@@ -14,7 +14,10 @@
 #with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-import gtk, subprocess
+#import gtk, subprocess
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 from otrverwaltung.pluginsystem import Plugin
 
@@ -29,7 +32,7 @@ class Play(Plugin):
     def enable(self):    
         self.relevant_sections = [Section.VIDEO_UNCUT, Section.VIDEO_CUT, Section.ARCHIVE]
 
-        self.toolbutton = self.gui.main_window.add_toolbutton(gtk.image_new_from_file(self.get_path('play.png')), 'Abspielen', self.relevant_sections)
+        self.toolbutton = self.gui.main_window.add_toolbutton(Gtk.Image.new_from_file(self.get_path('play.png')), 'Abspielen', self.relevant_sections)
         self.toolbutton.connect('clicked', self.on_play_clicked)        
         
         self.row_activate_id = self.gui.main_window.builder.get_object('treeview_files').connect('row-activated', self.on_row_activated)

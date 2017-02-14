@@ -18,14 +18,17 @@ from os.path import basename
 import datetime
 import time
 
-import gtk
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 from otrverwaltung import path
 
-class PlanningDialog(gtk.Dialog, gtk.Buildable):
+class PlanningDialog(Gtk.Dialog, Gtk.Buildable):
     __gtype_name__ = "PlanningDialog"
 
     def __init__(self):
+        Gtk.Dialog.__init__(self)
         pass
 
     def do_parser_finished(self, builder):
@@ -33,7 +36,7 @@ class PlanningDialog(gtk.Dialog, gtk.Buildable):
         self.builder.connect_signals(self)
 
         # fill combobox
-        store = gtk.ListStore(str)
+        store = Gtk.ListStore(str)
         
         stations = "ARD ZDF Sat.1 Pro7 RTL kabel1 VOX RTL2 SWR WDR NDR MDR RBB HR BR BR alpha SuperRTL Tele5 DMAX 3sat ARTE PHOENIX EinsExtra EinsPlus EinsFestival ZDFdokukanal ZDFinfokanal ZDFtheaterkanal ComedyCentral 9live DASVIERTE Nickelodeon KIKA Eurosport DSF GIGA VIVA MTV N24 n-tv BBC World CNN TRT" 
         for station in stations.split(" "):
@@ -101,7 +104,7 @@ class PlanningDialog(gtk.Dialog, gtk.Buildable):
 def NewPlanningDialog(gui):
     glade_filename = path.getdatapath('ui', 'PlanningDialog.glade')
     
-    builder = gtk.Builder()   
+    builder = Gtk.Builder()
     builder.add_from_file(glade_filename)
     dialog = builder.get_object("planning_dialog")
     dialog.gui = gui

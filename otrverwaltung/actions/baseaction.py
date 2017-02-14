@@ -14,11 +14,11 @@
 #with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-class BaseAction:    
+class BaseAction:
     """ Base class for actions."""    
      
     def __init__(self):
         self.update_list = True
     
-    def do(self):
+    def do(self, filenames, cut_action):
         raise Exception("Override this method!")

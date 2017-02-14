@@ -14,24 +14,24 @@
 #with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
-import gtk
-from gtk import RESPONSE_OK
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 import time
 import webbrowser
-import urllib2
-import xml.dom.minidom
-import hashlib
 
 from otrverwaltung.actions.baseaction import BaseAction
 
+
 class Add(BaseAction):    
     def __init__(self, app, gui):
+        BaseAction.__init__(self)
         self.update_list = False
         self.__app = app
         self.__gui = gui
 
-    def do(self):
-        if self.__gui.dialog_planning.run_new() == RESPONSE_OK:           
+    def do(self, filenames=None, cut_action=None):
+        if self.__gui.dialog_planning.run_new() == Gtk.ResponseType.OK:
             broadcast, datetime, station = self.__gui.dialog_planning.get_values()
             item = self.__app.planned_broadcasts.append(broadcast, datetime, station)
 
@@ -39,17 +39,19 @@ class Add(BaseAction):
             self.__gui.main_window.broadcasts_badge()
             
         self.__gui.dialog_planning.hide()
-        
+
+
 class Edit(BaseAction):    
     def __init__(self, app, gui):
+        BaseAction.__init__(self)
         self.update_list = False
         self.__gui = gui
 
-    def do(self, broadcast_iters):
+    def do(self, broadcast_iters, cut_action=None):
         model = self.__gui.main_window.builder.get_object('treeview_planning').get_model()
         broadcast = model.get_value(broadcast_iters[0], 0)
             
-        if self.__gui.dialog_planning.run_edit(broadcast) == RESPONSE_OK:
+        if self.__gui.dialog_planning.run_edit(broadcast) == Gtk.ResponseType.OK:
             title, datetime, station = self.__gui.dialog_planning.get_values()
             broadcast.title = title
             broadcast.datetime = datetime
@@ -59,13 +61,15 @@ class Edit(BaseAction):
             
         self.__gui.dialog_planning.hide()
 
-class Remove(BaseAction):    
+
+class Remove(BaseAction):
     def __init__(self, app, gui):
+        BaseAction.__init__(self)
         self.update_list = False
         self.__app = app
         self.__gui = gui
 
-    def do(self, broadcast_iters):
+    def do(self, broadcast_iters, cut_action=None):
         if len(broadcast_iters) == 1:
             message = "Es ist eine Sendung ausgewählt. Soll diese Sendung "
         else:
@@ -76,7 +80,7 @@ class Remove(BaseAction):
             planning_items = [model.get_value(iter, 0) for iter in broadcast_iters]
 
             # remove rows            
-            row_references = [gtk.TreeRowReference(model, model.get_path(iter)) for iter in broadcast_iters]
+            row_references = [Gtk.TreeRowReference.new(model, model.get_path(iter)) for iter in broadcast_iters]
             for row_reference in row_references:
                 iter = model.get_iter(row_reference.get_path())
                 # remove from list
@@ -85,14 +89,16 @@ class Remove(BaseAction):
                 del model[iter]
             
             self.__gui.main_window.broadcasts_badge()            
-            
+
+
 class Search(BaseAction):
     def __init__(self, app, gui):
+        BaseAction.__init__(self)
         self.update_list = False
         self.__app = app
         self.__gui = gui
         
-    def do(self, broadcast_iters):
+    def do(self, broadcast_iters, cut_action=None):
         model = self.__gui.main_window.builder.get_object('treeview_planning').get_model()
         for broadcast_iter in broadcast_iters:
             broadcast = model.get_value(broadcast_iter, 0)

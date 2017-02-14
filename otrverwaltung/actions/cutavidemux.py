@@ -16,7 +16,11 @@
 ### END LICENSE
 
 
-from gtk import events_pending, main_iteration, RESPONSE_OK
+
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+
 import os
 import subprocess
 import time
@@ -27,9 +31,11 @@ from otrverwaltung.constants import Action, Cut_action, Status, Format, Program
 from otrverwaltung import path
 from otrverwaltung import fileoperations
 
+
 class CutAvidemux(Cut):
 
     def __init__(self, app, gui):
+        Cut.__init__(self, app, gui)
         self.update_list = True
         self.app = app
         self.config = app.config
@@ -39,10 +45,9 @@ class CutAvidemux(Cut):
         # clean up
         pass
         
-    def cut_file_by_cutlist(self, filename, cutlist=None,  program_config_value=None):
+    def cut_file_by_cutlist(self, filename, cutlist=None, program_config_value=None):
         return self.__cut_file_avidemux(filename, program_config_value, cutlist.cuts_frames)
         
-
     def create_cutlist(self,  filename, program_config_value):
         """ read cuts from avidemux 2 and 3
             returns cut_frames und cutlist_error """
@@ -223,8 +228,8 @@ class CutAvidemux(Cut):
 #                progress = line[line.find(":") + 1 : line.find("%")]
 #                self.gui.main_window.set_tasks_progress(int(progress))
 #
-            while events_pending():
-                main_iteration(False)
+            while Gtk.events_pending():
+                Gtk.main_iteration()
 
         fileoperations.remove_file('tmp.js')
 

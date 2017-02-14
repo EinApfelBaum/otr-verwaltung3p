@@ -16,7 +16,9 @@
 
 import subprocess, time
 import os.path
-import gtk
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 from otrverwaltung.pluginsystem import Plugin
 
@@ -31,7 +33,7 @@ class CutPlay(Plugin):
     Configurable = False
         
     def enable(self):
-        self.toolbutton = self.gui.main_window.add_toolbutton(gtk.image_new_from_file(self.get_path('play.png')), 'Geschnitten Abspielen', [Section.VIDEO_UNCUT])
+        self.toolbutton = self.gui.main_window.add_toolbutton(Gtk.Image.new_from_file(self.get_path('play.png')), 'Geschnitten Abspielen', [Section.VIDEO_UNCUT])
         self.toolbutton.connect('clicked', self.on_cut_play_clicked)                
         
     def disable(self):
@@ -75,7 +77,7 @@ class CutPlay(Plugin):
         
         while p.poll() == None:
             time.sleep(1)
-            while gtk.events_pending():
-                gtk.main_iteration(False)
+            while Gtk.events_pending():
+                Gtk.main_iteration()
 
         fileoperations.remove_file(edl_filename)

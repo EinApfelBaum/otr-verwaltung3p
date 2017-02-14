@@ -3,13 +3,18 @@
 # This file is in the public domain
 ### END LICENSE
 
-import gtk
-import urllib, urllib2
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, GdkPixbuf
+#import urllib, urllib2
+import urllib.request as request
+import requests
 import re
 import subprocess
 import base64
 import os
 import libtorrent as lt
+
 
 from otrverwaltung.GeneratorTask import GeneratorTask
 from otrverwaltung import cutlists
@@ -17,10 +22,12 @@ from otrverwaltung import path
 from otrverwaltung.scraper import scrape
 from otrverwaltung.gui.widgets.CutlistsTreeView import CutlistsTreeView
 
-class AddDownloadDialog(gtk.Dialog, gtk.Buildable):
+
+class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
     __gtype_name__ = "AddDownloadDialog"
 
     def __init__(self):
+        Gtk.Dialog.__init__(self)
         self.mode = 0
         self.filename = ""
 
@@ -33,7 +40,7 @@ class AddDownloadDialog(gtk.Dialog, gtk.Buildable):
         self.cutlists_treeview.get_selection().connect('changed', self.treeview_cutlists_selection_changed)
         self.builder.get_object('scrolledwindow_cutlists').add(self.cutlists_treeview)
 
-        animation = gtk.gdk.PixbufAnimation(path.get_image_path("spinner.gif"))
+        animation = GdkPixbuf.PixbufAnimation.new_from_file(path.get_image_path("spinner.gif"))
         self.builder.get_object('image_spinner').set_from_animation(animation)
         self.builder.get_object('image_spinner_download').set_from_animation(animation)
 
@@ -61,7 +68,9 @@ class AddDownloadDialog(gtk.Dialog, gtk.Buildable):
     
     def search(self, text):
         try:        
-            html = urllib.urlopen("http://otrkeyfinder.com/?search=%s" % text).read()
+            #html = urllib.urlopen("http://otrkeyfinder.com/?search=%s" % text).read()
+            #html = Request.urlopen("http://otrkeyfinder.com/?search=%s" % text).read()
+            html = requests.get("http://otrkeyfinder.com/?search=%s" % text)
         except IOError:
             yield 'Verbindungsprobleme'
             return
@@ -146,7 +155,7 @@ class AddDownloadDialog(gtk.Dialog, gtk.Buildable):
         if not os.path.exists(torrent_filename):
             url = 'http://81.95.11.2/torrents/' + self.filename + '.torrent'
             try:
-                urllib.urlretrieve(url, torrent_filename)
+                request.urlretrieve(url, torrent_filename)
             except IOError:
                 yield 'torrent_error',  "Torrentdatei konnte nicht heruntergeladen werden (%s)!"
         # read filename
@@ -277,10 +286,11 @@ class AddDownloadDialog(gtk.Dialog, gtk.Buildable):
             
             self.response(-5)       
 
+
 def NewAddDownloadDialog(gui, config, via_link, link=None):
     glade_filename = path.getdatapath('ui', 'AddDownloadDialog.glade')
     
-    builder = gtk.Builder()   
+    builder = Gtk.Builder()
     builder.add_from_file(glade_filename)
     dialog = builder.get_object("add_download_dialog")
     dialog.gui = gui

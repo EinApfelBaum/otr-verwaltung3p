@@ -3,14 +3,53 @@ OTR-Verwaltung
 
 Copyright (C) 2010 Benjamin Elbers <elbersb@gmail.com>
 
-**Mehr Informationen auf der [Website](http://elbersb.de/otrverwaltung).**
+Die Ursprungsversion von OTRVerwaltung wurden von Benjamin Elbers programmiert.
 
-![Screenshot](http://github.com/elbersb/otr-verwaltung/raw/master/data/media/screenshots/search.png)
+OTR-Verwaltung++
+-----
+
+OTRVerwaltung wurde durch einige Patches erweitert, daraus entstand OTRVerwaltung++
+https://github.com/monarc99/otr-verwaltung
+
+OTR-Verwaltung3Plus
+-----
+
+Ein Port zu Python 3 und GTK3+.
 
 TODO
 ----
 
-* Mencoder zum Schneiden: http://www.otrforum.com/showpost.php?p=275672&postcount=297
-* Beim Zusammenfassen-Dialog warnen, wenn der Dialog geschlossen wird, und noch nicht alle Dateien angeguckt wurden (Decodieren und Schneiden, Schneiden)
-* Dekodieren und Schneiden threaden
-* "Abbrechen"-Knopf
+__Oberfläche__
+- Windows
+- [x] MainWindow
+- [x] PreferencesWindow
+- Dialoge
+- [ ] AddDownloadDialog
+- [x] ArchiveDialog
+- [x] ConclusionDialog
+- [ ] CutDialog
+- [ ] CutinterfaceDialog
+- [ ] DownloadPropertiesDialog
+- [x] EmailPasswordDialog
+- [ ] LoadCutDialog
+- [ ] PlanningDialog
+- [ ] PluginsDialog
+- [ ] RenameDialog
+
+__Funktionalität__
+- [x] Datei löschen, wiederherstellen
+- [x] Datei Abspielen (PlugIn)
+- [x] MediaInfo (PlugIn)
+- [x] Archivieren
+- [x] Convert to MKV
+- [ ] Datei umbennen
+- [ ] Ordner erstellen
+- [ ] Download
+- [ ] geplante Sendungen
+- [x] Decode otrkey Datei
+- [ ] Cut Avi
+- [ ] Cut HD
+
+__Feinheiten__
+- [ ] Oberflächengestaltung anpassen ( Abstände , Ränder, etc. ... )
+- [ ] Code cleanup

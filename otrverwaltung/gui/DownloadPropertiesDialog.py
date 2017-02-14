@@ -3,15 +3,19 @@
 # This file is in the public domain
 ### END LICENSE
 
-import gtk
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 from otrverwaltung.constants import DownloadTypes
 from otrverwaltung import path
 
-class DownloadPropertiesDialog(gtk.Dialog, gtk.Buildable):
+
+class DownloadPropertiesDialog(Gtk.Dialog, Gtk.Buildable):
     __gtype_name__ = "DownloadPropertiesDialog"
 
     def __init__(self):
+        Gtk.Dialog.__init__(self)
         self.changed = False
 
     def do_parser_finished(self, builder):
@@ -20,7 +24,7 @@ class DownloadPropertiesDialog(gtk.Dialog, gtk.Buildable):
 
         self.combobox_type = self.builder.get_object('combobox_downloadtype')
         self.liststore_type = self.builder.get_object('combobox_downloadtype').get_model()
-        cell = gtk.CellRendererText()
+        cell = Gtk.CellRendererText()
         self.combobox_type.pack_start(cell, True)
         self.combobox_type.add_attribute(cell, 'text', 0)
 
@@ -83,10 +87,10 @@ class DownloadPropertiesDialog(gtk.Dialog, gtk.Buildable):
         tag = textbuffer.create_tag(None, family='Monospace')
         textbuffer.apply_tag(tag, textbuffer.get_start_iter(), textbuffer.get_end_iter())
 
-        gtk.Dialog.run(self)
+        Gtk.Dialog.run(self)
 
     def clipboard(self, text):
-        clipboard = gtk.clipboard_get()
+        clipboard = Gtk.Clipboard.get()
         clipboard.set_text(text)
         clipboard.store()
 
@@ -130,7 +134,7 @@ class DownloadPropertiesDialog(gtk.Dialog, gtk.Buildable):
 def NewDownloadPropertiesDialog():
     glade_filename = path.getdatapath('ui', 'DownloadPropertiesDialog.glade')
 
-    builder = gtk.Builder()
+    builder = Gtk.Builder()
     builder.add_from_file(glade_filename)
     dialog = builder.get_object("download_properties_dialog")
     return dialog
