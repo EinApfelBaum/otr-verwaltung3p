@@ -27,10 +27,7 @@ class CutlistsTreeView(Gtk.TreeView):
     def __init__(self):
         Gtk.TreeView.__init__(self)
 
-        temp = path.get_image_path('error.png')
-
-        # TODO verursacht Fehler
-        #self.pixbuf_warning = GdkPixbuf.Pixbuf.pixbuf_new_from_file(path.get_image_path('error.png'))
+        self.pixbuf_warning = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('error.png'))
 
         self.errors = {
             "100000": "Fehlender Beginn",
@@ -89,7 +86,7 @@ class CutlistsTreeView(Gtk.TreeView):
         cutlist = model.get_value(iter, 0)
         cell.set_property('text', getattr(cutlist, attribute_name))
 
-    def _treeview_warning(self, column, cell, model, iter):
+    def _treeview_warning(self, column, cell, model, iter, data):
         cutlist = model.get_value(iter, 0)
 
         if cutlist.errors or cutlist.actualcontent or cutlist.othererrordescription:
@@ -97,7 +94,7 @@ class CutlistsTreeView(Gtk.TreeView):
         else:
             cell.set_property('pixbuf', None)
 
-    def _treeview_rating(self, column, cell, model, iter):
+    def _treeview_rating(self, column, cell, model, iter, data):
         cutlist = model.get_value(iter, 0)
         if cutlist.rating:
             if cutlist.ratingcount == 1:
@@ -107,11 +104,11 @@ class CutlistsTreeView(Gtk.TreeView):
         else:
             cell.set_property('text', "Keine")
 
-    def _treeview_actualcontent(self, column, cell, model, iter):
+    def _treeview_actualcontent(self, column, cell, model, iter, data):
         cutlist = model.get_value(iter, 0)
         cell.set_property('markup', "<span foreground='red'>%s</span>" % cutlist.actualcontent)
 
-    def _treeview_errors(self, column, cell, model, iter):
+    def _treeview_errors(self, column, cell, model, iter, data):
         cutlist = model.get_value(iter, 0)
         text = "<span foreground='red'>%s" % cutlist.errors
         if cutlist.othererrordescription:
