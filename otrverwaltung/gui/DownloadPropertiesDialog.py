@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-### BEGIN LICENSE
+# BEGIN LICENSE
 # This file is in the public domain
-### END LICENSE
+# END LICENSE
 
 import gi
+
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
@@ -97,7 +98,7 @@ class DownloadPropertiesDialog(Gtk.Dialog, Gtk.Buildable):
     # signals #
     def on_combobox_downloadtype_changed(self, widget, data=None):
         index = widget.get_active()
-        pref = { 1: '', 2: 'wget' }
+        pref = {1: '', 2: 'wget'}
 
         if self.original_download_type == DownloadTypes.BASIC and index in [1, 2]:
             # a change from wget to aria2c or vv.
@@ -130,6 +131,7 @@ class DownloadPropertiesDialog(Gtk.Dialog, Gtk.Buildable):
 
     def on_button_clipboard_link_clicked(self, widget, data=None):
         self.clipboard(self.builder.get_object('label_link_torrentinfo').get_text())
+
 
 def NewDownloadPropertiesDialog():
     glade_filename = path.getdatapath('ui', 'DownloadPropertiesDialog.glade')

@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-### BEGIN LICENSE
+# BEGIN LICENSE
 # Copyright (C) 2010 Benjamin Elbers <elbersb@gmail.com>
-#This program is free software: you can redistribute it and/or modify it
-#under the terms of the GNU General Public License version 3, as published
-#by the Free Software Foundation.
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
+# by the Free Software Foundation.
 #
-#This program is distributed in the hope that it will be useful, but
-#WITHOUT ANY WARRANTY; without even the implied warranties of
-#MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
-#PURPOSE.  See the GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
+# PURPOSE.  See the GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public License along
-#with this program.  If not, see <http://www.gnu.org/licenses/>.
-### END LICENSE
+# You should have received a copy of the GNU General Public License along
+# with this program.  If not, see <http://www.gnu.org/licenses/>.
+# END LICENSE
 
 import subprocess
 import re
@@ -29,8 +29,8 @@ from otrverwaltung.constants import DownloadStatus, DownloadTypes, Action, Cut_a
 from otrverwaltung import fileoperations
 from otrverwaltung import path
 
-class Download:
 
+class Download:
     def __init__(self, app, config, filename=None, link=None):
         """ Torrent: link=None """
 
@@ -42,13 +42,13 @@ class Download:
         self.log = ""
 
         self.information = {
-            'output' : '',
-            'status' : -1,
-            'size' : None,
-            'progress' : 0,
-            'speed' : '',
-            'est' : '',
-            'message_short' : '',
+            'output': '',
+            'status': -1,
+            'size': None,
+            'progress': 0,
+            'speed': '',
+            'est': '',
+            'message_short': '',
             # Torrent
             'seeders': None,
             'upspeed': None,
@@ -69,7 +69,7 @@ class Download:
             information['cutlist'] = None
 
         return {
-            'information' : information,
+            'information': information,
             'filename': self.filename,
             'link': self.link
         }
@@ -123,7 +123,22 @@ class Download:
     def _check_file_with_torrent(self):
         """ checks file with torrent """
         torrent_url = 'http://81.95.11.2/torrents/' + self.filename + '.torrent'
-        torrent_command = [self._config.get_program('aria2c')] + self._config.get('downloader', 'aria2c_opts_torrent') + ["-d", self.information['output'], '--check-integrity=true', '--continue', '--bt-enable-lpd=false', '--bt-exclude-tracker="*"', '--enable-dht=false', '--enable-dht6=false', '--enable-peer-exchange=false', '--bt-hash-check-seed=false', '--bt-stop-timeout=1', '--seed-time=0', '--follow-torrent=mem', torrent_url]
+        torrent_command = [self._config.get_program('aria2c')] + self._config.get('downloader',
+                                                                                  'aria2c_opts_torrent') + ["-d",
+                                                                                                            self.information[
+                                                                                                                'output'],
+                                                                                                            '--check-integrity=true',
+                                                                                                            '--continue',
+                                                                                                            '--bt-enable-lpd=false',
+                                                                                                            '--bt-exclude-tracker="*"',
+                                                                                                            '--enable-dht=false',
+                                                                                                            '--enable-dht6=false',
+                                                                                                            '--enable-peer-exchange=false',
+                                                                                                            '--bt-hash-check-seed=false',
+                                                                                                            '--bt-stop-timeout=1',
+                                                                                                            '--seed-time=0',
+                                                                                                            '--follow-torrent=mem',
+                                                                                                            torrent_url]
 
         # Checking
         try:
@@ -145,7 +160,8 @@ class Download:
 
         if self.information['download_type'] == DownloadTypes.TORRENT:
             # download torrent if necessary
-            torrent_filename = os.path.join(self._config.get('general', 'folder_new_otrkeys'), self.filename + '.torrent')
+            torrent_filename = os.path.join(self._config.get('general', 'folder_new_otrkeys'),
+                                            self.filename + '.torrent')
             if not os.path.exists(torrent_filename):
                 url = 'http://81.95.11.2/torrents/' + self.filename + '.torrent'
                 try:
@@ -167,7 +183,8 @@ class Download:
                     return
 
             self.information['output'] = self._config.get('general', 'folder_new_otrkeys')
-            command = [self._config.get_program('aria2c')] + self._config.get('downloader', 'aria2c_opts_torrent')  + ["-d", self.information['output'], "-T", torrent_filename]
+            command = [self._config.get_program('aria2c')] + self._config.get('downloader', 'aria2c_opts_torrent') + [
+                "-d", self.information['output'], "-T", torrent_filename]
             yield "Ausgeführt wird:\n%s\n" % " ".join(command)
 
             try:
@@ -188,7 +205,7 @@ class Download:
 
                 elif "SEEDING" in line:
                     self.information['message_short'] = 'Seeden...'
-                    self.information['status'] = DownloadStatus.SEEDING # _NOT_ DownloadStatus.FINISHED
+                    self.information['status'] = DownloadStatus.SEEDING  # _NOT_ DownloadStatus.FINISHED
                     self.information['progress'] = 100
                     self.information['est'] = ''
                     self.information['speed'] = ''
@@ -258,7 +275,10 @@ class Download:
             self.information['output'] = self._config.get('general', 'folder_new_otrkeys')
 
             if self.information['preferred_downloader'] == 'wget':
-                command = [self._config.get_program('wget')] + self._config.get('downloader', 'wget') + ["-c", "-P", self.information['output'], self.link]
+                command = [self._config.get_program('wget')] + self._config.get('downloader', 'wget') + ["-c", "-P",
+                                                                                                         self.information[
+                                                                                                             'output'],
+                                                                                                         self.link]
                 yield "Ausgeführt wird:\n%s\n" % " ".join(command)
 
                 try:
@@ -273,7 +293,7 @@ class Download:
                     exit_code = self.__process.poll()
                     if exit_code != None:
                         if self.information['status'] != DownloadStatus.STOPPED:
-                            if exit_code==0:
+                            if exit_code == 0:
                                 self._finished()
                             else:
                                 self.information['status'] = DownloadStatus.ERROR
@@ -316,19 +336,30 @@ class Download:
                 # Download with aria2c
                 self.information['message_short'] = 'Überprüfung der bereits heruntergeladen Datei ...'
                 self.update_view()
-                if 'otrkey' in self.filename and os.path.exists(self.information['output'] + '/' +  self.filename):
-                    torrent_check_return=self._check_file_with_torrent()
+                if 'otrkey' in self.filename and os.path.exists(self.information['output'] + '/' + self.filename):
+                    torrent_check_return = self._check_file_with_torrent()
 
                     if torrent_check_return == 0:
-                       self.information['message_short'] = '(OK):Download vollständig.'
-                       self._finished()
+                        self.information['message_short'] = '(OK):Download vollständig.'
+                        self._finished()
 
-                command = [self._config.get_program('aria2c')] + self._config.get('downloader', 'aria2c_opts') + ["-d", self.information['output'], '--retry-wait=30', '--max-tries=0','--summary-interval=5',  '--log', '-', '--log-level',  'info',    self.link]
+                command = [self._config.get_program('aria2c')] + self._config.get('downloader', 'aria2c_opts') + ["-d",
+                                                                                                                  self.information[
+                                                                                                                      'output'],
+                                                                                                                  '--retry-wait=30',
+                                                                                                                  '--max-tries=0',
+                                                                                                                  '--summary-interval=5',
+                                                                                                                  '--log',
+                                                                                                                  '-',
+                                                                                                                  '--log-level',
+                                                                                                                  'info',
+                                                                                                                  self.link]
                 yield "Ausgeführt wird:\n%s\n" % " ".join(command)
 
                 if self.information['status'] == DownloadStatus.RUNNING:
                     self.log = ''
-                    self.information['message_short'] = 'Versuche Download zu starten ... eventuell erst Warteschlange durchlaufen ...'
+                    self.information[
+                        'message_short'] = 'Versuche Download zu starten ... eventuell erst Warteschlange durchlaufen ...'
                     self.update_view()
 
                     try:
@@ -344,12 +375,12 @@ class Download:
                         line = self.__process.stdout.readline()
 
                         if 'X-OTR-Queueposition' in line or 'errorCode=29' in line:
-                            match = re.search('X-OTR-Queueposition:\ ([0-9]{1,})', line)                            
+                            match = re.search('X-OTR-Queueposition:\ ([0-9]{1,})', line)
                             if match:
                                 self.information['message_short'] = 'OTR Warteschlange - %s' % match.group(0)
                                 self.update_view()
                             else:
-                                if not 'OTR' in self.information['message_short'] :
+                                if not 'OTR' in self.information['message_short']:
                                     self.information['message_short'] = line.strip()
                         elif 'X-OTR-Error-Message' in line:
                             self.information['message_short'] = line.strip()
@@ -391,17 +422,17 @@ class Download:
                     stdout = self.__process.stdout.read().strip()
                     yield stdout
                     if not self.information['status'] in [DownloadStatus.STOPPED, DownloadStatus.ERROR]:
-                        time.sleep(1) # wait for log being updated - very ugly
+                        time.sleep(1)  # wait for log being updated - very ugly
                         if '(INPR):wird heruntergeladen.' in self.log:
                             self.information['message_short'] = '(INPR):Download unvollständig.'
                             self.information['progress'] = 0
                         elif '(INPR):download in-progress.' in self.log:
                             self.information['message_short'] = '(INPR):Download unvollständig.'
                             self.information['progress'] = 0
-                        elif '(OK):Herunterladen abgeschlossen.'  in self.log:
+                        elif '(OK):Herunterladen abgeschlossen.' in self.log:
                             self.information['message_short'] = '(OK):Download vollständig.'
                             self._finished()
-                        elif '(OK):download completed.'  in self.log:
+                        elif '(OK):download completed.' in self.log:
                             self.information['message_short'] = '(OK):Download vollständig.'
                             self._finished()
 
@@ -409,19 +440,21 @@ class Download:
                 self.information['message_short'] = 'Abschliessende Überprüfung der heruntergeladen Datei ...'
                 self.update_view()
                 if 'otrkey' in self.filename:
-                    torrent_check_return=self._check_file_with_torrent()
+                    torrent_check_return = self._check_file_with_torrent()
 
                     if torrent_check_return == 0:
-                       self.information['message_short'] = '(OK):Download vollständig.'
-                       self._finished()
+                        self.information['message_short'] = '(OK):Download vollständig.'
+                        self._finished()
                     elif torrent_check_return == 7:
-                       self.information['status'] = DownloadStatus.ERROR
-                       self.information['message_short'] = '(INPR):Download unvollständig - Datei hat Torrent-Prüfung nicht bestanden. z.B. durch fehlerhaften oder nicht mehr gültiger Link. Downloadabbruch oder defekte Mirrordatei.'
-                       self.information['progress'] = 0
+                        self.information['status'] = DownloadStatus.ERROR
+                        self.information[
+                            'message_short'] = '(INPR):Download unvollständig - Datei hat Torrent-Prüfung nicht bestanden. z.B. durch fehlerhaften oder nicht mehr gültiger Link. Downloadabbruch oder defekte Mirrordatei.'
+                        self.information['progress'] = 0
                     else:
-                       self.information['status'] = DownloadStatus.ERROR
-                       self.information['message_short'] = '(EER):Fehler bei der abschliessenden Überprüfung aufgetreten. Eventuell OTR nicht erreichbar.'
-                       self.information['progress'] = 0
+                        self.information['status'] = DownloadStatus.ERROR
+                        self.information[
+                            'message_short'] = '(EER):Fehler bei der abschliessenden Überprüfung aufgetreten. Eventuell OTR nicht erreichbar.'
+                        self.information['progress'] = 0
 
         elif self.information['download_type'] in [DownloadTypes.OTR_DECODE, DownloadTypes.OTR_CUT]:
             decoder = self._config.get_program('decoder')
@@ -435,7 +468,8 @@ class Download:
                 if not self.information['cutlist']:
                     cutlist = Cutlist()
                     cutlist.id = self.information['cutlist_id']
-                    error = cutlist.download(self._config.get('general', 'server'), os.path.join(self.information['output'], self.filename))
+                    error = cutlist.download(self._config.get('general', 'server'),
+                                             os.path.join(self.information['output'], self.filename))
                     if error:
                         self.information['status'] = DownloadStatus.ERROR
                         self.information['message_short'] = 'Cutlist konnte nicht geladen werden.'
@@ -464,10 +498,10 @@ class Download:
                 return
 
             line = ''
-            while self.__process.poll()==None:
+            while self.__process.poll() == None:
                 char = self.__process.stdout.read(1)
 
-                if char=='\r' or char=='\n':
+                if char == '\r' or char == '\n':
                     line = line.strip()
                     if not line:
                         continue

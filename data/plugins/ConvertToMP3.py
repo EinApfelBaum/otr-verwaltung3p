@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-### BEGIN LICENSE
+# BEGIN LICENSE
 # Copyright (C) 2016 Malte Kiefer <malte.kiefer@mailgermania.de>
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3, as published
@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
-### END LICENSE
+# END LICENSE
 
 import subprocess, time
 import os.path

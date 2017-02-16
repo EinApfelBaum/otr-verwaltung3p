@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
-### BEGIN LICENSE
+# BEGIN LICENSE
 # Copyright (C) 2010 Benjamin Elbers <elbersb@gmail.com>
-#This program is free software: you can redistribute it and/or modify it 
-#under the terms of the GNU General Public License version 3, as published 
-#by the Free Software Foundation.
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
+# by the Free Software Foundation.
 #
-#This program is distributed in the hope that it will be useful, but 
-#WITHOUT ANY WARRANTY; without even the implied warranties of 
-#MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
-#PURPOSE.  See the GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
+# PURPOSE.  See the GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public License along 
-#with this program.  If not, see <http://www.gnu.org/licenses/>.
-### END LICENSE
+# You should have received a copy of the GNU General Public License along
+# with this program.  If not, see <http://www.gnu.org/licenses/>.
+# END LICENSE
 
 import gi
+
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 import os.path
@@ -31,31 +32,31 @@ def add_download(via_link, app, gui, link=None):
         link = link.replace("otr://", "")
 
     dialog = AddDownloadDialog.NewAddDownloadDialog(gui, app.config, via_link, link)
-        
+
     if dialog.run() == Gtk.ResponseType.OK:
         options = dialog.get_download_options()
-                
+
         if options[0] == 'torrent':
             download = Download(app, app.config, dialog.filename)
-            download.download_torrent() 
+            download.download_torrent()
 
-        else: # normal
-            
-            if options[1] == 'decode':            
+        else:  # normal
+
+            if options[1] == 'decode':
                 download = Download(app, app.config, dialog.filename, link=options[2])
                 download.download_decode()
-                                                    
-            elif options[1] == 'decodeandcut':                
+
+            elif options[1] == 'decodeandcut':
                 download = Download(app, app.config, dialog.filename, link=options[2])
-                download.download_decode(options[3])   
-                             
-            else:          
+                download.download_decode(options[3])
+
+            else:
                 download = Download(app, app.config, dialog.filename, link=options[1])
                 download.download_basic(app.config.get('downloader', 'preferred_downloader'))
-                
+
         gui.main_window.treeview_download.add_objects(download)
         download.start()
-                                    
+
     dialog.destroy()
 
 
@@ -119,8 +120,10 @@ class Remove(BaseAction):
         else:
             question = "Sollen %i Downloads wirklich entfernt werden?" % downloads_count
 
-        dialog = Gtk.MessageDialog(self.__gui.main_window, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, question)
-        checkbutton = Gtk.CheckButton('Die heruntergeladene Datei in den Müll verschieben\n(Fertige Downloads werden nicht verschoben)')
+        dialog = Gtk.MessageDialog(self.__gui.main_window, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO,
+                                   question)
+        checkbutton = Gtk.CheckButton(
+            'Die heruntergeladene Datei in den Müll verschieben\n(Fertige Downloads werden nicht verschoben)')
         checkbutton.set_active(True)
         checkbutton.show()
         dialog.vbox.pack_end(checkbutton, False, False, 0)
@@ -138,22 +141,26 @@ class Remove(BaseAction):
                         os.path.join(row[0].information['output'], row[0].filename + '.torrent'),
                         os.path.join(row[0].information['output'], row[0].filename + '.aria2'),
                         os.path.join(row[0].information['output'], row[0].filename + '.cutlist'),
-                        os.path.join(self.__app.config.get('general', 'folder_trash_otrkeys'), row[0].filename + '.segments'),
+                        os.path.join(self.__app.config.get('general', 'folder_trash_otrkeys'),
+                                     row[0].filename + '.segments'),
                     ]
 
                     for file in files:
                         if os.path.exists(file):
                             fileoperations.remove_file(file, None)
 
-                    if checkbutton.get_active() and not row[0].information['status'] in [DownloadStatus.FINISHED, DownloadStatus.SEEDING]:
+                    if checkbutton.get_active() and not row[0].information['status'] in [DownloadStatus.FINISHED,
+                                                                                         DownloadStatus.SEEDING]:
                         otrkey = os.path.join(row[0].information['output'], row[0].filename)
                         # move otrkey to trash
                         if os.path.exists(otrkey):
-                            fileoperations.move_file(otrkey, self.__app.config.get('general', 'folder_trash_otrkeys'), None)
+                            fileoperations.move_file(otrkey, self.__app.config.get('general', 'folder_trash_otrkeys'),
+                                                     None)
                         # move avi file of otrdecoder to trash
                         avi_file = os.path.splitext(otrkey)[0]
                         if os.path.exists(avi_file):
-                            fileoperations.move_file(avi_file, self.__app.config.get('general', 'folder_trash_avis'), None)
+                            fileoperations.move_file(avi_file, self.__app.config.get('general', 'folder_trash_avis'),
+                                                     None)
 
                     row[0].stop()
 
