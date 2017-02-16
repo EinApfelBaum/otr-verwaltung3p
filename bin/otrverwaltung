@@ -126,18 +126,18 @@ class App:
 
         configuration = {
             'general': {
-                'folder_new_otrkeys': '/home/baum/Videos/OTR/Download',
-                'folder_uncut_avis': '/home/baum/Videos/OTR/Uncut',
-                'folder_cut_avis': '/home/baum/Videos/OTR/Cut',
-                'folder_trash_otrkeys': '/home/baum/Videos/OTR/Waste_otrk',
-                'folder_trash_avis': '/home/baum/Videos/OTR/Waste_avi',
-                'folder_archive': '/home/baum/01_Home/06_Videos/OTR/Archiv',
+                'folder_new_otrkeys': '',
+                'folder_uncut_avis': '',
+                'folder_cut_avis': '',
+                'folder_trash_otrkeys': '',
+                'folder_trash_avis': '',
+                'folder_archive': '',
                 'otrkey_search': 'http://otrkeyfinder.com/?search=',
                 'save_email_password': False,
                 'email': '',
                 'password': '',
                 'verify_decoded': True,
-                'cut_avis_by': 'avidemux2_cli',
+                'cut_avis_by': 'SmartMKVmerge',
                 'cut_hqs_by': 'SmartMKVmerge',
                 'cut_mp4s_by': 'intern-vdub',
                 'cut_avis_man_by': 'CutInterface',
@@ -701,11 +701,11 @@ class App:
         elif cmd_exists('mpv'):
             if self.config.get('general', 'mplayer_fullscreen'):
                 p = subprocess.Popen(
-                    [self.config.get_program('mpv'), "-fs", "--merge-files", "-geometry", "50%:50%", "-sub-file",
+                    [self.config.get_program('mpv'), "-fs", "-geometry", "50%:50%", "-sub-file",
                      f_mpv_sub, f_mpv_edl])
             else:
-                p = subprocess.Popen(
-                    [self.config.get_program('mpv'), "--merge-files", "-geometry", "50%:50%", "-sub-file", f_mpv_sub,
+                 p = subprocess.Popen(
+                    [self.config.get_program('mpv'), "-geometry", "50%:50%", "-sub-file", f_mpv_sub,
                      f_mpv_edl])
         else:
             self.__gui.message_error_box("Weder mpv noch mplayer sind zum Anzeigen der Schnitte installiert.")
