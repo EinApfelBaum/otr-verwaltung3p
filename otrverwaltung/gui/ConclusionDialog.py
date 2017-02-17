@@ -57,7 +57,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         self.builder.get_object('check_create_cutlist').modify_font(Pango.FontDescription("bold"))
 
         self.combobox_archive = FolderChooserComboBox(add_empty_entry=True)
-        self.builder.get_object('box_archive').pack_end(self.combobox_archive, False, False, 0)
+        self.builder.get_object('box_archive').pack_end(self.combobox_archive, True, True, 0)
 
         for combobox in ['combobox_external_rating', 'combobox_own_rating']:
             cell = Gtk.CellRendererText()
@@ -204,16 +204,15 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
 
                 if self.file_conclusion.cut.cutlist.filename:
                     rename_list.append(self.file_conclusion.cut.cutlist.filename)
-
-                    self.builder.get_object('comboboxentry_rename').child.modify_base(Gtk.StateType.NORMAL,
-                                                                                      Gdk.Color("#FFFF84"))
-                    self.builder.get_object('comboboxentry_rename').child.modify_text(Gtk.StateType.NORMAL,
-                                                                                      Gdk.Color("black"))
+                    self.builder.get_object('comboboxentry_rename').get_child().override_background_color(
+                        Gtk.StateType.NORMAL, Gdk.RGBA(255, 255, 132, 0.3))
+                    self.builder.get_object('comboboxentry_rename').get_child().override_color(Gtk.StateType.NORMAL,
+                                                                                               Gdk.RGBA(0, 0, 0, 1))
                 else:
-                    self.builder.get_object('comboboxentry_rename').child.modify_base(Gtk.StateType.NORMAL,
-                                                                                      Gdk.Color("white"))
-                    self.builder.get_object('comboboxentry_rename').child.modify_text(Gtk.StateType.NORMAL,
-                                                                                      Gdk.Color("black"))
+                    self.builder.get_object('comboboxentry_rename').get_child().override_background_color(
+                        Gtk.StateType.NORMAL, Gdk.RGBA(0, 0, 0, 0))
+                    self.builder.get_object('comboboxentry_rename').get_child().override_color(Gtk.StateType.NORMAL,
+                                                                                               Gdk.RGBA(0, 0, 0, 1))
 
                 self.gui.set_model_from_list(self.builder.get_object('comboboxentry_rename'), rename_list)
                 self.builder.get_object('comboboxentry_rename').set_active(0)
@@ -234,8 +233,8 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                     text = self.builder.get_object('label_cut_status').get_text()
 
                     text += "\nMit Cutlist %s geschnitten: Autor: <b>%s</b>, Wertung: <b>%s</b>\nKommentar: <b>%s</b>" % (
-                    self.file_conclusion.cut.cutlist.id, self.file_conclusion.cut.cutlist.author,
-                    self.file_conclusion.cut.cutlist.rating, self.file_conclusion.cut.cutlist.usercomment)
+                        self.file_conclusion.cut.cutlist.id, self.file_conclusion.cut.cutlist.author,
+                        self.file_conclusion.cut.cutlist.rating, self.file_conclusion.cut.cutlist.usercomment)
 
                     self.builder.get_object('label_cut_status').set_markup(text)
             else:
@@ -272,7 +271,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
 
     def _on_button_play_clicked(self, widget, data=None):
         if self.file_conclusion.action == Action.DECODE or (
-                self.file_conclusion.action == Action.DECODEANDCUT and self.file_conclusion.cut.status != Status.OK):
+                        self.file_conclusion.action == Action.DECODEANDCUT and self.file_conclusion.cut.status != Status.OK):
             self.app.play_file(self.file_conclusion.uncut_video)
         else:
             self.app.play_file(self.file_conclusion.cut_video)
