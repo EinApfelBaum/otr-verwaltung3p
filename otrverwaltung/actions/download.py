@@ -31,31 +31,37 @@ def add_download(via_link, app, gui, link=None):
     if link:
         link = link.replace("otr://", "")
 
-    dialog = AddDownloadDialog.NewAddDownloadDialog(gui, app.config, via_link, link)
-
-    if dialog.run() == Gtk.ResponseType.OK:
-        options = dialog.get_download_options()
-
-        if options[0] == 'torrent':
-            download = Download(app, app.config, dialog.filename)
-            download.download_torrent()
-
-        else:  # normal
-
-            if options[1] == 'decode':
-                download = Download(app, app.config, dialog.filename, link=options[2])
-                download.download_decode()
-
-            elif options[1] == 'decodeandcut':
-                download = Download(app, app.config, dialog.filename, link=options[2])
-                download.download_decode(options[3])
-
-            else:
-                download = Download(app, app.config, dialog.filename, link=options[1])
-                download.download_basic(app.config.get('downloader', 'preferred_downloader'))
-
-        gui.main_window.treeview_download.add_objects(download)
-        download.start()
+    # TODO: implment another type of download
+    #dialog = AddDownloadDialog.NewAddDownloadDialog(gui, app.config, via_link, link)
+    dialog = Gtk.MessageDialog(gui.main_window,
+                                 Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                 Gtk.MessageType.INFO,
+                                 Gtk.ButtonsType.OK,
+                                 "Wird überarbeitet.")
+    dialog.run()
+    # if dialog.run() == Gtk.ResponseType.OK:
+    #     options = dialog.get_download_options()
+    #
+    #     if options[0] == 'torrent':
+    #         download = Download(app, app.config, dialog.filename)
+    #         download.download_torrent()
+    #
+    #     else:  # normal
+    #
+    #         if options[1] == 'decode':
+    #             download = Download(app, app.config, dialog.filename, link=options[2])
+    #             download.download_decode()
+    #
+    #         elif options[1] == 'decodeandcut':
+    #             download = Download(app, app.config, dialog.filename, link=options[2])
+    #             download.download_decode(options[3])
+    #
+    #         else:
+    #             download = Download(app, app.config, dialog.filename, link=options[1])
+    #             download.download_basic(app.config.get('downloader', 'preferred_downloader'))
+    #
+    #     gui.main_window.treeview_download.add_objects(download)
+    #     download.start()
 
     dialog.destroy()
 
