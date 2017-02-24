@@ -39,13 +39,14 @@ class PlanningDialog(Gtk.Dialog, Gtk.Buildable):
 
         # fill combobox
         store = Gtk.ListStore(str)
-
+        # ToDo maybe move this to glade file
         stations = "ARD ZDF Sat.1 Pro7 RTL kabel1 VOX RTL2 SWR WDR NDR MDR RBB HR BR BR alpha SuperRTL Tele5 DMAX 3sat ARTE PHOENIX EinsExtra EinsPlus EinsFestival ZDFdokukanal ZDFinfokanal ZDFtheaterkanal ComedyCentral 9live DASVIERTE Nickelodeon KIKA Eurosport DSF GIGA VIVA MTV N24 n-tv BBC World CNN TRT"
         for station in stations.split(" "):
             store.append([station])
 
         self.builder.get_object('combobox_station').set_model(store)
-        self.builder.get_object('combobox_station').set_text_column(0)
+        # set an element from the middle at active text
+        self.builder.get_object('combobox_station').set_active(len(store)/2)
 
     def run_new(self):
         self.builder.get_object('label_headline').set_markup('<b>Neue Sendung hinzufügen:</b>')
@@ -55,7 +56,6 @@ class PlanningDialog(Gtk.Dialog, Gtk.Buildable):
         self.builder.get_object('calendar').select_day(dt.day)
 
         self.builder.get_object('entry_broadcast').set_text('')
-        self.builder.get_object('combobox_station').child.set_text('')
 
         return self.run()
 
@@ -82,7 +82,7 @@ class PlanningDialog(Gtk.Dialog, Gtk.Buildable):
         try:
             hour, minute = self.builder.get_object('entry_time').get_text().split(':')
             assert int(hour) in range(24)
-            assert int(minute) in range(59)
+            assert int(minute) in range(60)
         except:
             self.gui.message_error_box('Die Uhrzeit ist nicht korrekt formatiert!')
             return
@@ -99,7 +99,8 @@ class PlanningDialog(Gtk.Dialog, Gtk.Buildable):
         dt = datetime.datetime(year, month + 1, day, int(hour), int(minute))
         stamp = time.mktime(dt.timetuple())
 
-        station = self.builder.get_object('combobox_station').child.get_text().replace(',', '_').replace(';', '_')
+        #station = self.builder.get_object('combobox_station').get_child().get_text().replace(',', '_').replace(';', '_')
+        station = self.builder.get_object('combobox_station').get_active_text().replace(',', '_').replace(';', '_')
 
         return broadcast, int(stamp), station
 

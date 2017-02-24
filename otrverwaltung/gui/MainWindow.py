@@ -504,10 +504,9 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
         if count == 0:
             pass
-            # todo
-            # self.eventbox_planning.hide()
+            self.eventbox_planning.hide()
         else:
-            # self.eventbox_planning.show()
+            self.eventbox_planning.show()
             self.label_planning_current.set_markup("<b>%i</b>" % count)
 
     def change_status(self, message_type, message, permanent=False):
