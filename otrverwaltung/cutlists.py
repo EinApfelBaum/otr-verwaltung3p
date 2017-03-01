@@ -141,7 +141,7 @@ class Cutlist:
         config_parser = configparser.ConfigParser()
 
         try:
-            config_parser.read(self.local_filename)
+            config_parser.read(self.local_filename, encoding='latin-1')
 
             self.filename = self._check_string(config_parser.get('Info', 'SuggestedMovieName'))
             self.author = self._check_string(config_parser.get('Info', 'Author'))
@@ -167,7 +167,7 @@ class Cutlist:
         config_parser = configparser.ConfigParser()
 
         try:
-            config_parser.read(self.local_filename)
+            config_parser.read(self.local_filename, encoding='latin-1')
         except configparser.ParsingError as message:
             print("Malformed cutlist: ", message)
 
