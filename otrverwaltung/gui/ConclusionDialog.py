@@ -214,6 +214,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                     self.builder.get_object('comboboxentry_rename').get_child().override_color(Gtk.StateType.NORMAL,
                                                                                                Gdk.RGBA(0, 0, 0, 1))
 
+                self.builder.get_object('comboboxentry_rename').remove_all()
                 self.gui.set_model_from_list(self.builder.get_object('comboboxentry_rename'), rename_list)
                 self.builder.get_object('comboboxentry_rename').set_active(0)
 
@@ -289,8 +290,9 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         self.file_conclusion.cut.delete_uncut = widget.get_active()
 
     def _on_comboboxentry_rename_changed(self, widget, data=None):
-        print("[Conclusion] cut.rename = ", widget.child.get_text())
-        self.file_conclusion.cut.rename = widget.child.get_text()
+        #print("[Conclusion] cut.rename = ", widget.child.get_text())
+        print("[Conclusion] cut.rename = ", widget.get_active_text())
+        self.file_conclusion.cut.rename = widget.get_active_text()
 
     def _on_combobox_archive_changed(self, widget, data=None):
         if self.file_conclusion != Action.DECODE:

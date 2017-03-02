@@ -315,21 +315,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkButton" id="button_play">
-                    <property name="label" translatable="yes">Abspielen</property>
-                    <property name="use_action_appearance">False</property>
-                    <property name="width_request">111</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="image">image5</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">0</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkButton" id="button_play_cut">
                     <property name="label" translatable="yes">Schnitte anspielen</property>
                     <property name="use_action_appearance">False</property>
@@ -337,6 +322,7 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="image">image6</property>
+                    <signal name="clicked" handler="_on_button_conclusion_play_cut_clicked" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
@@ -353,6 +339,7 @@
                     <property name="xalign">0</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
+                    <signal name="toggled" handler="_on_check_delete_uncut_toggled" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
@@ -383,6 +370,7 @@
                       <object class="GtkComboBoxText" id="comboboxentry_rename">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <signal name="changed" handler="_on_comboboxentry_rename_changed" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -460,6 +448,7 @@
 5 - sämtliches unerwünschtes Material framegenau entfernt</property>
                         <property name="model">liststore_ratings</property>
                         <property name="active">0</property>
+                        <signal name="changed" handler="_on_combobox_external_rating_changed" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -471,6 +460,22 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="button_play">
+                    <property name="label" translatable="yes">Abspielen</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="width_request">111</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="image">image5</property>
+                    <signal name="clicked" handler="_on_button_play_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
                   </packing>
                 </child>
                 <child>
