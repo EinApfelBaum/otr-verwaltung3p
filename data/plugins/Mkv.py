@@ -226,6 +226,15 @@ class Mkv(Plugin):
                 yield 2, count
                 self.progress = 0
 
+                # find Umlaute and rename files
+                umlaute = ["ö", "Ö", "ä", "Ä", "ü", "Ü"]
+                umlaute2 = ["oe", "OE", "ae", "AE", "ue", "UE"]
+                for umlaut in umlaute:
+                    if umlaut in filename:
+                        filenameOld = filename
+                        filename = filename.replace(umlaut, umlaute2[umlaute.index(umlaut)])
+                        os.rename(filenameOld, filename)
+
                 mkvpass_file = fileoperations.make_unique_filename(os.path.splitext(filename)[0] + ".mkv")
 
                 if self.Config['EncodeAudioToAAC']:
@@ -272,6 +281,16 @@ class Mkv(Plugin):
 
                 if exit_code == 0 or exit_code == 1:
                     self.success += 1
+
+                    # find Umlaute and rename files
+                    umlaute = ["ö", "Ö", "ä", "Ä", "ü", "Ü"]
+                    umlaute2 = ["oe", "OE", "ae", "AE", "ue", "UE"]
+                    for umlaut in umlaute2:
+                        if umlaut in mkvpass_file:
+                            mkvpass_fileOld = mkvpass_file
+                            mkvpass_file = mkvpass_file.replace(umlaut, umlaute[umlaute2.index(umlaut)])
+                            os.rename(mkvpass_fileOld, mkvpass_file)
+
                     if self.Config['EncodeAudioToAAC']:
                         fileoperations.remove_file(ffmpegpass_file)
                     if self.Config['DumpAVIs']:
@@ -284,7 +303,7 @@ class Mkv(Plugin):
                                 fileoperations.remove_file(new_filename)
                             fileoperations.move_file(filename, self.app.config.get('general', 'folder_trash_avis'))
                 else:
-                    error = p.stdout.readline()
+                    error = p.stdout.readline().decode()
                     try:
                         error = error.split(":")[1]
                     except IndexError:
@@ -314,6 +333,7 @@ class Mkv(Plugin):
             if len(self.errors) == 0:
                 self.gui.main_window.change_status(0, "Erfolgreich %s/%s Dateien umgewandelt." % (
                 str(self.success), str(len(filenames))))
+
             else:
                 self.gui.main_window.change_status(0, "Erfolgreich %s/%s Dateien umgewandelt. (Fehler: %s)" % (
                 str(self.success), str(len(filenames)), " ".join(self.errors.values())))
