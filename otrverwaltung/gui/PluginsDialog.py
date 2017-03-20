@@ -38,7 +38,7 @@ class PluginsDialog(Gtk.Dialog, Gtk.Buildable):
     def _run(self):
         self.builder.get_object('liststore_plugins').clear()
 
-        for name, plugin in self.gui.app.plugin_system.plugins.iteritems():
+        for name, plugin in self.gui.app.plugin_system.plugins.items():
             enabled = (name in self.gui.app.plugin_system.enabled_plugins)
             self.builder.get_object('liststore_plugins').append([enabled, plugin.Name, plugin.Desc, name])
 
@@ -77,7 +77,7 @@ class PluginsDialog(Gtk.Dialog, Gtk.Buildable):
         dialog = Gtk.Dialog(store.get_value(iter, 1) + " - Einstellungen", parent=self, flags=Gtk.DialogFlags.MODAL,
                             buttons=(Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE))
         dialog.set_border_width(2)
-        dialog.set_icon(GdkPixbuf.Pixbuf.pixbuf_new_from_file(path.get_image_path('icon3.png')))
+        dialog.set_icon(GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('icon3.png')))
 
         dialog = self.gui.app.plugin_system.plugins[name].configurate(dialog)
 
