@@ -15,23 +15,27 @@ OTR-Verwaltung3Plus
 -----
 
 Ein Port zu Python 3 und GTK3+.
+
 https://github.com/EinApfelBaum/otr-verwaltung/tree/python3/GTK3
 
 Feedback, Bugreport, Fehler
+
 http://www.otrforum.com/showthread.php?74447-OTRVerwaltung3Plus-eine-Portierung-von-OTRVerwaltung-hinzu-Python3-und-Gtk3
 
-Alpha Version, ich weise hier auch noch mal darauf hin, dass
-dies noch keine Release Version ist.
+__Alpha Version__
+
+Ich weise hier auch noch mal darauf hin, dass dies noch keine Release Version ist.
 
 
 In einer VM Ubuntu 16.04 und Linux Mint 18.1 musste ich folgende Pakete installieren:
 
 sudo apt-get install python3-libtorrent mediainfo-gui mpv
 
-Hint:
+__Anmerkung:__
+
 Bei mir (Linux Mint 18.1 Cinnamon) wird der CutInterfaceDialog nicht richtig angezeigt.
 Das Video ist nicht zu sehen, aber Audio kann ich hören.
-In den VMs tritt dieser Fehler nicht auf. Dort ist Bild und Video richtig im CutInterfaceDialog richtig verarbeitet.
+In den VMs tritt dieser Fehler nicht auf. Dort wird Bild und Video richtig im CutInterfaceDialog verarbeitet.
 Die Ursache habe ich bei mir noch nicht gefunden.
 
 TODO
