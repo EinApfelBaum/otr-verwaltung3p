@@ -158,7 +158,7 @@ class MP4(Plugin):
                     while p.poll() == None:
                         # read progress from stdout 
                         char = p.stdout.read(1)
-                        line += char
+                        line += char.decode('utf-8')
                         progress = ''
                         if char == ':':
                             if "Error" in line or "Warning" in line:
@@ -312,6 +312,7 @@ class MP4(Plugin):
 
                 while p.poll() == None:
                     line = p.stdout.read(60)
+                    line = line.decode('utf-8')
                     m = re.search(infos_match, line)
                     if m:
                         self.progress = int(m.group(1))
