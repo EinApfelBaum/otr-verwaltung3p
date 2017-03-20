@@ -44,7 +44,7 @@ class Gui:
         self.dialog_conclusion = ConclusionDialog.NewConclusionDialog(app, self)
         self.dialog_cut = CutDialog.NewCutDialog(app, self)
         self.dialog_email_password = EmailPasswordDialog.NewEmailPasswordDialog()
-        # self.dialog_rename = RenameDialog.NewRenameDialog()
+        self.dialog_rename = RenameDialog.NewRenameDialog()
         self.dialog_planning = PlanningDialog.NewPlanningDialog(self)
         # self.dialog_plugins = PluginsDialog.NewPluginsDialog(self)
 

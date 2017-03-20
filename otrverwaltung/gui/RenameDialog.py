@@ -42,7 +42,7 @@ class RenameDialog(Gtk.Dialog, Gtk.Buildable):
             entries[f].set_text(basename(f))
             entries[f].set_activates_default(True)
             entries[f].show()
-            self.builder.get_object('vboxRename').pack_start(entries[f])
+            self.builder.get_object('vboxRename').pack_start(entries[f], False, True, 0)
 
         self.set_title(title)
         response = self.run()
