@@ -65,38 +65,38 @@ class Mkv(Plugin):
 
         # checkbutton for dumping media files
         checkbutton_dump_avis = Gtk.CheckButton("Originaldatei automatisch in Mülleimer verschieben?")
-        dialog.vbox.pack_start(checkbutton_dump_avis, expand=False)
+        dialog.vbox.pack_start(checkbutton_dump_avis, expand=False, fill=False, padding=0)
         checkbutton_dump_avis.connect('toggled', on_checkbutton_toggled, 'DumpAVIs')
 
         # checkbutton for eraseing media file
         checkbutton_dump_avis_delete = Gtk.CheckButton("Originaldatei im Mülleimer gleich für immer löschen?")
-        dialog.vbox.pack_start(checkbutton_dump_avis_delete, expand=False)
+        dialog.vbox.pack_start(checkbutton_dump_avis_delete, expand=False, fill=False, padding=0)
         checkbutton_dump_avis_delete.connect('toggled', on_checkbutton_toggled, 'DumpAVIs_delete')
 
         # checkbutton encode audio aac
         checkbutton_encode_audio = Gtk.CheckButton("Audiospuren zu AAC umwandeln?")
-        dialog.vbox.pack_start(checkbutton_encode_audio, expand=False)
+        dialog.vbox.pack_start(checkbutton_encode_audio, expand=False, fill=False, padding=0)
         checkbutton_encode_audio.connect('toggled', on_checkbutton_toggled, 'EncodeAudioToAAC')
 
         # checkbutton encode first audio only 
         checkbutton_encode_only_first_audio = Gtk.CheckButton("    AAC: nur erste Audiospur kodieren?")
-        dialog.vbox.pack_start(checkbutton_encode_only_first_audio, expand=False)
+        dialog.vbox.pack_start(checkbutton_encode_only_first_audio, expand=False, fill=False, padding=0)
         checkbutton_encode_only_first_audio.connect('toggled', on_checkbutton_toggled, 'EncodeOnlyFirstAudioToAAC')
 
         # checkbutton down mix first audio stream
         checkbutton_downmix_stereo = Gtk.CheckButton("    AAC: erste Audiospur automatisch auf Stereo downmixen?")
-        dialog.vbox.pack_start(checkbutton_downmix_stereo, expand=False)
+        dialog.vbox.pack_start(checkbutton_downmix_stereo, expand=False, fill=False, padding=0)
         checkbutton_downmix_stereo.connect('toggled', on_checkbutton_toggled, 'DownMixStereo')
 
         # checkbutton encode normalize aac
         checkbutton_normalize_audio = Gtk.CheckButton("    AAC: Audio bei Konvertierung normalisieren?")
-        dialog.vbox.pack_start(checkbutton_normalize_audio, expand=False)
+        dialog.vbox.pack_start(checkbutton_normalize_audio, expand=False, fill=False, padding=0)
         checkbutton_normalize_audio.connect('toggled', on_checkbutton_toggled, 'NormalizeAudio')
 
         # checkbutton remove other audio streams than ac3_stream
         checkbutton_remove_other_audio_streams_than_ac3 = Gtk.CheckButton(
             "Falls AC3 gefunden wurde, alle Audiospuren außer AC3 entfernen? \nDie AC3 wird somit erste Spur und wird gegebenenfalls nach AAC konvertiert und downgemixt, wenn oben angewählt.")
-        dialog.vbox.pack_start(checkbutton_remove_other_audio_streams_than_ac3, expand=False)
+        dialog.vbox.pack_start(checkbutton_remove_other_audio_streams_than_ac3, expand=False, fill=False, padding=0)
         checkbutton_remove_other_audio_streams_than_ac3.connect('toggled', on_checkbutton_toggled,
                                                                 'RemoveOtherAudioStreamsThanAC3')
 
