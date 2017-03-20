@@ -54,7 +54,10 @@ def remove_file(filename, error_cb=__error):
 
     print("[Fileoperations] Remove ", filename)
     try:
-        os.remove(filename)
+        if os.path.isfile(filename):
+            os.remove(filename)
+        elif os.path.isdir(filename):
+            os.rmdir(filename)
     except Exception as e:
         handle_error(error_cb, "Fehler beim Löschen von %s (%s)." % (filename, e))
 
