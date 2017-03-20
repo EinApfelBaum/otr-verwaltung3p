@@ -24,17 +24,17 @@ __Oberfläche__
 - [x] MainWindow
 - [x] PreferencesWindow
 - Dialoge
-- [ ] AddDownloadDialog
+- [x] AddDownloadDialog
 - [x] ArchiveDialog
 - [x] ConclusionDialog
-- [ ] CutDialog
+- [x] CutDialog
 - [ ] CutinterfaceDialog
 - [ ] DownloadPropertiesDialog
 - [x] EmailPasswordDialog
-- [ ] LoadCutDialog
-- [ ] PlanningDialog
-- [ ] PluginsDialog
-- [ ] RenameDialog
+- [x] LoadCutDialog
+- [x] PlanningDialog
+- [x] PluginsDialog
+- [x] RenameDialog
 
 __Funktionalität__
 - [x] Datei löschen, wiederherstellen
@@ -42,13 +42,15 @@ __Funktionalität__
 - [x] MediaInfo (PlugIn)
 - [x] Archivieren
 - [x] Convert to MKV
-- [ ] Datei umbennen
-- [ ] Ordner erstellen
+- [x] Datei umbennen
+- [x] Ordner erstellen
+- [x] Ordner löschen
 - [ ] Download
 - [ ] geplante Sendungen
 - [x] Decode otrkey Datei
-- [ ] Cut Avi
-- [ ] Cut HD
+- [x] Cut Avi - SmartMKVMerge
+- [x] Cut HD - SmartMKVMerge
+- [ ] Cut mp4
 
 __Feinheiten__
 - [ ] Oberflächengestaltung anpassen ( Abstände , Ränder, etc. ... )
