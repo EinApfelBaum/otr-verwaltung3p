@@ -5,7 +5,7 @@ from gi.repository import Gtk, GObject, Gst
 
 GObject.threads_init()
 import threading
-Gst.init()
+Gst.init(None)
 
 
 

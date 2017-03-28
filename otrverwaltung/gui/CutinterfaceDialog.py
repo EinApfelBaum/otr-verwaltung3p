@@ -17,7 +17,7 @@ import pathlib
 from gi.repository import GdkX11, GstVideo
 
 Gdk.threads_init()
-Gst.init()
+Gst.init(None)
 
 import os
 import time
