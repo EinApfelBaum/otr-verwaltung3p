@@ -33,7 +33,7 @@ In einer VM Ubuntu 16.04 und Linux Mint 18.1 musste ich folgende Pakete installi
 
 Pakete, welche notwendig sind, vielleicht aber schon installiert sind:
 
-`sudo apt-get install python3-xdg`
+`sudo apt-get install python3-xdg python3-gst-1.0`
 
 __Anmerkung:__
 
