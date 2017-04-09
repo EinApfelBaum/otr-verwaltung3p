@@ -405,7 +405,6 @@ def get_best_cutlist(cutlists):
     else:
         items = [(cutlist, cutlist.ratingbyauthor) for cutlist in cutlists]
 
-    # items.sort(lambda x,y: cmp(y[1], x[1]))
-    items.sort(key=lambda x: x[1])
+    sorted(items, key=lambda x: x[1])
 
-    return items[0][0]
+    return next(iter(items))[0]
