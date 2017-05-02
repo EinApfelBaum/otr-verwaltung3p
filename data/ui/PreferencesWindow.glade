@@ -601,6 +601,7 @@
                                     <property name="active_id">avidemux2_cli</property>
                                     <items>
                                       <item id="SmartMKVmerge" translatable="yes">SmartMKVmerge</item>
+                                      <item id="intern-vdub" translatable="yes">intern-vdub</item>
                                     </items>
                                   </object>
                                   <packing>
@@ -641,6 +642,7 @@
                                     <property name="active_id">SmartMKVmerge</property>
                                     <items>
                                       <item id="SmartMKVmerge" translatable="yes">SmartMKVmerge</item>
+                                      <item id="intern-vdub" translatable="yes">intern-vdub</item>
                                     </items>
                                   </object>
                                   <packing>
@@ -679,6 +681,9 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="active_id">intern_vdub</property>
+                                    <items>
+                                      <item id="intern-vdub" translatable="yes">intern-vdub</item>
+                                    </items>
                                   </object>
                                   <packing>
                                     <property name="expand">True</property>
@@ -784,6 +789,7 @@
                                     <property name="active_id">CutInterface</property>
                                     <items>
                                       <item id="CutInterface" translatable="yes">CutInterface</item>
+                                      <item id="intern-VirtualDub" translatable="yes">intern-VirtualDub</item>
                                     </items>
                                   </object>
                                   <packing>
@@ -824,6 +830,7 @@
                                     <property name="active_id">CutInterface</property>
                                     <items>
                                       <item id="CutInterface" translatable="yes">CutInterface</item>
+                                      <item id="intern-VirtualDub" translatable="yes">intern-VirtualDub</item>
                                     </items>
                                   </object>
                                   <packing>
@@ -864,6 +871,7 @@
                                     <property name="active_id">CutInterface</property>
                                     <items>
                                       <item id="CutInterface" translatable="yes">CutInterface</item>
+                                      <item id="intern-VirtualDub" translatable="yes">intern-VirtualDub</item>
                                     </items>
                                   </object>
                                   <packing>
