@@ -35,6 +35,8 @@ Pakete, welche notwendig sind, vielleicht aber schon installiert sind:
 
 `sudo apt-get install python3-xdg python3-gst-1.0 gir1.2-gstreamer-1.0 gstreamer1.0-libav:amd64 gstreamer1.0-nice:amd64 gstreamer1.0-plugins-base:amd64 gstreamer1.0-plugins-base-apps gstreamer1.0-plugins-good:amd64 gstreamer1.0-tools libgstreamer-plugins-bad1.0-0:amd64 libgstreamer-plugins-base1.0-0:amd64 libgstreamer-plugins-good1.0-0:amd64 libgstreamer1.0-0:amd64 libgstreamer1.0-dev`
 
+OTRVerwaltung starten:
+`python3 /home/USER/OTRVerwaltung/bin/otrverwaltung`
 
 __Anmerkung:__
 
