@@ -33,7 +33,8 @@ In einer VM Ubuntu 16.04 und Linux Mint 18.1 musste ich folgende Pakete installi
 
 Pakete, welche notwendig sind, vielleicht aber schon installiert sind:
 
-`sudo apt-get install python3-xdg python3-gst-1.0`
+`sudo apt-get install python3-xdg python3-gst-1.0 gir1.2-gstreamer-1.0 gstreamer1.0-libav:amd64 gstreamer1.0-nice:amd64 gstreamer1.0-plugins-base:amd64 gstreamer1.0-plugins-base-apps gstreamer1.0-plugins-good:amd64 gstreamer1.0-tools libgstreamer-plugins-bad1.0-0:amd64 libgstreamer-plugins-base1.0-0:amd64 libgstreamer-plugins-good1.0-0:amd64 libgstreamer1.0-0:amd64 libgstreamer1.0-dev`
+
 
 __Anmerkung:__
 
