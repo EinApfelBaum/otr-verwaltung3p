@@ -890,7 +890,42 @@ WINE REGISTRY Version 2
 [Software\\Microsoft\\Internet Explorer\\Settings] 1493753101
 "Text Color"="0,0,0"
 
+[Software\\Microsoft\\Notepad] 1494767224
+"fWrap"=dword:00000001
+"iMarginBottom"=dword:000009c4
+"iMarginLeft"=dword:000007d0
+"iMarginRight"=dword:000007d0
+"iMarginTop"=dword:000009c4
+"iPointSize"=dword:0000005a
+"iWindowPosDX"=dword:00000357
+"iWindowPosDY"=dword:00000281
+"iWindowPosX"=dword:00000024
+"iWindowPosY"=dword:00000030
+"lfCharSet"=dword:00000001
+"lfClipPrecision"=dword:00000000
+"lfEscapement"=dword:00000000
+"lfFaceName"="System"
+"lfItalic"=dword:00000000
+"lfOrientation"=dword:00000000
+"lfOutPrecision"=dword:00000000
+"lfPitchAndFamily"=dword:00000001
+"lfQuality"=dword:00000000
+"lfStrikeOut"=dword:00000000
+"lfUnderline"=dword:00000000
+"lfWeight"=dword:00000190
+"szHeader"="&f"
+"szTrailer"="Seite &p"
+
 [Software\\Microsoft\\Protected Storage System Provider] 1493753101
+
+[Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced] 1496947456
+
+[Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ComDlg32\\LastVisitedMRU] 1496947461
+"a"=hex:56,00,69,00,72,00,74,00,75,00,61,00,6c,00,44,00,75,00,62,00,2e,00,65,\
+  00,78,00,65,00,00,00,5a,00,3a,00,5c,00,68,00,6f,00,6d,00,65,00,5c,00,62,00,\
+  61,00,75,00,6d,00,5c,00,56,00,69,00,64,00,65,00,6f,00,73,00,5c,00,4f,00,54,\
+  00,52,00,5c,00,43,00,75,00,74,00,00,00
+"MRUList"="a"
 
 [Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders] 1493753096
 "AppData"="C:\\users\\baum\\Application Data"
@@ -1162,6 +1197,15 @@ WINE REGISTRY Version 2
 
 [Software\\Microsoft\\Windows\\CurrentVersion\\Run] 1493753101
 
+[Software\\Microsoft\\Windows NT\\CurrentVersion\\Devices] 1494767217
+"EPSON-WF-3520-Series"="wineps.drv,CUPS:EPSON-WF-3520-Series"
+
+[Software\\Microsoft\\Windows NT\\CurrentVersion\\PrinterPorts] 1494767217
+"EPSON-WF-3520-Series"="wineps.drv,CUPS:EPSON-WF-3520-Series,15,45"
+
+[Software\\Microsoft\\Windows NT\\CurrentVersion\\Windows] 1494767217
+"device"="EPSON-WF-3520-Series,wineps.drv,CUPS:EPSON-WF-3520-Series"
+
 [Software\\VirtualDub.org\\VirtualDub] 1363981501
 "Main prefs"=hex:00,04,00,01,00,00,00,00,20,03,00,00,40,00,00,00,02,00,00,00
 "SeenWelcome"=dword:00000001
@@ -1169,12 +1213,12 @@ WINE REGISTRY Version 2
 
 [Software\\VirtualDub.org\\VirtualDub\\External Encoders] 1363981426
 
-[Software\\VirtualDub.org\\VirtualDub\\MRU List] 1493755017
-"a"="Z:\\home\\baum\\Videos\\OTR\\Uncut\\Mitternachtsspitzen_16.05.28_02-15_zdf_105_TVOON_DE.mpg.HD.avi"
-"b"="Z:\\home\\baum\\Videos\\OTR\\Uncut\\Big_Buck_Bunny_12.09.30_02-25_osf_10_TVOON_DE.mpg.HQ.avi"
-"c"="Z:\\home\\baum\\Videos\\OTR\\Uncut\\Shakespeare_in_Love_15.12.23_01-10_zdf_115_TVOON_DE.mpg.HD.avi"
-"d"="Z:\\home\\baum\\Videos\\OTR\\Uncut\\Mitternachtsspitzen_15.08.06_00-45_zdf_105_TVOON_DE.mpg.HQ.avi"
-"MRUList"="dabc"
+[Software\\VirtualDub.org\\VirtualDub\\MRU List] 1506843633
+"a"="Z:\\home\\baum\\Videos\\OTR\\Uncut\\Big_Buck_Bunny_12.09.30_02-25_osf_10_TVOON_DE.mpg.HQ.avi"
+"b"="Z:\\home\\baum\\Videos\\OTR\\Uncut\\Blau_ist_eine_warme_Farbe_16.08.22_23-25_wdr_170_TVOON_DE.mpg.HD.avi"
+"c"="Z:\\home\\baum\\Videos\\OTR\\Uncut\\Wie_im_Himmel_15.04.08_20-15_3sat_125_TVOON_DE.mpg.HD.avi"
+"d"="Z:\\home\\baum\\Videos\\OTR\\Uncut\\Swimming_Pool_16.02.01_01-30_ard_98_TVOON_DE.mpg.HD.avi"
+"MRUList"="abcd"
 
 [Software\\VirtualDub.org\\VirtualDub\\Persistence] 1364070492
 "Accelerate preview"=dword:00000000
@@ -1234,14 +1278,14 @@ WINE REGISTRY Version 2
 "Timeline format"="Frame %f (%h:%02m:%02s.%03t) [%c]"
 "Use profile-local path"=dword:00000000
 
-[Software\\VirtualDub.org\\VirtualDub\\Saved filespecs] 1493755017
-"00000066"=hex(1):
+[Software\\VirtualDub.org\\VirtualDub\\Saved filespecs] 1506844949
+"00000066"="Z:\\home\\baum\\Videos\\OTR\\Cut\\"
 "6769666f"=hex(1):
 "7277616f"=hex(1):
 "7761766f"=hex(1):
 
-[Software\\VirtualDub.org\\VirtualDub\\Window Placement] 1493753157
-"Main window"=hex:00,00,00,00,04,00,00,00,80,07,00,00,27,04,00,00,00,00,00,00
+[Software\\VirtualDub.org\\VirtualDub\\Window Placement] 1504091444
+"Main window"=hex:fc,ff,ff,ff,04,00,00,00,44,06,00,00,e8,02,00,00,00,00,00,00
 
 [Software\\Wine\\Debug] 1493753101
 "RelayExclude"="ntdll.RtlEnterCriticalSection;ntdll.RtlLeaveCriticalSection;kernel32.48;kernel32.49;kernel32.94;kernel32.95;kernel32.96;kernel32.97;kernel32.98;kernel32.TlsGetValue;kernel32.TlsSetValue;kernel32.FlsGetValue;kernel32.FlsSetValue;kernel32.SetLastError"
@@ -1350,11 +1394,11 @@ WINE REGISTRY Version 2
 "OpenWithIcon"="7765_winebrowser.0"
 "ProgID"="xmlfile"
 
-[Software\\Wine\\Fonts] 1493754997
+[Software\\Wine\\Fonts] 1506844946
 "Codepages"="1252,850"
 "LogPixels"=dword:00000060
 
-[Software\\Wine\\Fonts\\External Fonts] 1493754997
+[Software\\Wine\\Fonts\\External Fonts] 1506844947
 "@IPAexGothic"="Z:\\usr\\share\\fonts\\opentype\\ipaexfont-gothic\\ipaexg.ttf"
 "@IPAexMincho"="Z:\\usr\\share\\fonts\\truetype\\fonts-japanese-mincho.ttf"
 "@IPAGothic"="Z:\\usr\\share\\fonts\\opentype\\ipafont-gothic\\ipag.ttf"
