@@ -133,7 +133,8 @@ class Cutlist:
                 res = string.decode('utf-8').encode('utf-8')
             except:
                 print("Malformed string")
-                res = ""
+                # gcurse
+                res = string
 
         return res
 
