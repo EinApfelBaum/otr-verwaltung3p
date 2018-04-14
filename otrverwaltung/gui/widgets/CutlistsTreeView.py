@@ -84,7 +84,7 @@ class CutlistsTreeView(Gtk.TreeView):
 
     def _treeview_standard(self, column, cell, model, iter, attribute_name):
         cutlist = model.get_value(iter, 0)
-        cell.set_property('text', getattr(cutlist, attribute_name))
+        cell.set_property('text', str(getattr(cutlist, attribute_name)))
 
     def _treeview_warning(self, column, cell, model, iter, data):
         cutlist = model.get_value(iter, 0)

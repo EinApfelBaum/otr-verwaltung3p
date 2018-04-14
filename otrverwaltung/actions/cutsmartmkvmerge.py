@@ -31,6 +31,7 @@ from otrverwaltung import path
 class CutSmartMkvmerge(Cut):
     def __init__(self, app, gui):
         super().__init__(app, gui)
+        self.log = logging.getLogger(self.__class__.__name__)
         self.update_list = True
         self.app = app
         self.config = app.config
@@ -120,8 +121,7 @@ class CutSmartMkvmerge(Cut):
         else:
             return None, "Format nicht unterstützt (Nur MP4 H264, HQ H264 und HD H264 sind möglich)."
 
-        logging.debug(codec)
-        logging.debug(codec_core)
+        self.log.debug(codec)
 
         if codec_core != 125:
             warning_msg = "Unbekannte Kodierung entdeckt. Diese Datei genau prüfen und notfalls mit intern-Virtualdub und Codec ffdshow schneiden."
@@ -146,7 +146,7 @@ class CutSmartMkvmerge(Cut):
             except Exception  as e:
                 flag_singlethread = self.config.get('smartmkvmerge', 'single_threaded')
 
-        logging.debug(flag_singlethread)
+        self.log.debug(flag_singlethread)
 
         # audio part 1 - cut audio 
         if ac3_file:
@@ -159,7 +159,7 @@ class CutSmartMkvmerge(Cut):
 
         command = [mkvmerge, '--ui-language', 'en_US', '-D', '--split', 'parts:' + audio_timecodes, '-o',
                    self.workingdir + '/audio_copy.mkv'] + audio_import_files
-        logging.debug(command)
+        self.log.debug(command)
         try:
             blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                                 universal_newlines=True, env=my_env)
@@ -173,7 +173,7 @@ class CutSmartMkvmerge(Cut):
         keyframes, error = self.get_keyframes_from_file(filename)
         if keyframes == None:
             return None, "Keyframes konnten nicht ausgelesen werden."
-        logging.debug(keyframes)
+        self.log.debug(keyframes)
 
         # video part 2 - simulate smart rendering process
         for frame_start, frames_duration in cutlist.cuts_frames:
@@ -182,7 +182,7 @@ class CutSmartMkvmerge(Cut):
                 videolist += result
             else:
                 return None, 'Cutlist oder zu schneidende Datei passen nicht zusammen oder sind fehlerhaft.'
-        logging.debug(videolist)
+        self.log.debug(videolist)
 
         # video part 3 - encode small parts - smart rendering part (1/2) 
         for encode, start, duration, video_part_filename in videolist:
@@ -198,7 +198,7 @@ class CutSmartMkvmerge(Cut):
                 command[5:5] = codec
             else:
                 return None, "Keine unterstützte Render-Engine zum Kodieren eingestellt"
-            logging.debug(command)
+            self.log.debug(command)
             if encode:
                 try:
                     non_blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -217,7 +217,7 @@ class CutSmartMkvmerge(Cut):
         # video part 4 - cut the big parts out the file (keyframe accurate) - smart rendering part (2/2)
         command = [mkvmerge, '--ui-language', 'en_US', '-A', '--split', 'parts-frames:' + video_splitframes, '-o',
                    self.workingdir + '/video_copy.mkv', filename]
-        logging.debug(command)
+        self.log.debug(command)
         try:
             non_blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                                     universal_newlines=True, env=my_env)
@@ -289,7 +289,7 @@ class CutSmartMkvmerge(Cut):
             map.extend(audiocodec)
             map.extend(audiofilter)
             args[8:8] = map
-            logging.debug(args)
+            self.log.debug(args)
             try:
                 non_blocking_process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                                         universal_newlines=True)
@@ -329,7 +329,7 @@ class CutSmartMkvmerge(Cut):
             cut_video = os.path.splitext(self.generate_filename(filename, 1))[0] + ".mkv"
         command = [mkvmerge, '--engage', 'no_cue_duration', '--engage', 'no_cue_relative_position', '--ui-language',
                    'en_US', '-o', cut_video] + self.video_files + self.audio_files
-        logging.debug(command)
+        self.log.debug(command)
         try:
             blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                                 universal_newlines=True, env=my_env)
@@ -352,7 +352,7 @@ class CutSmartMkvmerge(Cut):
             with ChangeDir(self.workingdir):
                 command = ['wine', path.get_tools_path('intern-eac3to/eac3to.exe'), os.path.basename(cut_video),
                            '-demux', '-silence', '-keepDialnorm']
-                logging.debug(command)
+                self.log.debug(command)
                 try:
                     blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                                         universal_newlines=True)
@@ -400,7 +400,7 @@ class CutSmartMkvmerge(Cut):
                 args.append(cut_video)
 
                 # mux to mp4 (mp4box) 
-                logging.debug(args)
+                self.log.debug(args)
                 try:
                     blocking_process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                                         universal_newlines=True)

@@ -14,7 +14,7 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-import os, os.path, sys
+import os, os.path, sys, logging
 
 
 class Plugin:
@@ -31,6 +31,7 @@ class Plugin:
 
     def __init__(self, app, gui, dirname):
         """ Don't override the constructor. Do the intial work in 'enable'. """
+        self.log = logging.getLogger(self.__class__.__name__)
         self.app = app  # for api access
         self.gui = gui  # for api access
         self.dirname = dirname
@@ -63,14 +64,17 @@ class Plugin:
 
 class PluginSystem:
     def __init__(self, app, gui, plugin_paths, enabled_plugins, plugins_config):
+        self.log = logging.getLogger(self.__class__.__name__)
         self.plugins = {}  # value : plugin instance
         self.enabled_plugins = [plugin for plugin in enabled_plugins.split(':') if plugin]  # list of names
 
-        print("[Plugins] Paths to search: ", plugin_paths)
+        msg = "Paths to search: {0}".format(plugin_paths)
+        self.log.info(msg)
 
         for path in plugin_paths:
             if not os.path.isdir(path):
-                print("[Plugins] %s is not a directory." % path)
+                msg = "{0} is not a directory.".format(path)
+                self.log.error(msg)
                 continue
 
             sys.path.append(path)
@@ -82,7 +86,8 @@ class PluginSystem:
                     try:
                         plugin_module = __import__(plugin_name)
                     except Exception as error:
-                        print("[Plugins] Error in >%s< plugin: %s" % (plugin_name, error))
+                        msg = "Error in >{0}< plugin: {1}".format(plugin_name, error)
+                        self.log.error(msg)
                         continue
 
                     # instanciate plugin
@@ -96,15 +101,18 @@ class PluginSystem:
                     if plugin_name in plugins_config:
                         self.plugins[plugin_name].Config.update(plugins_config[plugin_name])
 
-                    print("[Plugins] Found: ", plugin_name)
+                    msg = "Found: {0}".format(plugin_name)
+                    self.log.info(msg)
 
         for plugin in self.enabled_plugins:
             if not plugin in self.plugins.keys():
-                print("[Plugins] Error: Plugin >%s< not found." % plugin)
+                msg = "Error: Plugin >{0}< not found.".format(plugin)
+                self.log.error(msg)
                 self.enabled_plugins.remove(plugin)
             else:
                 self.plugins[plugin].enable()
-                print("[Plugins] Enabled: ", plugin)
+                msg = "Enabled: {0}".format(plugin)
+                self.log.info(msg)
 
     def enable(self, name):
         if name not in self.enabled_plugins:

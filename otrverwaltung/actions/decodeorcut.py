@@ -21,8 +21,8 @@ from gi.repository import Gtk
 from os.path import basename, join, exists
 import base64
 import subprocess
-import os
-import re
+import os, re
+import logging
 
 from otrverwaltung import fileoperations
 from otrverwaltung.conclusions import FileConclusion
@@ -40,6 +40,7 @@ from otrverwaltung import bcode
 class DecodeOrCut(Cut):
     def __init__(self, app, gui):
         super().__init__(app, gui)
+        self.log = logging.getLogger(self.__class__.__name__)
         self.update_list = True
         self.app = app
         self.config = app.config
@@ -337,7 +338,7 @@ class DecodeOrCut(Cut):
             if file_conclusion.cut.status in [Status.NOT_DONE, Status.ERROR]:
                 continue
 
-            print("[Decodeandcut] Datei %s wird geschnitten" % file_conclusion.uncut_video)
+            self.log.info("[Decodeandcut] Datei %s wird geschnitten" % file_conclusion.uncut_video)
             self.gui.main_window.set_tasks_text("Datei %s/%s schneiden" % (count + 1, len(file_conclusions)))
             self.gui.main_window.set_tasks_progress(0)
             while Gtk.events_pending():
@@ -411,7 +412,7 @@ class DecodeOrCut(Cut):
             for f in files:
                 match = cutregex.match(f)
                 if match:
-                    # print "Found local cutlist %s" % match.group()
+                    # self.log.debug "Found local cutlist %s" % match.group()
                     if match.group(1) == '':
                         res_num = 0
                     else:
@@ -467,7 +468,7 @@ class DecodeOrCut(Cut):
             else:
                 return None, None, "Konnte FPS nicht bestimmen: " + error
 
-            print("Calculate frame values from seconds.")
+            self.log.info("Calculate frame values from seconds.")
             for start, duration in cutlist.cuts_seconds:
                 cutlist.cuts_frames.append((start * cutlist.fps, duration * cutlist.fps))
 

@@ -17,6 +17,7 @@
 from otrverwaltung.constants import Action
 import os.path
 from os.path import splitext
+import logging
 
 from otrverwaltung.cutlists import Cutlist
 from otrverwaltung.constants import Action, Status
@@ -72,6 +73,7 @@ class FileConclusion:
 
 class ConclusionsManager:
     def __init__(self, app):
+        self.log = logging.getLogger(self.__class__.__name__)
         self.app = app
         self.conclusions = []
 
@@ -100,12 +102,12 @@ class ConclusionsManager:
             if conclusion.action == Action.DECODE:
                 continue
 
-            print("[Conclusion] for file ", conclusion.uncut_video)
+            self.log.debug("[Conclusion] for file ", conclusion.uncut_video)
 
             # rename
-            print("[Conclusion] Rename?")
+            self.log.debug("[Conclusion] Rename?")
             if conclusion.cut.rename:
-                print("[Conclusion] true")
+                self.log.debug("[Conclusion] true")
                 extension = os.path.splitext(conclusion.cut_video)[1]
                 if not conclusion.cut.rename.endswith(extension):
                     conclusion.cut.rename += extension
@@ -118,15 +120,15 @@ class ConclusionsManager:
                     conclusion.cut_video = fileoperations.rename_file(conclusion.cut_video, new_filename)
 
             # move cut video to archive
-            print("[Conclusion] Move to archive?")
+            self.log.debug("[Conclusion] Move to archive?")
             if conclusion.cut.archive_to:
-                print("[Conclusion] true")
+                self.log.debug("[Conclusion] true")
                 fileoperations.move_file(conclusion.cut_video, conclusion.cut.archive_to)
 
             # move uncut video to trash if it's ok
-            print("[Conclusion] Move to trash?")
+            self.log.debug("[Conclusion] Move to trash?")
             if conclusion.cut.status == Status.OK and conclusion.cut.delete_uncut:
-                print("[Conclusion] true")
+                self.log.debug("[Conclusion] true")
                 if os.path.exists(conclusion.uncut_video):
                     # move to trash
                     target = self.app.config.get('general', 'folder_trash_avis')
@@ -136,16 +138,16 @@ class ConclusionsManager:
                         fileoperations.move_file(conclusion.ac3_file, target)
 
                 # remove local cutlists
-                print("[Conclusion] Remove local cutlist?")
+                self.log.debug("[Conclusion] Remove local cutlist?")
                 if self.app.config.get('general', 'delete_cutlists'):
-                    print("[Conclusion] true")
+                    self.log.debug("[Conclusion] true")
                     if conclusion.cut.cutlist.local_filename:
                         if os.path.exists(conclusion.cut.cutlist.local_filename):
                             fileoperations.remove_file(conclusion.cut.cutlist.local_filename)
 
-            print("[Conclusion] Create cutlist?")
+            self.log.debug("[Conclusion] Create cutlist?")
             if conclusion.cut.create_cutlist:
-                print("[Conclusion] true")
+                self.log.debug("[Conclusion] true")
                 if "VirtualDub" in conclusion.cut.cutlist.intended_app:
                     intended_app_name = "VirtualDub"
                 else:
@@ -188,7 +190,7 @@ class ConclusionsManager:
             yield message
 
         if len(cutlists) > 0:
-            print("[Conclusion] Upload cutlists")
+            self.log.debug("[Conclusion] Upload cutlists")
             if self.app.gui.question_box("Soll(en) %s Cutlist(en) hochgeladen werden?" % len(cutlists)):
                 def change_status(message):
                     self.app.gui.main_window.change_status(0, message)
@@ -205,7 +207,7 @@ class ConclusionsManager:
                     continue
 
                 if conclusion.cut.my_rating > -1:
-                    print("Rate with ", conclusion.cut.my_rating)
+                    self.log.debug("Rate with ", conclusion.cut.my_rating)
                     success, message = conclusion.cut.cutlist.rate(conclusion.cut.my_rating,
                                                                    self.app.config.get('general', 'server'))
                     if success:
@@ -226,5 +228,5 @@ class ConclusionsManager:
 
                 self.app.gui.main_window.change_status(0, text)
 
-        print("[Conclusion] Rate cutlists")
+        self.log.debug("[Conclusion] Rate cutlists")
         GeneratorTask(rate).start()
