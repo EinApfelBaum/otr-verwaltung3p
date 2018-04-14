@@ -32,6 +32,7 @@ gi.require_version('Gtk', '3.0')
 
 class Cut(BaseAction):
     def __init__(self, app, gui):
+        self.log = logging.getLogger(self.__class__.__name__)
         BaseAction.__init__(self)
         self.update_list = True
         self.app = app
@@ -222,10 +223,12 @@ class Cut(BaseAction):
                 None, None, None, None, None, error_message
         """
 
+        self.log.info("function start")
         try:
             process = subprocess.Popen([self.config.get_program('ffmpeg'), "-i", filename], stdout=subprocess.PIPE,
                                        stderr=subprocess.STDOUT)
         except OSError:
+            self.log.error("Leave function")
             return None, None, None, None, None, "FFMPEG (static) konnte nicht ausgeführt werden!"
 
         log = process.communicate()[0]
@@ -238,15 +241,22 @@ class Cut(BaseAction):
         for line in log.split('\n'.encode()):
             #TODO remove try catch
             try:
+                #gcurse
                 m = re.search(video_infos_match, line.decode())
-            except UnicodeDecodeError as ex:
-                print(ex)
+                self.log.info("Videoinfo from ffmpeg: {0}".format(m))
+            except UnicodeDecodeError:
+                try:
+                    m = re.search(video_infos_match, line.decode('latin-1'))
+                    self.log.info("Videoinfo from ffmpeg: {0}".format(m))
+                except UnicodeDecodeError as ex:
+                    self.log.error("Exeption: {0}".format(ex))
 
             if m:
                 if "Duration" == m.group(1):
                     try:
                         seconds = float(m.group(2)) * 3600 + float(m.group(3)) * 60 + float(m.group(4))
                     except ValueError:
+                        self.log.error("Leave function")
                         return None, None, None, None, "Dauer des Film konnte nicht ausgelesen werden."
                 elif "SAR" == m.group(5):
                     try:
@@ -254,6 +264,7 @@ class Cut(BaseAction):
                         dar = m.group(7)
                         fps = float(m.group(8))
                     except ValueError:
+                        self.log.error("Leave function")
                         return None, None, None, None, "Video Stream Informationen konnte nicht ausgelesen werden."
                 elif "Stream" == m.group(9):
                     ac3_stream = m.group(10)
@@ -262,8 +273,10 @@ class Cut(BaseAction):
 
         if seconds != 0 and fps != None and sar != None and dar != None:
             max_frames = seconds * fps
+            self.log.error("Leave function")
             return fps, dar, sar, max_frames, ac3_stream, None
 
+        self.log.error("Leave function")
         return None, None, None, None, None, "Es konnten keine Video Infos der zu bearbeitenden Datei ausgelesen werden."
 
     def get_keyframes_from_file(self, filename):
@@ -287,7 +300,7 @@ class Cut(BaseAction):
 
         try:
             index = open(filename_keyframes, 'r')
-        except IOError:
+        except (IOError, TypeError) as e:
             return None, "Keyframe File von ffmsindex konnte nicht geöffnet werden."
         index.readline()
         index.readline()
@@ -342,10 +355,9 @@ class Cut(BaseAction):
 
             if line != '':
                 if 'x264 core' in line:
-                    print(line)
+                    self.log.info(line)
                     try:
                         x264_core = int(line.strip().split(' ')[30])
-                        print(x264_core)
                     except ValueError as e:
                         continue
                     except IndexError as e:

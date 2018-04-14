@@ -19,6 +19,7 @@ import urllib.request
 import configparser
 import os.path
 import http.client
+import logging
 
 from otrverwaltung import fileoperations
 
@@ -26,6 +27,7 @@ from otrverwaltung import fileoperations
 class Cutlist:
     def __init__(self):
 
+        self.log = logging.getLogger(self.__class__.__name__)
         # cutlist.at xml-output
         self.id = 0
         self.author = ''
@@ -124,17 +126,17 @@ class Cutlist:
         except IOError as error:
             return "Cutlist konnte nicht heruntergeladen werden (%s)." % error
 
-    def _check_string(self, string):
+    def _check_string(self, string_to_check):
+        #gcurse
         try:
-            res = string.decode('latin1').encode('utf-8')
+            res = string_to_check.decode('utf-8')
         except:
-            print("No latin1 string, trying utf-8")
+            self.log.info("No utf-8 string, trying latin-1: {0}".format(string_to_check))
             try:
-                res = string.decode('utf-8').encode('utf-8')
+                res = string_to_check.decode('latin-1')
             except:
-                print("Malformed string")
-                # gcurse
-                res = string
+                self.log.info("Returning undecoded string: {0}".format(string_to_check))
+                res = string_to_check
 
         return res
 
@@ -153,8 +155,9 @@ class Cutlist:
             self.countcuts = int(config_parser.get('General', 'NoOfCuts'))
             self.actualcontent = self._check_string(config_parser.get('Info', 'ActualContent'))
             self.filename_original = self._check_string(config_parser.get('General', 'ApplyToFile'))
-        except:
-            print("Malformed cutlist: ", self.local_filename)
+        except Exception as e:
+            self.log.error("Exception: {0}".format(e))
+            self.log.error("Malformed cutlist: ".format(self.local_filename))
 
     def read_cuts(self):
         """ Reads cuts from local_filename.
