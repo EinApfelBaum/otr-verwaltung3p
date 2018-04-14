@@ -42,13 +42,15 @@ except:
     print("PyGTK/GTK is missing.")
     sys.exit(-1)
 
+## Logging
+logging.basicConfig(level=logging.WARNING, stream=sys.stdout,
+                    format='%(module)s\t%(name)s\t%(funcName)s\t%(message)s')
+log = logging.getLogger("otrverwaltung")
 
 # Options and configuration
 def parse_opts():
     usage = "usage: %prog [options]"
-
     oparse = optparse.OptionParser(usage=usage)
-
     oparse.add_option("-v", "--verbose", action="store_true",
                       help="Verbose messages", default=False)
     oparse.add_option("-d", "--debug", action="store_true",
@@ -65,7 +67,6 @@ if opts.debug:
     logging.root.setLevel(logging.DEBUG)
 elif opts.verbose:
     logging.root.setLevel(logging.INFO)
-logging.basicConfig(stream=sys.stdout)
 link = opts.link
 
 # Setup path
@@ -77,7 +78,7 @@ source_tree = os.path.join(launch_dir, "..", "otrverwaltung")
 # preferred module path ...
 if os.path.exists(os.path.join(source_tree, "path.py")):
     local = True
-    logging.info("Running from source tree; adjusting path")
+    log.info("Running from source tree; adjusting path")
     sys.path.insert(0, os.path.realpath(os.path.dirname(source_tree)))
     locale_dir = os.path.join(launch_dir, "..", "locale")
 else:
@@ -91,8 +92,7 @@ else:
         sys.path.insert(0, "/usr/share/pyshared")
 
 import gettext, locale
-#import Gtk.glade
-
+log.debug(locale_dir)
 gettext.install('otrverwaltung', locale_dir, True)
 
 locale.setlocale(locale.LC_ALL, '')
@@ -124,6 +124,7 @@ class App:
 
     def __init__(self):
 
+        self.log = logging.getLogger(self.__class__.__name__)
         configuration = {
             'general': {
                 'folder_new_otrkeys': '',
@@ -260,7 +261,7 @@ class App:
             file = open(path.get_storage_dir("data"), 'r')
             downloads = json.loads(file.read())['downloads']
         except (IOError, ValueError) as message:
-            print("Can't read downloads: %s" % message)
+            self.log.warning("Can't read downloads: %s" % message)
 
         for json_download in downloads:
             download = Download(self, self.config)
@@ -326,7 +327,7 @@ class App:
                 else:
                     value = datatype(value)
 
-                print("IMPORT: %s of %s" % (key, datatype))
+                self.info("IMPORT: %s of %s" % (key, datatype))
                 configuration['general'][key] = value
 
             elif key == "enabled_plugins":
@@ -874,7 +875,7 @@ class App:
             file.write(json.dumps({'downloads': downloads}))
             file.close()
         except IOError as message:
-            print("Can't write downloads: " + str(message))
+            self.log.warning("Can't write downloads: " + str(message))
 
         # kill downloads
         for row in self.gui.main_window.treeview_download.liststore:
@@ -915,7 +916,7 @@ class OTRVerwaltungService(dbus.service.Object):
 
 if __name__ == "__main__":
     if dbus.SessionBus().request_name("elbersb.otrverwaltung") != dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER:
-        print("OTR-Verwaltung läuft bereits. Zeige Fenster.")
+        log.warning("OTR-Verwaltung läuft bereits. Zeige Fenster.")
         dbus.SessionBus().get_object("elbersb.otrverwaltung", "/elbersb/otrverwaltung").get_dbus_method("show_window")()
         if link:
             dbus.SessionBus().get_object("elbersb.otrverwaltung", "/elbersb/otrverwaltung").get_dbus_method("add_link")(
