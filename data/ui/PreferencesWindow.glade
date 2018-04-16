@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
   <requires lib="PreferencesWindow" version="1.0"/>
@@ -11,6 +11,9 @@
     <property name="destroy_with_parent">True</property>
     <property name="skip_taskbar_hint">True</property>
     <signal name="delete-event" handler="_on_preferences_window_delete_event" swapped="no"/>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="vbox2">
         <property name="visible">True</property>
@@ -1264,18 +1267,17 @@
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkComboBoxText" id="comboboxServer">
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="entry_server">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="active_id">cutlistserver</property>
-                            <items>
-                              <item id="cutlistserver" translatable="yes">http://cutlist.at/</item>
-                            </items>
+                            <property name="can_focus">True</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">0</property>
+                            <property name="position">1</property>
                           </packing>
                         </child>
                         <child>
@@ -1289,7 +1291,7 @@
                           <packing>
                             <property name="expand">True</property>
                             <property name="fill">True</property>
-                            <property name="position">1</property>
+                            <property name="position">3</property>
                           </packing>
                         </child>
                       </object>

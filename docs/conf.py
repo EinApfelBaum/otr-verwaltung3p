@@ -19,7 +19,7 @@ import sys, os
 #print os.path.abspath('../src')
 sys.path.insert(0, os.path.abspath('../bin'))
 sys.path.insert(0, os.path.abspath('../otrverwaltung'))
-print sys.path
+print(sys.path)
 
 # -- General configuration -----------------------------------------------------
 
@@ -40,8 +40,8 @@ source_encoding = 'utf-8'
 master_doc = 'index'
 
 # General information about the project.
-project = u'OTR-Verwaltung'
-copyright = u'2009, Benjamin Elbers'
+project = 'OTR-Verwaltung'
+copyright = '2009, Benjamin Elbers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -189,8 +189,8 @@ htmlhelp_basename = 'OTR-Verwaltungdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'OTR-Verwaltung.tex', u'OTR-Verwaltung Documentation',
-   u'Benjamin Elbers', 'manual'),
+  ('index', 'OTR-Verwaltung.tex', 'OTR-Verwaltung Documentation',
+   'Benjamin Elbers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

@@ -223,12 +223,12 @@ class Cut(BaseAction):
                 None, None, None, None, None, error_message
         """
 
-        self.log.info("function start")
+        self.log.debug("function start")
         try:
             process = subprocess.Popen([self.config.get_program('ffmpeg'), "-i", filename], stdout=subprocess.PIPE,
                                        stderr=subprocess.STDOUT)
         except OSError:
-            self.log.error("Leave function")
+            self.log.debug("Leave function")
             return None, None, None, None, None, "FFMPEG (static) konnte nicht ausgeführt werden!"
 
         log = process.communicate()[0]
@@ -256,7 +256,7 @@ class Cut(BaseAction):
                     try:
                         seconds = float(m.group(2)) * 3600 + float(m.group(3)) * 60 + float(m.group(4))
                     except ValueError:
-                        self.log.error("Leave function")
+                        self.log.debug("Leave function")
                         return None, None, None, None, "Dauer des Film konnte nicht ausgelesen werden."
                 elif "SAR" == m.group(5):
                     try:
@@ -264,7 +264,7 @@ class Cut(BaseAction):
                         dar = m.group(7)
                         fps = float(m.group(8))
                     except ValueError:
-                        self.log.error("Leave function")
+                        self.log.debug("Leave function")
                         return None, None, None, None, "Video Stream Informationen konnte nicht ausgelesen werden."
                 elif "Stream" == m.group(9):
                     ac3_stream = m.group(10)
@@ -273,10 +273,10 @@ class Cut(BaseAction):
 
         if seconds != 0 and fps != None and sar != None and dar != None:
             max_frames = seconds * fps
-            self.log.error("Leave function")
+            self.log.debug("Leave function")
             return fps, dar, sar, max_frames, ac3_stream, None
 
-        self.log.error("Leave function")
+        self.log.debug("Leave function")
         return None, None, None, None, None, "Es konnten keine Video Infos der zu bearbeitenden Datei ausgelesen werden."
 
     def get_keyframes_from_file(self, filename):

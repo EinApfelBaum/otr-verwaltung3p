@@ -44,7 +44,7 @@ except:
 
 ## Logging
 logging.basicConfig(level=logging.WARNING, stream=sys.stdout,
-                    format='%(module)s\t%(name)s\t%(funcName)s\t%(message)s')
+                    format='%(levelname).1s:%(module)s:%(name)s:%(funcName)s: %(message)s')
 log = logging.getLogger("otrverwaltung")
 
 # Options and configuration

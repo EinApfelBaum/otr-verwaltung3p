@@ -96,7 +96,7 @@ class Cutlist:
         except Exception as error_message:
             return error_message
 
-        response = connection.getresponse().read()
+        response = connection.getresponse().read().decode('utf-8')
         if 'erfolgreich' in response:
             return None
         else:
@@ -173,7 +173,7 @@ class Cutlist:
         try:
             config_parser.read(self.local_filename, encoding='latin-1')
         except configparser.ParsingError as message:
-            print("Malformed cutlist: ", message)
+            self.log.info("Malformed cutlist: ", message)
 
         try:
             noofcuts = int(config_parser.get("General", "NoOfCuts"))
@@ -186,13 +186,13 @@ class Cutlist:
                     duration_frames = int(config_parser.get(cut, "DurationFrames"))
                     if duration_frames > 0:
                         self.cuts_frames.append((start_frame, duration_frames))
-                        print("Append frames: %i, %i" % (start_frame, duration_frames))
+                        self.log.info("Append frames: {0}, {1}".format(start_frame, duration_frames))
 
                 start_second = float(config_parser.get(cut, "Start"))
                 duration_seconds = float(config_parser.get(cut, "Duration"))
                 if duration_seconds > 0:
                     self.cuts_seconds.append((start_second, duration_seconds))
-                    print("Append seconds: %f, %f" % (start_second, duration_seconds))
+                    self.log.info("Append seconds:  {0}, {1}".format(start_second, duration_seconds))
 
         except configparser.NoSectionError as message:
             return "Fehler in Cutlist: " + str(message)

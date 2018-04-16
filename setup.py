@@ -21,7 +21,7 @@ import sys
 try:
     import DistUtilsExtra.auto
 except ImportError:
-    print >> sys.stderr, 'To build otrverwaltung you need https://launchpad.net/python-distutils-extra'
+    print('To build otrverwaltung you need https://launchpad.net/python-distutils-extra', file=sys.stderr)
     sys.exit(1)
 
 assert DistUtilsExtra.auto.__version__ >= '2.10', 'needs DistUtilsExtra.auto >= 2.10'
@@ -106,13 +106,13 @@ class InstallAndUpdateDataDirectory(DistUtilsExtra.auto.install_auto):
 ##################################################################################
 
 DistUtilsExtra.auto.setup(
-    name='otrverwaltung',
+    name='otrverwaltung3p',
     version=open('data/VERSION', 'r').read().strip(),
     license='GPL-3',
     author='Benjamin Elbers',
     author_email='elbersb@gmail.com',
     description='Dateien von onlinetvrecorder.com verwalten',
     long_description='Dateien von onlinetvrecorder.com verwalten: Schneiden, Schnitte betrachten, Cutlists bewerten...',
-    url='http://github.com/elbersb/otr-verwaltung',
+    url='http://github.com/gcurse/otr-verwaltung3p',
     cmdclass={'install': InstallAndUpdateDataDirectory}
 )

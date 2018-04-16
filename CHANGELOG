@@ -1,3 +1,11 @@
+3.2.0, 2018-04-16:
+    * CutInterface: Anzeige der Schnitte mit farbigen Balken, Balken grün wenn Schnitt an Keyframe
+    * CutInterface: Keyframe vor/zurück jetzt implementiert
+    * Cutlist upload funktioniert
+    * Das Umbenennenfeld ist jetzt leserlich und (immer noch) editierbar
+    * Einstellungendialog: Die persönliche cutlist.at URL ist editierbar
+    * Alle print Anweisungen durch logging ersetzt
+
 0.9.7, 30. Mai. 16:
     * Plugin ConvertToMP3 hinzugfügt (Danke beli3ver)
     * Icon für "In den Müll verschieben" geändert

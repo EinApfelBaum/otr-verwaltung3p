@@ -53,7 +53,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.builder.connect_signals(self)
         self.slider = self.builder.get_object('slider')
         self.slider.set_digits(0)
-        self.slider.set_draw_value(True)
+        # TODO: make it an option
+        #self.slider.set_draw_value(True)
 
         self.movie_window = self.builder.get_object('movie_window')
         self.movie_window.connect('realize', self.on_realize)
@@ -151,7 +152,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         cutlist.fps = float(self.framerate_num) / float(self.framerate_denom)
         cutlist.cuts_frames = cuts
         cutlist.cuts_seconds = []
-        cutlist.app = 'OTR-Verwaltung++;Cutinterface'
+        cutlist.app = 'OTR-Verwaltung3p;Cutinterface'
         for start, duration in cuts:
             s = start * self.framerate_denom / float(self.framerate_num)
             d = duration * self.framerate_denom / float(self.framerate_num)
@@ -165,10 +166,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         self.keyframes, error = self.get_keyframes_from_file(filename)
         if self.keyframes == None:
-            self.log.error("Error: Keyframes konnten nicht ausgelesen werden.")
-            # gcurse
-            self.button_keyfast_forward.set_sensitive(False)
-            self.button_keyfast_back.set_sensitive(False)
+            self.log.warning("Error: Keyframes konnten nicht ausgelesen werden.")
 
         self.movie_window.set_size_request(self.config.get('general', 'cutinterface_resolution_x'), self.config.get('general', 'cutinterface_resolution_y'))
         self.hide_cuts = self.config.get('general', 'cutinterface_hide_cuts')
@@ -178,13 +176,18 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         # get video info
         self.discover = GstPbutils.Discoverer.new(Gst.SECOND)
-        tempfilename = pathlib.Path(filename).as_uri()
-        self.d = self.discover.discover_uri(tempfilename)
+        #tempfilename = pathlib.Path(filename).as_uri()
+        self.d = self.discover.discover_uri('file://{}'.format(pathlib.Path(filename)))
         for vinfo in self.d.get_video_streams():
             self.framerate_num = vinfo.get_framerate_num()
             self.framerate_denom = vinfo.get_framerate_denom()
             self.videowidth = vinfo.get_width()
             self.videoheight = vinfo.get_height()
+
+        self.videolength = self.d.get_duration()
+        self.frames = self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND
+        self.timelines = [self.get_cuts_in_frames(self.initial_cutlist, self.initial_cutlist_in_frames)]
+        self.ready_callback()
 
         if Gtk.ResponseType.OK == self.run():
             self.set_cuts(self.cutlist, self.timelines[-1])
@@ -255,44 +258,32 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         """ Set markers a and/or b to a specific frame posititon and update the buttons """
 
         if a is not None:
-            if self.marker_a:
-                self.slider.clear_marks()
-                self.slider.add_mark(self.marker_b, Gtk.PositionType.TOP, 'B')
             self.marker_a = a
-            self.slider.add_mark(a, Gtk.PositionType.TOP,'A')
-
+            
             if a != -1 and self.marker_b < 0:
                     self.marker_b = self.get_frames()-1
-
+    
         if b is not None:
-            if self.marker_b:
-                self.slider.clear_marks()
-                self.slider.add_mark(self.marker_a, Gtk.PositionType.TOP, 'A')
             self.marker_b = b
-            self.slider.add_mark(b, Gtk.PositionType.TOP, 'B')
-
+            
             if b != -1 and self.marker_a < 0:
                     self.marker_a = 0
-
+        
         if self.marker_a != -1 and self.marker_b != -1 and self.marker_a > self.marker_b:
             self.log.info("Switch a and b")
             c = self.marker_b
             self.marker_b = self.marker_a
             self.marker_a = c
 
-            self.slider.clear_marks()
-            self.slider.add_mark(self.marker_a, Gtk.PositionType.TOP, 'A')
-            self.slider.add_mark(self.marker_b, Gtk.PositionType.TOP, 'B')
-
         if self.marker_a == -1:
             self.builder.get_object('button_jump_to_marker_a').set_label('-')
         else:
-            self.builder.get_object('button_jump_to_marker_a').set_label(str(self.marker_a))
-
+            self.builder.get_object('button_jump_to_marker_a').set_label(str(int(self.marker_a)))
+        
         if self.marker_b == -1:
             self.builder.get_object('button_jump_to_marker_b').set_label('-')
         else:
-            self.builder.get_object('button_jump_to_marker_b').set_label(str(self.marker_b))
+            self.builder.get_object('button_jump_to_marker_b').set_label(str(int(self.marker_b)))
 
         self.slider.queue_draw()
 
@@ -515,8 +506,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
     def on_message(self, bus, message):
         t = message.type
         if t == Gst.MessageType.ASYNC_DONE:
-            if self.getVideoLength is True:
-                self.getVideoLength = False
+            if self.getVideoLength:
+                self.getVideoLength = not self.getVideoLength
                 self.log.info('Async done')
                 self.videolength = self.playbin.query_duration(Gst.Format.TIME)
                 self.frames = self.videolength[1] * self.framerate_num / self.framerate_denom / Gst.SECOND
@@ -525,10 +516,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 self.builder.get_object('slider').set_range(0, self.get_frames())
                 self.slider.queue_draw()
                 self.log.info("Timelines: {0}".format(self.timelines))
-                self.log.info('framerate_num: {0}'.format(self.framerate_num))
-                self.log.info('framerate_denom: {0}'.format(self.framerate_denom))
-                self.log.info('videolength: {0}'.format(self.videolength))
-                self.log.info('frames: {0}'.format(self.frames))
+                self.log.info("framerate_num: {0}".format(self.framerate_num))
+                self.log.info("framerate_denom: {0}".format(self.framerate_denom))
+                self.log.info("videolength: {0}".format(self.videolength))
+                self.log.info("frames: {0}".format(self.frames))
 
     # signals #
 
@@ -830,10 +821,48 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             GObject.source_remove(self.timer)
         self.callback(self.cutlist)
         self.close()
-        #Gtk.main_quit()
 
-    def slider_expose_event(self, area, event):
-        self.redraw()
+    def on_slider_draw_event(self, widget, cr):
+        self.redraw(cr)
+
+    def redraw(self, cr):
+        slider = self.builder.get_object('slider')
+
+        border = 11
+        if self.get_frames() != 0:
+            # draw line from marker a to marker b and for all cuts
+            try:
+                one_frame_in_pixels = (slider.get_allocation().width - 2*border) / float(self.get_frames())
+                # draw only if ...
+                if self.marker_a != self.marker_b and self.marker_a >= 0 and self.marker_b >= 0:
+                    self.log.debug("Slider allocation size: {0} x {1}".format(slider.get_allocation().width, slider.get_allocation().height))
+                    self.log.debug("one_frame_in_pixels: {0}".format(one_frame_in_pixels))
+                    marker_a = border + int(round(self.marker_a * one_frame_in_pixels))
+                    marker_b = border + int(round(self.marker_b * one_frame_in_pixels))
+
+                    cr.set_source_rgb(1.0,0.0,0.0)  # red
+                    cr.rectangle(marker_a, 0, marker_b - marker_a, 5)
+                    cr.fill()
+
+                if not self.hide_cuts:
+                    inverted = self.invert_simple(self.timelines[-1])
+                    for start, duration in inverted:
+                        pixel_start = border + int(round(start * one_frame_in_pixels))
+                        pixel_duration = int(round(duration * one_frame_in_pixels))
+                        
+                        # draw keyframe cuts that don't need reencoding with a different color
+                        if ((start + duration) in self.keyframes) or (start + duration == self.frames):
+                            cr.set_source_rgb(0.0,0.6,0.0)  # green
+                        else:
+                            cr.set_source_rgb(1.0,0.6,0.0)  # orange
+
+                        cr.rectangle(pixel_start, slider.get_allocation().height - 5, pixel_duration, 5)
+                        cr.fill()
+
+                # slider.queue_draw()
+            except AttributeError as ex:
+                self.log.warning("Exeption: {0}".format(ex))
+                pass
 
     def on_load_button_clicked(self, widget):
         load_dialog = LoadCutDialog.NewLoadCutDialog(self.app, self.app.gui)
@@ -848,43 +877,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
             self.slider.queue_draw()
             self.update_listview()
-
-    def redraw(self):
-        slider = self.builder.get_object('slider')
-        colormap = slider.get_colormap()
-        gc_red = slider.window.new_gc()
-        gc_orange = slider.window.new_gc()
-        red = colormap.alloc_color('red')
-        orange = colormap.alloc_color('orange')
-        gc_red.set_foreground(red)
-        gc_orange.set_foreground(orange)
-
-        border = 11
-        if self.get_frames() != 0:
-            # draw line from marker a to marker b and for all cuts
-            try:
-                one_frame_in_pixels = (slider.window.get_size()[0] - 2*border) / float(self.get_frames())
-                # draw only if ...
-                if self.marker_a != self.marker_b and self.marker_a >= 0 and self.marker_b >= 0:
-                    #print slider.window.get_size()
-                    #print one_frame_in_pixels
-                    marker_a = border + int(round(self.marker_a * one_frame_in_pixels))
-                    marker_b = border + int(round(self.marker_b * one_frame_in_pixels))
-                    # print marker_a
-                    #print marker_b
-
-                    slider.window.draw_rectangle(gc_red, True, marker_a, 0, marker_b - marker_a, 5)
-
-                if not self.hide_cuts:
-                    inverted = self.invert_simple(self.timelines[-1])
-                    for start, duration in inverted:
-                        pixel_start = border + int(round(start * one_frame_in_pixels))
-                        pixel_duration = int(round(duration * one_frame_in_pixels))
-                        slider.window.draw_rectangle(gc_orange, True, pixel_start, slider.window.get_size()[1] - 5, pixel_duration, 5)
-
-                # slider.queue_draw()
-            except AttributeError:
-                pass
 
 def NewCutinterfaceDialog():
     glade_filename = path.getdatapath('ui', 'CutinterfaceDialog.glade')

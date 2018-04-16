@@ -43,7 +43,7 @@ class Planning(list):
 
                 self.append(values[0], int(values[1]), values[2])
             except AssertionError:
-                print("Assertion failed: ", values)
+                #print("Assertion failed: ", values)
                 continue
 
     def get_config(self):

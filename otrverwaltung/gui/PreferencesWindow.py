@@ -22,8 +22,8 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Pango
 
 from otrverwaltung.constants import Cut_action
-from otrverwaltung.gui.config_bindings import EntryBinding, FileChooserFolderBinding, CheckButtonBinding, \
-    ComboBoxEntryBinding, RadioButtonsBinding
+from otrverwaltung.gui.config_bindings import EntryBinding, FileChooserFolderBinding, \
+                        CheckButtonBinding, ComboBoxEntryBinding, RadioButtonsBinding
 from otrverwaltung import path
 
 
@@ -97,6 +97,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         EntryBinding(self.builder.get_object('entryPassword'), self.app.config, 'general', 'password', encode=True)
         EntryBinding(self.builder.get_object('entry_schema'), self.app.config, 'general', 'rename_schema')
         EntryBinding(self.builder.get_object('smkv_workingdir'), self.app.config, 'smartmkvmerge', 'workingdir')
+        EntryBinding(self.builder.get_object('entry_server'), self.app.config, 'general', 'server')
 
         def rename_schema_changed(value):
             new = self.app.rename_by_schema(self.example_cut_filename, value)
@@ -150,7 +151,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         ComboBoxEntryBinding(self.builder.get_object('combobox_man_avi'), self.app.config, 'general', 'cut_avis_man_by')
         ComboBoxEntryBinding(self.builder.get_object('combobox_man_hq'), self.app.config, 'general', 'cut_hqs_man_by')
         ComboBoxEntryBinding(self.builder.get_object('combobox_man_mp4'), self.app.config, 'general', 'cut_mp4s_man_by')
-        ComboBoxEntryBinding(self.builder.get_object('comboboxServer'), self.app.config, 'general', 'server')
+        #ComboBoxEntryBinding(self.builder.get_object('comboboxServer'), self.app.config, 'general', 'server')
         ComboBoxEntryBinding(self.builder.get_object('h264_codec_cbox'), self.app.config, 'general', 'h264_codec')
         ComboBoxEntryBinding(self.builder.get_object('combobox_ac3'), self.app.config, 'general', 'merge_ac3s_by')
         ComboBoxEntryBinding(self.builder.get_object('entry_decoder'), self.app.config, 'programs', 'decoder')

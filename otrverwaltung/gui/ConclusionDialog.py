@@ -204,9 +204,10 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                 rename_list.append(self.rename_by_schema(os.path.basename(self.file_conclusion.cut_video)))
 
                 if self.file_conclusion.cut.cutlist.filename:
-                    ## gcurse
                     rename_list.append(self.file_conclusion.cut.cutlist.filename)
                     rename_label = self.builder.get_object('label5')
+                    ## gcurse   set background of label 'Umbenennen' to yellow to indicate there is
+                    ##          a suggested filename in cutlist. Set font color to black
                     rename_label.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(100, 100, 0, 0.8))
                     rename_label.override_color(Gtk.StateType.NORMAL, Gdk.RGBA(0, 0, 0, 1.0))
 
