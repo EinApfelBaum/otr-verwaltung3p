@@ -68,13 +68,11 @@ class PluginSystem:
         self.plugins = {}  # value : plugin instance
         self.enabled_plugins = [plugin for plugin in enabled_plugins.split(':') if plugin]  # list of names
 
-        msg = "Paths to search: {0}".format(plugin_paths)
-        self.log.info(msg)
+        self.log.info("Paths to search: {}".format(plugin_paths))
 
         for path in plugin_paths:
             if not os.path.isdir(path):
-                msg = "{0} is not a directory.".format(path)
-                self.log.error(msg)
+                self.log.error("{} is not a directory.".format(path))
                 continue
 
             sys.path.append(path)
@@ -86,8 +84,7 @@ class PluginSystem:
                     try:
                         plugin_module = __import__(plugin_name)
                     except Exception as error:
-                        msg = "Error in >{0}< plugin: {1}".format(plugin_name, error)
-                        self.log.error(msg)
+                        self.log.error("Error in >{0}< plugin: {1}".format(plugin_name, error))
                         continue
 
                     # instanciate plugin
@@ -101,18 +98,15 @@ class PluginSystem:
                     if plugin_name in plugins_config:
                         self.plugins[plugin_name].Config.update(plugins_config[plugin_name])
 
-                    msg = "Found: {0}".format(plugin_name)
-                    self.log.info(msg)
+                    self.log.info("Found: {}".format(plugin_name))
 
         for plugin in self.enabled_plugins:
             if not plugin in self.plugins.keys():
-                msg = "Error: Plugin >{0}< not found.".format(plugin)
-                self.log.error(msg)
+                self.log.error("Error: Plugin >{}< not found.".format(plugin))
                 self.enabled_plugins.remove(plugin)
             else:
                 self.plugins[plugin].enable()
-                msg = "Enabled: {0}".format(plugin)
-                self.log.info(msg)
+                self.log.info("Enabled: {}".format(plugin))
 
     def enable(self, name):
         if name not in self.enabled_plugins:

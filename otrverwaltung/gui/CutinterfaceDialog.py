@@ -614,7 +614,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.frames = self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND
 
         nano_seconds += frames * (1 * Gst.SECOND * self.framerate_denom / self.framerate_num)
-        self.log.info("new position: {0}".format(nano_seconds))
         if nano_seconds < 0:
             self.log.info("restrict")
             nano_seconds = 0
@@ -672,6 +671,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.slider.queue_draw()
 
     def on_button_b_clicked(self, *args):
+        # TODO: warn if Marker A = B or distance between them to low
         self.log.info('marker b = {0}'.format(self.current_frame_position))
         self.set_marker(b=self.current_frame_position)
         self.slider.queue_draw()

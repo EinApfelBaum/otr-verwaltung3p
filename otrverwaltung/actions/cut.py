@@ -241,13 +241,10 @@ class Cut(BaseAction):
         for line in log.split('\n'.encode()):
             #TODO remove try catch
             try:
-                #gcurse
                 m = re.search(video_infos_match, line.decode())
-                self.log.info("Videoinfo from ffmpeg: {0}".format(m))
             except UnicodeDecodeError:
                 try:
                     m = re.search(video_infos_match, line.decode('latin-1'))
-                    self.log.info("Videoinfo from ffmpeg: {0}".format(m))
                 except UnicodeDecodeError as ex:
                     self.log.error("Exeption: {0}".format(ex))
 
