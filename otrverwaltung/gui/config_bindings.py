@@ -60,7 +60,13 @@ class EntryBinding(ConfigBinding):
             if not value:
                 self.widget.set_text('')
             else:
-                self.widget.set_text(base64.b64decode(value.decode('utf-8')).decode('utf-8'))
+                #self.widget.set_text(base64.b64decode(value.decode('utf-8')).decode('utf-8'))
+                try:
+                    value.decode('utf-8')
+                    self.widget.set_text(base64.b64decode(value.decode('utf-8')).decode('utf-8'))
+                except AttributeError:
+                    self.widget.set_text(value)
+                    
         else:
             self.widget.set_text(value)
 

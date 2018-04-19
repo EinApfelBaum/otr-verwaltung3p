@@ -20,8 +20,10 @@ except ImportError:
     import json
 import os.path
 import logging
+import base64
 
 from otrverwaltung import path
+from Crypto.Cipher import AES
 
 
 class Config:
@@ -78,8 +80,20 @@ class Config:
                 pass
 
             config_file = open(self.__config_file, "w")
+            
+            try:
+                if len(str(self.__fields['general']['password'])) > 0:
+                    # Encryption
+                    pad = lambda s: s + (self.__fields['general']['aes_blocksize'] - len(s) % self.__fields['general']['aes_blocksize']) * self.__fields['general']['aes_padding']
+                    EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
+                    encryption_suite = AES.new(base64.b64decode(self.__fields['general']['aes_key'].encode('utf-8')))
+                    cipher_text = EncodeAES(encryption_suite, self.__fields['general']['password'])
+                    self.__fields['general']['password'] = base64.b64encode(cipher_text).decode('utf-8')
+            except ValueError:
+                self.__fields['general']['password']=self.__fields['general']['password']
+            
             self.log.debug("Writing to {0}".format(config_file))
-            json.dump(self.__fields, config_file, sort_keys=True, indent=4)
+            json.dump(self.__fields, config_file, ensure_ascii=False, sort_keys=True, indent=4)
             config_file.close()
         except IOError as message:
             self.log.error("Config file not available. Dumping configuration:")
@@ -92,14 +106,27 @@ class Config:
             config = open(self.__config_file, 'r')
             json_config = json.load(config)
             config.close()
-        except IOError as message:
-            self.log.error("Config file not available. Using default configuration.")
+        except (IOError, json.decoder.JSONDecodeError) as message:
+            self.log.error("Config file is not available or has invalid json content. Using default configuration.")
+            self.log.debug(message)
             json_config = {}
 
         for category, options in self.__fields.items():
             for option, value in options.items():
                 try:
-                    self.set(category, option, json_config[category][option])
+                    if category is 'general' and option is 'password':
+                        try:
+                            # Decryption
+                            padding=json_config['general']['aes_padding']
+                            DecodeAES = lambda c, e: (c.decrypt(base64.b64decode(e)).decode("utf-8")).rstrip(padding)
+                            decryption_suite = AES.new(base64.b64decode(json_config['general']['aes_key'].encode('utf-8')))
+                            b = base64.b64decode(json_config[category][option])
+                            plain_text = DecodeAES(decryption_suite, b)
+                            self.set(category, option, plain_text)
+                        except ValueError:
+                            self.set(category, option, json_config[category][option])
+                    else:
+                        self.set(category, option, json_config[category][option])
                 except KeyError:
                     self.set(category, option, value)
 

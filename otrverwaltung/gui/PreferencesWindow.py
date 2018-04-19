@@ -94,7 +94,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         # add bindings here.
         EntryBinding(self.builder.get_object('entry_username'), self.app.config, 'general', 'cutlist_username')
         EntryBinding(self.builder.get_object('entryEMail'), self.app.config, 'general', 'email')
-        EntryBinding(self.builder.get_object('entryPassword'), self.app.config, 'general', 'password', encode=True)
+        EntryBinding(self.builder.get_object('entryPassword'), self.app.config, 'general', 'password')
         EntryBinding(self.builder.get_object('entry_schema'), self.app.config, 'general', 'rename_schema')
         EntryBinding(self.builder.get_object('smkv_workingdir'), self.app.config, 'smartmkvmerge', 'workingdir')
         EntryBinding(self.builder.get_object('entry_server'), self.app.config, 'general', 'server')

@@ -25,6 +25,7 @@ import hashlib
 import optparse
 import logging
 import dbus, dbus.service, dbus.glib
+from base64 import b64encode
 
 try:
     import simplejson as json
@@ -41,6 +42,9 @@ try:
 except:
     print("PyGTK/GTK is missing.")
     sys.exit(-1)
+
+sys.modules["gi.overrides.Gst"] = None
+sys.modules["gi.overrides.GstPbutils"] = None
 
 ## Logging
 logging.basicConfig(level=logging.WARNING, stream=sys.stdout,
@@ -135,6 +139,9 @@ class App:
                 'folder_archive': '',
                 'otrkey_search': 'http://otrkeyfinder.com/?search=',
                 'save_email_password': False,
+                'aes_key': b64encode(os.urandom(32)).decode('utf-8'),
+                'aes_padding': '{',
+                'aes_blocksize': 32,    # 16 (AES-128), 24 (AES-192), or 32 (AES-256)
                 'email': '',
                 'password': '',
                 'verify_decoded': True,
@@ -856,10 +863,35 @@ class App:
 
         self.__gui.main_window.show()
 
-        if self.config.get('general', 'folder_new_otrkeys') == "":
+        if not os.path.exists('conf'):
             self.__gui.message_info_box(
                 "Dies ist offenbar das erste Mal, dass OTR-Verwaltung gestartet wird.\n\nEs müssen zunächst einige wichtige Einstellungen vorgenommen werden. Klicken Sie dazu auf OK.")
             self.__gui.preferences_window.show()
+        else:
+            errstr = ''
+            
+            if self.config.get('general', 'email') == "":
+                errstr = errstr + '- setze eine E-Mail-Adresse für den OTR-Account\n'
+            if self.config.get('general', 'password') == "":
+                errstr = errstr + '- setze ein Passwort für den OTR-Account\n'
+                
+            if self.config.get('general', 'folder_new_otrkeys') == "":
+                errstr = errstr + '- definiere einen Ordner für .otrkey Dateien\n'
+            if self.config.get('general', 'folder_archive') == "":
+                errstr = errstr + '- definiere einen Ordner für archivierte Dateien\n'
+            if self.config.get('general', 'folder_cut_avis') == "":
+                errstr = errstr + '- definiere einen Ordner für geschnitte .avi Dateien\n'
+            if self.config.get('general', 'folder_uncut_avis') == "":
+                errstr = errstr + '- definiere einen Ordner für ungeschnittene .avi Dateien\n'
+            if self.config.get('general', 'folder_trash_avis') == "":
+                errstr = errstr + '- definiere einen "Müll"-Ordner für .avi Dateien\n'
+            if self.config.get('general', 'folder_trash_otrkeys') == "":
+                errstr = errstr + '- definiere einen "Müll"-Ordner für .otrkey Dateien\n'
+                
+            if errstr != '':
+                self.__gui.message_info_box('Es müssen noch ein paar wichtige Einstellungen vorgenommen werden.\n\n'+errstr+"\nKlicken Sie dazu auf OK.")
+                self.__gui.preferences_window.show()
+
 
         if link:
             self.add_download_link(link)

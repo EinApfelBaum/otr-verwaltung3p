@@ -29,7 +29,8 @@ Ich weise hier auch noch mal darauf hin, dass dies noch keine Release Version is
 
 In einer VM Ubuntu 16.04 und Linux Mint 18.1 musste ich folgende Pakete installieren:
 
-`sudo apt-get install python3-libtorrent mediainfo-gui mpv`
+`sudo apt-get install python3-libtorrent mediainfo-gui mpv python3-pip`
+`pip3 install pycrypto`
 
 Pakete, welche notwendig sind, vielleicht aber schon installiert sind:
 
