@@ -144,6 +144,7 @@ class App:
                 'aes_blocksize': 32,    # 16 (AES-128), 24 (AES-192), or 32 (AES-256)
                 'email': '',
                 'password': '',
+                'no_password_hint': False,
                 'verify_decoded': True,
                 'cut_avis_by': 'SmartMKVmerge',
                 'cut_hqs_by': 'SmartMKVmerge',
@@ -872,9 +873,8 @@ class App:
             
             if self.config.get('general', 'email') == "":
                 errstr = errstr + '- setze eine E-Mail-Adresse für den OTR-Account\n'
-            if self.config.get('general', 'password') == "":
-                errstr = errstr + '- setze ein Passwort für den OTR-Account\n'
-                
+            if self.config.get('general', 'password') == "" and not self.config.get('general', 'no_password_hint'):
+                errstr = errstr + '- setze ein Passwort für den OTR-Account (optional)\n'
             if self.config.get('general', 'folder_new_otrkeys') == "":
                 errstr = errstr + '- definiere einen Ordner für .otrkey Dateien\n'
             if self.config.get('general', 'folder_archive') == "":

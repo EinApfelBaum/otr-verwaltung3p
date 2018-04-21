@@ -15,7 +15,9 @@
 # END LICENSE
 
 import os
-
+import hashlib
+import requests
+import urllib.request as urllib2
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -126,6 +128,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             self.app.config.connect('general', option, lambda value: self.app.show_section(self.app.section))
 
         CheckButtonBinding(self.builder.get_object('checkCorrect'), self.app.config, 'general', 'verify_decoded')
+        CheckButtonBinding(self.builder.get_object('checkPasswordCheckOnProgramStart'), self.app.config, 'general', 'no_password_hint')
         CheckButtonBinding(self.builder.get_object('check_delete_cutlists'), self.app.config, 'general',
                            'delete_cutlists')
         CheckButtonBinding(self.builder.get_object('check_rename_cut'), self.app.config, 'general', 'rename_cut')
@@ -168,6 +171,24 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         self.builder.get_object('combobox_ac3').set_sensitive(self.app.config.get('general', 'merge_ac3s'))
 
     #  Signal handlers
+    
+    def _on_button_check_otr_credentials_clicked(self, entry):
+        request_answer=""
+        if self.app.config.get('general', 'password') != "" and internet_on():
+            URL = "http://www.onlinetvrecorder.com/webrecording/isuser.php"
+            PARAMS = {
+                'email': self.app.config.get('general', 'email'), 
+                'pass': hashlib.md5(self.app.config.get('general', 'password').encode('utf-8')).hexdigest()
+            }
+            r = requests.get(url = URL, params = PARAMS)
+            request_answer = r.text;
+        if internet_on():
+            if 'yes' in request_answer:
+                self.builder.get_object('OTRCredentialCheckResponse').set_markup("<span color='green'>✓</span>")
+            else:
+                self.builder.get_object('OTRCredentialCheckResponse').set_markup("<span color='red'>✘</span>")
+        else:
+            self.builder.get_object('OTRCredentialCheckResponse').set_markup("<span color='red'>🖧</span>")
 
     def _on_button_set_file_clicked(self, entry, data=None):
         chooser = Gtk.FileChooserDialog(title="Datei auswählen",
@@ -200,3 +221,10 @@ def NewPreferencesWindow(app, gui):
     window.app = app
     window.gui = gui
     return window
+
+def internet_on():
+    try:
+        urllib2.urlopen('http://216.58.192.142', timeout=1)
+        return True
+    except urllib2.URLError as err: 
+        return False

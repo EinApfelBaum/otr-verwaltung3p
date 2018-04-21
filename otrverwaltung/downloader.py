@@ -459,7 +459,7 @@ class Download:
         elif self.information['download_type'] in [DownloadTypes.OTR_DECODE, DownloadTypes.OTR_CUT]:
             decoder = self._config.get_program('decoder')
             email = self._config.get('general', 'email')
-            password = base64.b64decode(self._config.get('general', 'password'))
+            password = self._config.get('general', 'password')
             cache_dir = self._config.get('general', 'folder_trash_otrkeys')
             command = [decoder, "-b", "0", "-n", "-i", self.link, "-e", email, "-p", password, "-c", cache_dir]
 

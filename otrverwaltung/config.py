@@ -111,6 +111,9 @@ class Config:
             self.log.debug(message)
             json_config = {}
 
+        newConfFields = {'no_password_hint':'general'}
+        newConfValues = {'no_password_hint':False}
+
         for category, options in self.__fields.items():
             for option, value in options.items():
                 try:
@@ -127,8 +130,15 @@ class Config:
                             self.set(category, option, json_config[category][option])
                     else:
                         self.set(category, option, json_config[category][option])
+                    if option in newConfFields:
+                        try:
+                            del newConfFields[option]
+                        except KeyError:
+                            pass
                 except KeyError:
                     self.set(category, option, value)
+        for key, value in newConfFields.items():
+            self.set(value, key, newConfValues.get(key))
 
     def get_program(self, program):
         """ Returns the full calling string of a program 

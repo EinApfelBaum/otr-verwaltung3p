@@ -122,7 +122,7 @@ class DecodeOrCut(Cut):
 
         # retrieve email and password
         email = self.config.get('general', 'email')
-        password = base64.b64decode(self.config.get('general', 'password'))
+        password = self.config.get('general', 'password')
 
         if not email or not password:
             self.gui.dialog_email_password.set_email_password(email, password)
