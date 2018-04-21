@@ -1,10 +1,20 @@
-3.2.0, 2018-04-16:
+3.2.0-A, 2018-04-21
+    * Programmversion und aktuelle Version auf github werden in der Fensterleiste angezeigt
+    * OTR Email und Passwort im Optionendialog können auf Korrektheit gepüft werden
+    * Überprüfung auf vorhandenes Passwort kann im Optionendialog abgeschaltet werden
+    * Verbesserter Startup-Dialog, wenn keine conf-Datei vorhanden oder Daten fehlen
+    * OTR-Passwort wird jetzt AES-verschlüsselt gespeichert
     * CutInterface: Anzeige der Schnitte mit farbigen Balken, Balken grün wenn Schnitt an Keyframe
     * CutInterface: Keyframe vor/zurück jetzt implementiert
     * Cutlist upload funktioniert
     * Das Umbenennenfeld ist jetzt leserlich und (immer noch) editierbar
     * Einstellungendialog: Die persönliche cutlist.at URL ist editierbar
-    * Alle print Anweisungen durch logging ersetzt
+    * (Fast?) Alle print Anweisungen durch logging ersetzt
+
+3.1-A, 2017-10-01
+    * Umgestellt auf Python3, GTK3, GStreamer1.0
+
+________________________________________________________________________________________________________________________________
 
 0.9.7, 30. Mai. 16:
     * Plugin ConvertToMP3 hinzugfügt (Danke beli3ver)
