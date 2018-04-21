@@ -57,16 +57,15 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.__setup_treeview_files()
         self.__setup_widgets()
 
-        # set title
+        # set window title
         current_version = open(path.getdatapath("VERSION"), 'r').read().strip()
 
-        # TODO
-        # try:
-        #    svn_version = urllib.urlopen('http://github.com/monarc99/otr-verwaltung/raw/master/data/VERSION').read().strip()
-        # except IOError:
-        #    self.set_title('OTR-Verwaltung++' + ' ' + current_version)
-        # else:
-        #    self.set_title('OTR-Verwaltung++' + ' ' + current_version + '  -  aktuelle Version: ' + svn_version)
+        try:
+           svn_version = urllib.request.urlopen('http://github.com/einapfelbaum/otr-verwaltung3p/raw/master/data/VERSION').read().strip().decode('utf-8')
+        except IOError:
+           self.set_title('OTR-Verwaltung3p' + ' ' + current_version)
+        else:
+           self.set_title('OTR-Verwaltung3p' + ' ' + current_version + '  -  aktuelle Version: ' + str(svn_version))
 
     def __get_cut_menu(self, action):
         # menu for cut/decodeandcut
@@ -568,7 +567,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
         try:
             svn_version = urllib.request.urlopen(
-                'http://github.com/monarc99/otr-verwaltung/raw/master/data/VERSION').read().strip()
+                'http://github.com/einapfelbaum/otr-verwaltung3p/raw/master/data/VERSION').read().strip().decode('utf-8')
         except IOError:
             self.gui.message_error_box("Konnte keine Verbindung mit dem Internet herstellen!")
             return
@@ -576,7 +575,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.gui.message_info_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s" % (current_version, svn_version))
 
     def _on_menuHelpHelp_activate(self, widget, data=None):
-        webbrowser.open("http://elbersb.de/otrverwaltung?q=usage")
+        webbrowser.open("https://github.com/EinApfelBaum/otr-verwaltung3p/wiki")
 
     def _on_menuHelpAbout_activate(self, widget, data=None):
 

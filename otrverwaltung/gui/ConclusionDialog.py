@@ -20,6 +20,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Pango, Gdk
 import os.path
 import os
+import logging
 
 from otrverwaltung.constants import Action, Status, Cut_action
 from otrverwaltung.gui.widgets.FolderChooserComboBox import FolderChooserComboBox
@@ -48,6 +49,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
 
     def __init__(self):
         Gtk.Dialog.__init__(self)
+        self.log = logging.getLogger(self.__class__.__name__)
         pass
 
     def do_parser_finished(self, builder):
@@ -279,16 +281,15 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
 
     def _on_combobox_external_rating_changed(self, widget, data=None):
         rating = widget.get_active() - 1
-        print("[Conclusion] cut.my_rating = ", rating)
+        self.log.info("cut.my_rating = {}".format(rating))
         self.file_conclusion.cut.my_rating = rating
 
     def _on_check_delete_uncut_toggled(self, widget, data=None):
-        print("[Conclusion] cut.delete_uncut = ", widget.get_active())
+        self.log.info("cut.delete_uncut = {}".format(widget.get_active()))
         self.file_conclusion.cut.delete_uncut = widget.get_active()
 
     def _on_comboboxentry_rename_changed(self, widget, data=None):
-        #print("[Conclusion] cut.rename = ", widget.child.get_text())
-        print("[Conclusion] cut.rename = ", widget.get_active_text())
+        self.log.info("cut.rename = {}".format(widget.get_active_text()))
         self.file_conclusion.cut.rename = widget.get_active_text()
 
     def _on_button_rename_func_clicked(self, widget, data=None):
@@ -297,57 +298,57 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     def _on_combobox_archive_changed(self, widget, data=None):
         if self.file_conclusion != Action.DECODE:
             archive_to = self.combobox_archive.get_active_path()
-            print("[Conclusion] cut.archive_to = ", archive_to)
+            self.log.info("cut.archive_to = {}".format(archive_to))
             self.file_conclusion.cut.archive_to = archive_to
 
     # box_create_cutlist
     def _on_check_create_cutlist_toggled(self, widget, data=None):
         create_cutlist = widget.get_active()
-        print("[Conclusion] cut.create_cutlist = ", create_cutlist)
+        self.log.info("cut.create_cutlist = {}".format(create_cutlist))
         self.file_conclusion.cut.create_cutlist = create_cutlist
         self.builder.get_object('box_create_cutlist_options').set_sensitive(create_cutlist)
         self.builder.get_object('check_upload_cutlist').set_sensitive(create_cutlist)
 
     def _on_check_upload_cutlist_toggled(self, widget, data=None):
         upload_cutlist = widget.get_active()
-        print("[Conclusion] cut.upload_cutlist = ", upload_cutlist)
+        self.log.info("cut.upload_cutlist = {}".format(upload_cutlist))
         self.file_conclusion.cut.upload_cutlist = upload_cutlist
 
     def _on_combobox_own_rating_changed(self, widget, data=None):
         ratingbyauthor = widget.get_active() - 1
-        print("[Conclusion] cut.cutlist.ratingbyauthor = ", ratingbyauthor)
+        self.log.info("cut.cutlist.ratingbyauthor = {}".format(ratingbyauthor))
         self.file_conclusion.cut.cutlist.ratingbyauthor = ratingbyauthor
 
     def _on_check_wrong_content_toggled(self, widget, data=None):
-        print("[Conclusion] cut.cutlist.wrong_content = ", widget.get_active())
+        self.log.info("cut.cutlist.wrong_content = {}".format(widget.get_active()))
         self.file_conclusion.cut.cutlist.wrong_content = widget.get_active()
 
     def _on_entry_actual_content_changed(self, widget, data=None):
-        print("[Conclusion] cut.cutlist.actualcontent = ", widget.get_text())
+        self.log.info("cut.cutlist.actualcontent = {}".format(widget.get_text()))
         self.file_conclusion.cut.cutlist.actualcontent = widget.get_text()
 
     def _on_check_missing_beginning_toggled(self, widget, data=None):
-        print("[Conclusion] cut.cutlist.missing_beginning = ", widget.get_active())
+        self.log.info("cut.cutlist.missing_beginning = {}".format(widget.get_active()))
         self.file_conclusion.cut.cutlist.missing_beginning = widget.get_active()
 
     def _on_check_missing_ending_toggled(self, widget, data=None):
-        print("[Conclusion] cut.cutlist.missing_ending = ", widget.get_active())
+        self.log.info("cut.cutlist.missing_ending = {}".format(widget.get_active()))
         self.file_conclusion.cut.cutlist.missing_ending = widget.get_active()
 
     def _on_check_other_error_toggled(self, widget, data=None):
-        print("[Conclusion] cut.cutlist.other_error = ", widget.get_active())
+        self.log.info("cut.cutlist.other_error = {}".format(widget.get_active()))
         self.file_conclusion.cut.cutlist.other_error = widget.get_active()
 
     def _on_entry_other_error_description_changed(self, widget, data=None):
-        print("[Conclusion] cut.cutlist.othererrordescription = ", widget.get_text())
+        self.log.info("cut.cutlist.othererrordescription = {}".format(widget.get_text()))
         self.file_conclusion.cut.cutlist.othererrordescription = widget.get_text()
 
     def _on_entry_suggested_changed(self, widget, data=None):
-        print("[Conclusion] cut.cutlist.suggested_filename = ", widget.get_text())
+        self.log.info("cut.cutlist.suggested_filename = {}".format(widget.get_text()))
         self.file_conclusion.cut.cutlist.suggested_filename = widget.get_text()
 
     def _on_entry_comment_changed(self, widget, data=None):
-        print("[Conclusion] cut.cutlist.usercomment = ", widget.get_text())
+        self.log.info("cut.cutlist.usercomment = {}".format(widget.get_text()))
         self.file_conclusion.cut.cutlist.usercomment = widget.get_text()
 
 

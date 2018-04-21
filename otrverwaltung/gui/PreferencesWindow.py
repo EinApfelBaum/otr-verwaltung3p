@@ -223,7 +223,9 @@ def NewPreferencesWindow(app, gui):
     return window
 
 def internet_on():
+    ## Check if online
     try:
+        ## google.com ip
         urllib2.urlopen('http://216.58.192.142', timeout=1)
         return True
     except urllib2.URLError as err: 
