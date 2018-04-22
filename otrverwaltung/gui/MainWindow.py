@@ -20,6 +20,9 @@ import time
 import urllib.request
 import webbrowser
 import logging
+import git
+import sys
+import os
 
 import gi
 from gi.repository import Gtk, GdkPixbuf, Gdk
@@ -65,7 +68,11 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         except IOError:
            self.set_title('OTR-Verwaltung3p' + ' ' + current_version)
         else:
-           self.set_title('OTR-Verwaltung3p' + ' ' + current_version + '  -  aktuelle Version: ' + str(svn_version))
+            if current_version in str(svn_version):
+                self.set_title('OTR-Verwaltung3p' + ' ' + current_version + '  -  Aktuell!')
+            else:
+                self.set_title('OTR-Verwaltung3p' + ' ' + current_version + '  -  aktuelle Version: ' + str(svn_version))
+                self._on_menu_check_update_activate(self)
 
     def __get_cut_menu(self, action):
         # menu for cut/decodeandcut
@@ -572,7 +579,25 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             self.gui.message_error_box("Konnte keine Verbindung mit dem Internet herstellen!")
             return
 
-        self.gui.message_info_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s" % (current_version, svn_version))
+        if current_version in svn_version:
+            self.gui.message_info_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s" % (current_version, svn_version))
+        else:
+            if self.gui.question_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s\n\nAutomatisch updaten?\n" % (current_version, svn_version)):
+                #get new version from git
+                script_root_dir = os.path.abspath(os.path.realpath(sys.argv[0])+'/../..')
+                file = open(script_root_dir+"/.git/config", "r")
+                filelist = file.read()
+                if 'url = https://github.com/EinApfelBaum/otr-verwaltung3p.git' in filelist:    # check if program is in right repo
+                    g = git.cmd.Git(script_root_dir+'/')
+                    logging.debug(g.checkout('master'))
+                    git_pull_output=g.pull()
+                    logging.debug(git_pull_output)
+                    if "Already up-to-date" in git_pull_output:
+                        self.gui.message_error_box("Es konnten keine Updates gefunden werden.\nBitte starte das Programm neu, damit ein bereits eingespieltes Update angewendet werden kann!\n")
+                    else:
+                        if self.gui.question_box("Die Version wurde auf %s geupdated.\n\nBestätige mit 'Ja', damit das Programm neu gestartet wird und das Update direkt angewendet werden kann!\n" % (open(path.getdatapath("VERSION"), 'r').read().strip())):
+                            os.execv(sys.executable, ['python'] + sys.argv)
+                            sys.exit()
 
     def _on_menuHelpHelp_activate(self, widget, data=None):
         webbrowser.open("https://github.com/EinApfelBaum/otr-verwaltung3p/wiki")
