@@ -584,10 +584,11 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         else:
             if self.gui.question_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s\n\nAutomatisch updaten?\n" % (current_version, svn_version)):
                 #get new version from git
-                file = open(".git/config", "r")
+                script_root_dir = os.path.abspath(os.path.realpath(sys.argv[0])+'/../..')
+                file = open(script_root_dir+"/.git/config", "r")
                 filelist = file.read()
                 if 'url = https://github.com/EinApfelBaum/otr-verwaltung3p.git' in filelist:    # check if program is in right repo
-                    g = git.cmd.Git('./')
+                    g = git.cmd.Git(script_root_dir+'/')
                     logging.debug(g.checkout('master'))
                     git_pull_output=g.pull()
                     logging.debug(git_pull_output)
