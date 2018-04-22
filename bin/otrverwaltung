@@ -863,8 +863,8 @@ class App:
         """ #FIXME """
 
         self.__gui.main_window.show()
-
-        if not os.path.exists('conf'):
+        otrv3p_path = os.path.abspath(os.path.realpath(sys.argv[0])+'/../..')
+        if not os.path.exists(otrv3p_path+'/conf'):
             self.__gui.message_info_box(
                 "Dies ist offenbar das erste Mal, dass OTR-Verwaltung gestartet wird.\n\nEs müssen zunächst einige wichtige Einstellungen vorgenommen werden. Klicken Sie dazu auf OK.")
             self.__gui.preferences_window.show()
