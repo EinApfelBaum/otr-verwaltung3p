@@ -39,6 +39,8 @@ class Gui:
         self.main_window.post_init()
         self.preferences_window = PreferencesWindow.NewPreferencesWindow(app, self)
         self.preferences_window.bind_config(app.config)
+        self.preferences_window.set_transient_for(self.main_window)
+        self.preferences_window.set_modal(True)
 
         self.dialog_archive = ArchiveDialog.NewArchiveDialog()
         self.dialog_conclusion = ConclusionDialog.NewConclusionDialog(app, self)
