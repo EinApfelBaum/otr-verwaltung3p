@@ -114,13 +114,11 @@ install_otrv3p_git () {
 
 usage () {
     echo -e "\n${BLUE}"
-    echo -e "Die Installation muss in zwei Schritten durchgeführt werden:\n"
-    echo -e "    1. Installation der Abhängigkeiten (Root-Rechte benötigt). Aufruf:"
-    echo -e "        sudo otrv3p-install-deb.sh deps"
-    echo -e "    2. Installation der otr-verwaltung3p (ohne Root-Rechte). Aufruf:"
-    echo -e "        otrv3p-install-deb.sh prog"
-    echo -e "        Im diesem Schritt wird auch gitpython installiert (pip3 install gitpython --user)\n\n"
-    echo -e "Gelesen und verstanden? Dann weiter mit der Eingabetaste a.k.a ENTER, abbrechen mit Strg-C${NOC}"
+    echo -e "Die Installation wird in zwei Schritten durchgeführt werden:\n"
+    echo -e "    1. Installation der Abhängigkeiten (Root-Rechte benötigt)."
+    echo -e "    2. Installation der otr-verwaltung3p (ohne Root-Rechte)."
+    echo -e "       In diesem Schritt wird auch gitpython installiert (pip3 install gitpython --user)\n\n"
+    echo -e "Das läuft automatisch ab. Bereit? Dann weiter mit der Eingabetaste, abbrechen mit Strg-C${NOC}"
     read dummy
 }
 
