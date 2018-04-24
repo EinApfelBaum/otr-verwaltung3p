@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # otrv3p-install-deb.sh
-# version 0.0.2
+# version 0.0.3
 # https://raw.githubusercontent.com/einapfelbaum/otr-verwaltung3p/master/installscripts/otrv3p-install-deb.sh
 
 # BEGIN LICENSE
@@ -60,8 +60,11 @@ install_deps () {
         for package in  python3-xdg \
                         python3-gst-1.0 \
                         gir1.2-gstreamer-1.0 \
+                        python3-simplejson \
                         python3-libtorrent \
-                        python3-crypto\
+                        python3-cairo \
+                        python3-crypto \
+                        python3-requests \
                         python3-pip \
                         gstreamer1.0-tools \
                         gstreamer1.0-plugins-base \
@@ -94,6 +97,7 @@ install_otrv3p_git () {
             git clone https://github.com/EinApfelBaum/otr-verwaltung3p.git 2>&1 | tee -a $myhome/otrv3p-install-deb.log
         fi
         mkdir -p $HOME/.local/share/applications 2>&1 | tee -a $myhome/otrv3p-install-deb.log
+        mkdir -p $HOME/.local/share/otrverwaltung 2>&1 | tee -a $HOME/otrv3p-install-deb.log
         create_desktop_file
         echo "otrv3p:install_otrv3p_git: Updating desktop database" | tee -a $myhome/otrv3p-install-deb.log
         update-desktop-database $HOME/.local/share/applications 2>&1 | tee -a $myhome/otrv3p-install-deb.log
