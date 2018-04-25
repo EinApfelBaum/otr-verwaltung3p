@@ -25,6 +25,7 @@ import sys
 import os
 
 import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, Gdk
 
 from otrverwaltung import path
@@ -34,8 +35,6 @@ from otrverwaltung.gui.widgets.Sidebar import Sidebar
 from otrverwaltung.gui.widgets.EntrySearchToolItem import EntrySearchToolItem
 from otrverwaltung.gui import DownloadPropertiesDialog
 from otrverwaltung.GeneratorTask import GeneratorTask
-
-gi.require_version('Gtk', '3.0')
 
 
 class MainWindow(Gtk.Window, Gtk.Buildable):
@@ -62,9 +61,10 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
         # set window title
         current_version = open(path.getdatapath("VERSION"), 'r').read().strip()
+        self.svn_version_url = "https://raw.githubusercontent.com/einapfelbaum/otr-verwaltung3p/master/data/VERSION"
 
         try:
-           svn_version = urllib.request.urlopen('http://github.com/einapfelbaum/otr-verwaltung3p/raw/master/data/VERSION').read().strip().decode('utf-8')
+           svn_version = urllib.request.urlopen(self.svn_version_url).read().strip().decode('utf-8')
         except IOError:
            self.set_title('OTR-Verwaltung3p' + ' ' + current_version)
         else:
@@ -573,8 +573,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         current_version = open(path.getdatapath("VERSION"), 'r').read().strip()
 
         try:
-            svn_version = urllib.request.urlopen(
-                'http://github.com/einapfelbaum/otr-verwaltung3p/raw/master/data/VERSION').read().strip().decode('utf-8')
+            svn_version = urllib.request.urlopen(self.svn_version_url).read().strip().decode('utf-8')
         except IOError:
             self.gui.message_error_box("Konnte keine Verbindung mit dem Internet herstellen!")
             return

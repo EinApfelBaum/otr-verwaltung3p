@@ -69,7 +69,7 @@ install_deps () {
     check_root
     if [ $root = 1 ]; then
         echo "otrv3p:install_deps: Installiere Abhängigkeiten" | tee -a $HOME/otrv3p-install-arch.log
-        for package in  pygobject \
+        for package in  python-gobject \
                         gst-python \
                         python-xdg \
                         python-dbus \

@@ -9,7 +9,8 @@ gi.require_version('Gst', '1.0')
 gi.require_version('GstPbutils', '1.0')
 gi.require_version('GdkX11', '3.0')
 gi.require_version('GstVideo', '1.0')
-from gi.repository import Gtk, Gdk, GObject, Gst, GstPbutils, GdkX11, GstVideo
+from gi.repository import Gtk, Gdk, GObject, Gst, GstPbutils
+
 import pathlib
 import logging
 
@@ -53,7 +54,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.builder.connect_signals(self)
         self.slider = self.builder.get_object('slider')
         self.slider.set_digits(0)
-        # TODO: make it an option
+        # TODO: make slider.set_draw_value an option
+        #       needs formatting: offset to the right at start position, to the left at end
         #self.slider.set_draw_value(True)
 
         self.movie_window = self.builder.get_object('movie_window')
@@ -218,6 +220,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         # Create GStreamer elements
         self.playbin = Gst.ElementFactory.make('playbin', None)
+        #self.videosink = Gst.ElementFactory.make('autovideosink', None)
+        #self.playbin.set_property("video-sink", self.videosink)
 
         # Add playbin to the player
         self.player.add(self.playbin)
@@ -491,17 +495,14 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
 
     def on_sync_message(self, bus, message):
-        #if message.structure is None:
-        #    return
+        if message.get_structure().get_name() == "prepare-window-handle":
+            imagesink = message.src
+            imagesink.set_property("force-aspect-ratio", True)
+            imagesink.set_window_handle(self.xid)
 
-        #if message.structure.get_name() == "prepare-xwindow-id":
-        #    imagesink = message.src
-        #    imagesink.set_property("force-aspect-ratio", True)
-        #    imagesink.set_xwindow_id(self.movie_xid)
-
-        if message.get_structure().get_name() == 'prepare-window-handle':
-            self.log.info('prepare-window-handle')
-            message.src.set_window_handle(self.xid)
+        # if message.get_structure().get_name() == 'prepare-window-handle':
+        #     self.log.info('prepare-window-handle')
+        #     message.src.set_window_handle(self.xid)
 
     def on_message(self, bus, message):
         t = message.type
