@@ -62,6 +62,7 @@ install_deps () {
                         gir1.2-gstreamer-1.0 \
                         python3-simplejson \
                         python3-libtorrent \
+                        python3-gi-cairo \
                         python3-cairo \
                         python3-crypto \
                         python3-requests \
