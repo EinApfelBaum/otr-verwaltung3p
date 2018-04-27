@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # otrv3p-install-deb.sh
-# version 0.0.3
+version="0.0.4"
+# 2018-04-27
 # https://raw.githubusercontent.com/einapfelbaum/otr-verwaltung3p/master/installscripts/otrv3p-install-deb.sh
 
 # BEGIN LICENSE
@@ -49,14 +50,26 @@ check_root () {
 }
 
 create_desktop_file () {
-    echo "otrv3p: Erzeuge otrv3p-git.desktop in $HOME/.local/share/applications" | tee -a $myhome/otrv3p-install-deb.log
-    printf "[Desktop Entry]\nType=Application\nName=OTR-Verwaltung3p-git\nGenericName=Verwaltung von OTR-Dateien\nGenericName[en]=Management of OTR-Files\nComment=Dateien von onlinetvrecorder.com verwalten: Schneiden, Schnitte betrachten, Cutlists bewerten...\nComment[en]=Manage files from onlinetvrecorder.com : decode, cut, review cuts, rate cutlists...\nCategories=AudioVideo;AudioVideoEditing;\nExec=$HOME/otr-verwaltung3p/bin/otrverwaltung\nTerminal=0\nIcon=$HOME/otr-verwaltung3p/data/media/icon.png\n" > $HOME/.local/share/applications/otrv3p-git.desktop
+    echo "otrv3p:create_desktop_file: Erzeuge otrv3p-git.desktop in $HOME/.local/share/applications" | tee -a /tmp/otrv3p-install-arch.log
+    echo "[Desktop Entry]
+Type=Application
+Name=OTR-Verwaltung3p-git
+GenericName=Verwaltung von OTR-Dateien
+GenericName[en]=Management of OTR-Files
+Comment=Dateien von onlinetvrecorder.com verwalten: Schneiden, Schnitte betrachten, Cutlists bewerten...
+Comment[en]=Manage files from onlinetvrecorder.com : decode, cut, review cuts, rate cutlists...
+Categories=AudioVideo;AudioVideoEditing;
+Exec=$HOME/otr-verwaltung3p/bin/otrverwaltung
+Terminal=0
+Icon=$HOME/otr-verwaltung3p/data/media/icon.png
+
+" > $HOME/.local/share/applications/otrv3p-git.desktop
 }
 
 install_deps () {
     check_root
     if [ $root = 1 ]; then
-        echo "otrv3p:install_deps: Installiere Abhängigkeiten" | tee -a $myhome/otrv3p-install-deb.log
+        echo "otrv3p:install_deps: Installiere Abhängigkeiten" | tee -a /tmp/otrv3p-install-arch.log
         for package in  python3-xdg \
                         python3-gst-1.0 \
                         gir1.2-gstreamer-1.0 \
@@ -79,11 +92,12 @@ install_deps () {
                         git; do
             ## Only install packages if they are not alredy installed
             ## dkpg -s <packagename> returns 0 if package is installed else 1
-            dpkg -s "$package" > /dev/null 2>&1 || apt-get -qq -y install "$package" 2>&1 | tee -a $myhome/otrv3p-install-deb.log
+            dpkg -s "$package" > /dev/null 2>&1 || apt-get -qq -y install "$package" 2>&1 | grep -ve "Preparing to unpack.*" | tee -a /tmp/otrv3p-install-arch.log
         done
+        if [ $? = 0 ]: then echo -e "Alle Abhängigkeiten sind (jetzt) installiert.\n"; fi
         exit
     else
-        echo -e "\n\n${RED}otrv3p:install_deps: Diese Skriptfunktion muss als root ausgeführt werden${NOC}\n\n" | tee -a $myhome/otrv3p-install-deb.log
+        echo -e "\n\n${RED}otrv3p:install_deps: Diese Skriptfunktion muss als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install-arch.log
         exit
     fi
 }
@@ -93,26 +107,28 @@ install_otrv3p_git () {
     if [ $root = 0 ]; then
         cd $HOME
         if [[ -d "otr-verwaltung3p" ]]; then
-            echo -e "otrv3p:install_otrv3p_git: Das Verzeichnis $HOME/otr-verwaltung3p existiert. Das Repo wird nicht geklont." | tee -a $myhome/otrv3p-install-deb.log
+            echo -e "otrv3p:install_otrv3p_git: Das Verzeichnis $HOME/otr-verwaltung3p existiert. Das Repo wird nicht geklont." | tee -a /tmp/otrv3p-install-arch.log
+            echo "no" > /tmp/otrv3pCloneYesNo
         else
-            git clone https://github.com/EinApfelBaum/otr-verwaltung3p.git 2>&1 | tee -a $myhome/otrv3p-install-deb.log
+            git clone https://github.com/EinApfelBaum/otr-verwaltung3p.git 2>&1 | tee -a /tmp/otrv3p-install-arch.log
+            echo "yes" > /tmp/otrv3pCloneYesNo
         fi
-        mkdir -p $HOME/.local/share/applications 2>&1 | tee -a $myhome/otrv3p-install-deb.log
+        mkdir -p $HOME/.local/share/applications 2>&1 | tee -a /tmp/otrv3p-install-arch.log
         mkdir -p $HOME/.local/share/otrverwaltung 2>&1 | tee -a $HOME/otrv3p-install-deb.log
         create_desktop_file
-        echo "otrv3p:install_otrv3p_git: Updating desktop database" | tee -a $myhome/otrv3p-install-deb.log
-        update-desktop-database $HOME/.local/share/applications 2>&1 | tee -a $myhome/otrv3p-install-deb.log
+        echo "otrv3p:install_otrv3p_git: Updating desktop database" | tee -a /tmp/otrv3p-install-arch.log
+        update-desktop-database $HOME/.local/share/applications 2>&1 | tee -a /tmp/otrv3p-install-arch.log
         ## Check if gitpython is installed. If not install it
         python3 -c "import git" > /dev/null 2>&1
         if [ "$?" = 1 ]; then
-            echo "otrv3p:install_otrv3p_git: Installiere gitpython." | tee -a $myhome/otrv3p-install-deb.log
-            pip3 install gitpython --user 2>&1 | tee -a $myhome/otrv3p-install-deb.log
+            echo "otrv3p:install_otrv3p_git: Installiere gitpython." | tee -a /tmp/otrv3p-install-arch.log
+            pip3 install gitpython --user 2>&1 | tee -a /tmp/otrv3p-install-arch.log
         else
-            echo "otrv3p:install_otrv3p_git: gitpython ist bereits installiert." | tee -a $myhome/otrv3p-install-deb.log
+            echo "otrv3p:install_otrv3p_git: gitpython ist bereits installiert." | tee -a /tmp/otrv3p-install-arch.log
         fi
         exit
     else
-        echo -e "\n\n${RED}install_otrv3p_git: Diese Skriptfunktion darf nicht als root ausgeführt werden${NOC}\n\n" | tee -a $myhome/otrv3p-install-deb.log
+        echo -e "\n\n${RED}install_otrv3p_git: Diese Skriptfunktion darf nicht als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install-arch.log
         exit
     fi
 }
@@ -130,36 +146,44 @@ usage () {
 if [ -z "$1" ]; then
     check_root
     if [ $root = 1 ]; then
-        echo -e "\n\n${RED}Dieses Skript darf nicht als root ausgeführt werden${NOC}\n\n" | tee -a $myhome/otrv3p-install-deb.log
+        echo -e "\n\n${RED}Dieses Skript darf nicht als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install-arch.log
         exit 1
     fi
-    # Save user homedir in var for use with recursive sudo call.
-    # In Debian sudo does not preserve user env.
-    export myhome=$HOME
-    echo -e "\n"$(date +"%Y-%m-%d_%H:%M:%S")" LOG BEGINS\n" >> $myhome/otrv3p-install-deb.log
+
+    #export myhome=$HOME
+    echo -e "\n"$(date +"%Y-%m-%d_%H:%M:%S")" LOG BEGINS\n" >> /tmp/otrv3p-install-arch.log
     usage
 elif [ "$1" = "deps" ]; then
-    myhome="$2"
+    #myhome="$2"
     install_deps
 elif [ "$1" = "prog" ]; then
-    myhome="$2"
+    #myhome="$2"
     install_otrv3p_git
 else
-    echo -e "\n\n${RED}otrv3p: Das hätte niemals passieren dürfen! THE END${NOC}\n\n" 2>&1 | tee -a $myhome/otrv3p-install-deb.log
+    echo -e "\n\n${RED}otrv3p: Das hätte niemals passieren dürfen! THE END${NOC}\n\n" 2>&1 | tee -a /tmp/otrv3p-install-arch.log
     exit 1
 fi
 
 # Recursive call
-echo "otrv3p: Start sudo $0 deps $myhome" | tee -a $myhome/otrv3p-install-deb.log
-sudo "$0" deps $myhome
+echo "otrv3p: Start sudo $0 deps $myhome" | tee -a /tmp/otrv3p-install-arch.log
+sudo "$0" deps #$myhome
 # Recursive call
-echo "otrv3p: Start $0 prog $myhome" | tee -a $myhome/otrv3p-install-deb.log
-"$0" prog $myhome
-# check for wine and give hint
-echo "otrv3p: checking for wine" | tee -a $myhome/otrv3p-install-deb.log
+echo "otrv3p: Start $0 prog $myhome" | tee -a /tmp/otrv3p-install-arch.log
+"$0" prog #$myhome
+clone=$(cat /tmp/otrv3pCloneYesNo)
+rm /tmp/otrv3pCloneYesNo
+# check for wine and hint
+echo "otrv3p: checking for wine" | tee -a /tmp/otrv3p-install-arch.log
 which wine > /dev/null 2>&1
 if [ "$?" = 0 ]; then
-    echo -e "otrv3p: wine ist installiert." | tee -a $myhome/otrv3p-install-deb.log
+    echo -e "otrv3p: wine ist installiert." | tee -a /tmp/otrv3p-install-arch.log
 else
-    echo -e "otrv3p: wine ist nicht installiert.\nFalls mp4 geschnitten werden sollen, muss wine installiert werden." | tee -a $myhome/otrv3p-install-deb.log
+    echo -e "otrv3p: wine ist nicht installiert.\nFalls mp4 geschnitten werden sollen, muss wine installiert werden." | tee -a /tmp/otrv3p-install-arch.log
+    echo -n "Soll wine installiert werden? (j/N)? "
+    read answer
+    if [ "$answer" != "${answer#[Jj]}" ]; then
+        echo "Installiere wine"; sudo apt-get install wine
+    else
+        echo "wine wird nicht installiert."
+    fi
 fi
