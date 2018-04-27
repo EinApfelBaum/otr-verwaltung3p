@@ -1,3 +1,8 @@
+3.2.1-A, 2018-04-27
+    * Cutinterface stabilisert (OpenGL Fenster Ausbruch (no xvideo) und leeres
+      Videofenster gefixt)
+    * Auto-update Funktion hinzugefügt
+
 3.2.0-A, 2018-04-21
     * Programmversion und aktuelle Version auf github werden in der Fensterleiste angezeigt
     * OTR Email und Passwort im Optionendialog können auf Korrektheit gepüft werden
