@@ -49,6 +49,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.buttonClose = False
         self.buttonOk = False
 
+        self.state = Gst.State.NULL
         self.player = Gst.ElementFactory.make("playbin", "playbin")
         if not self.player:
             self.log.error("Could not create player.")
@@ -59,8 +60,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         bus = self.player.get_bus()
         bus.add_signal_watch()
 
-        bus.connect('message::eos', self.on_eos)
         bus.connect('message::error', self.on_error)
+        bus.connect('message::eos', self.on_eos)
+        bus.connect("message::state-changed", self.on_state_changed)
 
         # This is needed to make the video output in our DrawingArea:
         bus.enable_sync_message_emission()
@@ -181,7 +183,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         if self.keyframes == None:
             self.log.warning("Error: Keyframes konnten nicht ausgelesen werden.")
 
-        self.movie_window.set_size_request(self.config.get('general', 'cutinterface_resolution_x'), self.config.get('general', 'cutinterface_resolution_y'))
+        self.movie_window.set_size_request(self.config.get('general', 'cutinterface_resolution_x'),\
+                                           self.config.get('general', 'cutinterface_resolution_y'))
+
         self.hide_cuts = self.config.get('general', 'cutinterface_hide_cuts')
 
         # before we get info, we need to create the player
@@ -476,15 +480,22 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         return time_str
 
-    def on_eos(self, bus, msg):
-        self.player.set_state(Gst.State.NULL)
-        self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
-
     def on_error(self, bus, msg):
         err, debug = msg.parse_error()
         self.log.error("Error: {0}, {1}".format(err, debug))
         self.player.set_state(Gst.State.NULL)
         self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
+
+    def on_eos(self, bus, msg):
+        self.player.set_state(Gst.State.NULL)
+        self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
+
+    def on_state_changed(self, bus, msg):
+        old, new, pending = msg.parse_state_changed()
+        if not msg.src == self.player:
+            # not from the player, ignore
+            return
+        self.state = new
 
     def on_sync_message(self, bus, message):
         if message.get_structure().get_name() == "prepare-window-handle":
@@ -496,7 +507,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         if t == Gst.MessageType.ASYNC_DONE:
             if self.getVideoLength:
                 self.getVideoLength = not self.getVideoLength
-                self.log.info('Async done')
+                self.log.info("Async done")
                 self.videolength = self.player.query_duration(Gst.Format.TIME)
                 self.frames = self.videolength[1] * self.framerate_num / self.framerate_denom / Gst.SECOND
                 self.slider.set_range(0, self.get_frames())
@@ -510,6 +521,21 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 self.log.info("frames: {0}".format(self.frames))
 
     # signals #
+
+    def on_draw_movie_window(self, widget, cr):
+        """
+        this function is called every time the video window needs to be
+        redrawn. GStreamer takes care of this in the PAUSED and PLAYING states.
+        in the other states we simply draw a black rectangle to avoid
+        any garbage showing up
+        """
+        if self.state < Gst.State.PAUSED:
+            allocation = widget.get_allocation()
+            cr.set_source_rgb(0, 0, 0)
+            cr.rectangle(0, 0, allocation.width, allocation.height)
+            cr.fill()
+
+        return False
 
     def on_window_key_press_event(self, widget, event, *args):
         """handle keyboard events"""
@@ -711,7 +737,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         marker_a = self.get_absolute_position(self.marker_a)
         marker_b = self.get_absolute_position(self.marker_b)
         pos = self.get_absolute_position(self.current_frame_position)
-        self.log.info("Absolute position: ".format(pos))
 
         self.hide_cuts = widget.get_active()
         self.config.set('general', 'cutinterface_hide_cuts',self.hide_cuts)
