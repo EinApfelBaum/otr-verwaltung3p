@@ -11,7 +11,7 @@ gi.require_version('GdkX11', '3.0')
 gi.require_version('GstVideo', '1.0')
 from gi.repository import Gtk, Gdk, GObject, Gst, GstPbutils
 
-import pathlib
+#import pathlib
 import logging
 
 # Needed for window.get_xid(), xvimagesink.set_window_handle(), respectively:
@@ -49,6 +49,25 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.buttonClose = False
         self.buttonOk = False
 
+        self.player = Gst.ElementFactory.make("playbin", "playbin")
+        if not self.player:
+            self.log.error("Could not create player.")
+            pass
+
+        # Create bus and connect several handlers
+        # Create bus to get events from GStreamer player
+        bus = self.player.get_bus()
+        bus.add_signal_watch()
+
+        bus.connect('message::eos', self.on_eos)
+        bus.connect('message::error', self.on_error)
+
+        # This is needed to make the video output in our DrawingArea:
+        bus.enable_sync_message_emission()
+        bus.connect("sync-message::element", self.on_sync_message)
+        bus.connect("message", self.on_message)
+        
+
     def do_parser_finished(self, builder):
         self.builder = builder
         self.builder.connect_signals(self)
@@ -79,26 +98,17 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.is_playing = False
 
     def on_realize(self, widget, data=None):
-        self.log.info("function start")
+        self.log.warn("function start")
 
         window = widget.get_window()
+        # xid must be retrieved first in GUI-thread and before creating player to
+        # prevent racing conditions. You need to get the XID after window.show_all().
+        # You shouldn't get it in the on_sync_message() handler because threading
+        # issues will cause segfaults there.
         self.xid = window.get_xid()
-        #window = widget.get_window()
-        #window_handle = widget.get_xid()
-
-        # xid must be retrieved first in GUI-thread and before creating player to prevent racing conditions
-        # You need to get the XID after window.show_all().  You shouldn't get it
-        # in the on_sync_message() handler because threading issues will cause
-        # segfaults there.
-        #self.xid = self.movie_window.get_property('window').get_xid()
-
         # pass it to playbin, which implements XOverlay and will forward
         # it to the video sink
-        #self.playbin.set_window_handle(self.xid)
-        #self.playbin.set_xwindow_id(window_handle)
-
-        #self.player.set_state(Gst.State.PLAYING)
-        #self.player.set_state(Gst.State.PAUSED)
+        self.player.set_window_handle(self.xid)
 
         self.ready_callback()
 
@@ -161,12 +171,13 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             cutlist.cuts_seconds.append((s,d))
 
     def _run(self, filename, cutlist, app):
+        self.log.info("function start")
         self.app = app
         self.config = app.config
         self.filename = filename
         self.cutlist = self.load_cutlist(cutlist)
 
-        self.keyframes, error = self.get_keyframes_from_file(filename)
+        self.keyframes, error = self.get_keyframes_from_file(self.filename)
         if self.keyframes == None:
             self.log.warning("Error: Keyframes konnten nicht ausgelesen werden.")
 
@@ -174,12 +185,15 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.hide_cuts = self.config.get('general', 'cutinterface_hide_cuts')
 
         # before we get info, we need to create the player
-        self.create_Player()
+        #self.init_Player()
+        # Set properties
+        self.player.set_property('uri', "file://" + self.filename)
+        self.player.set_state(Gst.State.PLAYING)
+        self.player.set_state(Gst.State.PAUSED)
 
         # get video info
         self.discover = GstPbutils.Discoverer.new(Gst.SECOND)
-        #tempfilename = pathlib.Path(filename).as_uri()
-        self.d = self.discover.discover_uri('file://{}'.format(pathlib.Path(filename)))
+        self.d = self.discover.discover_uri("file://" + self.filename)
         for vinfo in self.d.get_video_streams():
             self.framerate_num = vinfo.get_framerate_num()
             self.framerate_denom = vinfo.get_framerate_denom()
@@ -188,7 +202,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         self.videolength = self.d.get_duration()
         self.frames = self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND
-        self.timelines = [self.get_cuts_in_frames(self.initial_cutlist, self.initial_cutlist_in_frames)]
+        self.timelines = [self.get_cuts_in_frames(self.initial_cutlist, 
+                                                  self.initial_cutlist_in_frames)]
+
         self.ready_callback()
 
         if Gtk.ResponseType.OK == self.run():
@@ -201,40 +217,16 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         return self.cutlist
 
-    def create_Player(self):
-        # The player
-        self.player = Gst.Pipeline.new()
+    # def init_Player(self):
+    #     # Set properties
+    #     self.player.set_property('uri', "file://" + self.filename)
 
-        # Create bus and connect several handlers
-        # Create bus to get events from GStreamer player
-        bus = self.player.get_bus()
-        bus.add_signal_watch()
-
-        bus.connect('message::eos', self.on_eos)
-        bus.connect('message::error', self.on_error)
-
-        # This is needed to make the video output in our DrawingArea:
-        bus.enable_sync_message_emission()
-        bus.connect("sync-message::element", self.on_sync_message)
-        bus.connect("message", self.on_message)
-
-        # Create GStreamer elements
-        self.playbin = Gst.ElementFactory.make('playbin', None)
-        #self.videosink = Gst.ElementFactory.make('autovideosink', None)
-        #self.playbin.set_property("video-sink", self.videosink)
-
-        # Add playbin to the player
-        self.player.add(self.playbin)
-
-        # Set properties
-        fileUri = 'file://' + self.filename
-        self.playbin.set_property('uri', fileUri)
-
-        self.player.set_state(Gst.State.PLAYING)
-        self.player.set_state(Gst.State.PAUSED)
+    #     self.player.set_state(Gst.State.PLAYING)
+    #     self.player.set_state(Gst.State.PAUSED)
 
     def ready_callback(self):
-        self.builder.get_object('label_filename').set_markup("Aktuelle Datei: <b>%s</b>" % os.path.basename(self.filename))
+        self.builder.get_object('label_filename').\
+            set_markup("Aktuelle Datei: <b>%s</b>" % os.path.basename(self.filename))
 
         self.update_timeline()
         self.update_listview()
@@ -296,8 +288,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.player.set_state(Gst.State.PLAYING)
         self.player.set_state(Gst.State.PAUSED)
 
-    # get absolute frame, assuming that the given frame corresponds to the current display modus
     def get_absolute_position(self, rel_pos):
+        # get absolute frame, assuming that the given frame corresponds to the current display modus
         if not self.hide_cuts:
             return rel_pos
         elif rel_pos == -1:
@@ -312,8 +304,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         return self.frames-1
 
-    # convert the absolute position into the corresponding relative position
     def get_relative_position(self, abs_pos):
+        # convert the absolute position into the corresponding relative position
         if abs_pos == -1:
             return -1
 
@@ -328,9 +320,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         return durations-1
 
-    # inverts the cuts (between timeline and cut-out list) assuming the list is flawless
-    # and should be faster than the full version below
     def invert_simple(self, cuts):
+        # inverts the cuts (between timeline and cut-out list) assuming the list is flawless
+        # and should be faster than the full version below
         inverted = []
         if cuts[0][0] > 0:
             inverted.append( (0, cuts[0][0]) )
@@ -345,8 +337,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         return inverted
 
-    # inverts the cuts (between timeline and cut-out list) removing all kinds of overlaps etc.
     def invert_full(self, cuts):
+        # inverts the cuts (between timeline and cut-out list) removing all kinds of overlaps etc.
         inverted = []
 
         sorted_cuts = sorted(cuts, key=lambda c:c[0]) # sort cuts after start frame
@@ -490,7 +482,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def on_error(self, bus, msg):
         err, debug = msg.parse_error()
-        self.log.error("Error: %s" % err, debug)
+        self.log.error("Error: {0}, {1}".format(err, debug))
         self.player.set_state(Gst.State.NULL)
         self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
 
@@ -498,11 +490,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         if message.get_structure().get_name() == "prepare-window-handle":
             imagesink = message.src
             imagesink.set_property("force-aspect-ratio", True)
-            imagesink.set_window_handle(self.xid)
-
-        # if message.get_structure().get_name() == 'prepare-window-handle':
-        #     self.log.info('prepare-window-handle')
-        #     message.src.set_window_handle(self.xid)
 
     def on_message(self, bus, message):
         t = message.type
@@ -510,7 +497,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             if self.getVideoLength:
                 self.getVideoLength = not self.getVideoLength
                 self.log.info('Async done')
-                self.videolength = self.playbin.query_duration(Gst.Format.TIME)
+                self.videolength = self.player.query_duration(Gst.Format.TIME)
                 self.frames = self.videolength[1] * self.framerate_num / self.framerate_denom / Gst.SECOND
                 self.slider.set_range(0, self.get_frames())
                 self.timelines = [self.get_cuts_in_frames(self.initial_cutlist, self.initial_cutlist_in_frames)]

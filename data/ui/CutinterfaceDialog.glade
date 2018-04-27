@@ -574,6 +574,7 @@
               <object class="GtkBox" id="vbox5">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin_left">5</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkLabel" id="label_cutlist">
