@@ -21,7 +21,7 @@ from gi.repository import Gtk
 from os.path import basename, join, exists
 import base64
 import subprocess
-import os, re
+import os, re, shutil
 import logging
 
 from otrverwaltung import fileoperations
@@ -113,12 +113,17 @@ class DecodeOrCut(Cut):
             self.app.conclusions_manager.add_conclusions(*file_conclusions)
 
     def decode(self, file_conclusions):
-
+        otrtool = shutil.which("otrtool")
         # no decoder
-        if not "decode" in self.config.get('programs', 'decoder'):  # no decoder specified
+        # --> otrtool
+        if not "decode" or not "otrtool" in self.config.get('programs', 'decoder'): # no decoder specified
             # dialog box: no decoder
             self.gui.message_error_box("Es ist kein korrekter Dekoder angegeben!")
             return False
+        elif 'otrtool' in self.config.get('programs', 'decoder') and not otrtool:
+            self.gui.message_error_box("Der Decoder otrtool ist ausgewählt, wurde aber nicht im Pfad gefunden!")
+            return False
+        # <-- otrtool
 
         # retrieve email and password
         email = self.config.get('general', 'email')
@@ -145,14 +150,17 @@ class DecodeOrCut(Cut):
             # update progress
             self.gui.main_window.set_tasks_text("Datei %s/%s dekodieren" % (count + 1, len(file_conclusions)))
 
-            verify = True
-
-            command = [self.config.get_program('decoder'), "-i", file_conclusion.otrkey, "-e", email, "-p", password,
-                       "-o", self.config.get('general', 'folder_uncut_avis')]
-
-            if not self.config.get('general', 'verify_decoded'):
-                verify = False
-                command += ["-q"]
+            # --> otrtool
+            if self.config.get_program('decoder') == 'otrtool':
+                command = [otrtool, "-x", "-g", "-e", email, "-p", password, "-O", self.config.get('general', 'folder_uncut_avis') + "/" + basename(file_conclusion.otrkey[0:len(file_conclusion.otrkey)-7]), file_conclusion.otrkey]
+            else:
+                verify = True
+                command = [self.config.get_program('decoder'), "-i", file_conclusion.otrkey, "-e",
+                    email, "-p", password, "-o", self.config.get('general', 'folder_uncut_avis')]
+                if not self.config.get('general', 'verify_decoded'):
+                    verify = False
+                    command += ["-q"]
+            # <-- otrtool
 
             try:
                 process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -161,45 +169,72 @@ class DecodeOrCut(Cut):
                 file_conclusion.decode.message = "Dekoder wurde nicht gefunden."
                 continue
 
-            while True:
-                l = ""
-                while True:
-                    c = process.stdout.read(1).decode('utf-8')
-                    if c == "\r" or c == "\n":
+            # --> otrtool
+            if self.config.get_program('decoder') == 'otrtool':
+                error_message = ""
+                file_count = count + 1, len(file_conclusions)
+                # list of non error strings
+                nonerror = ["OK", "gui", "OTR-Tool, ", "Keyphrase from", "Keyphrase:",
+                            "Decrypting", "Trying to contact", "Server responded", "info:", "warning:"]
+                for line in iter(process.stderr.readline,''):
+                    line = line.decode("utf-8")
+                    if not line:
                         break
-                    l += c
+                    # Gathering errors
+                    if not any(x in line for x in nonerror):
+                        error_message += line.strip()
 
-                if not l:
-                    break
+                    if "Decrypting" in line:
+                        self.gui.main_window.set_tasks_text("Datei %s/%s dekodieren und prüfen" % file_count)
 
-                try:
-                    if verify:
-                        file_count = count + 1, len(file_conclusions)
-
-                        if "input" in l:
-                            self.gui.main_window.set_tasks_text("Eingabedatei %s/%s kontrollieren" % file_count)
-                        elif "output" in l:
-                            self.gui.main_window.set_tasks_text("Ausgabedatei %s/%s kontrollieren" % file_count)
-                        elif "Decoding" in l:
-                            self.gui.main_window.set_tasks_text("Datei %s/%s dekodieren" % file_count)
-
-                    if len(l) > 13 and l[12].isdigit():
-                        progress = int(l[10:13])
+                    if ("gui" in line) and not ("Finished" in line):
+                        progress = int(line[5:])
                         # update progress
                         self.gui.main_window.set_tasks_progress(progress)
 
                     while Gtk.events_pending():
-                        Gtk.main_iteration()
-                except ValueError:
-                    pass
+                            Gtk.main_iteration()
+            # <-- otrtool
+            else:
+                while True:
+                    l = ""
+                    while True:
+                        c = process.stdout.read(1).decode('utf-8')
+                        if c == "\r" or c == "\n":
+                            break
+                        l += c
 
-            # errors?
-            errors = process.stderr.readlines()
-            error_message = ""
-            for error in errors:
-                error = error.decode('ISO-8859-1')
-                if not 'libmediaclient' in error:
-                    error_message += error.strip()
+                    if not l:
+                        break
+
+                    try:
+                        if verify:
+                            file_count = count + 1, len(file_conclusions)
+
+                            if "input" in l:
+                                self.gui.main_window.set_tasks_text("Eingabedatei %s/%s kontrollieren" % file_count)
+                            elif "output" in l:
+                                self.gui.main_window.set_tasks_text("Ausgabedatei %s/%s kontrollieren" % file_count)
+                            elif "Decoding" in l:
+                                self.gui.main_window.set_tasks_text("Datei %s/%s dekodieren" % file_count)
+
+                        if len(l) > 13 and l[12].isdigit():
+                            progress = int(l[10:13])
+                            # update progress
+                            self.gui.main_window.set_tasks_progress(progress)
+
+                        while Gtk.events_pending():
+                            Gtk.main_iteration()
+                    except ValueError:
+                        pass
+
+                # errors?
+                errors = process.stderr.readlines()
+                error_message = ""
+                for error in errors:
+                    error = error.decode('ISO-8859-1')
+                    if not 'libmediaclient' in error:
+                        error_message += error.strip()
 
             if error_message == "":  # dekodieren erfolgreich
                 file_conclusion.decode.status = Status.OK

@@ -29,6 +29,7 @@
               <object class="GtkBox" id="vboxPathConfiguration">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin_left">5</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkGrid" id="grid2">
@@ -293,6 +294,7 @@
               <object class="GtkBox" id="vboxOTRConfiguration">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin_left">5</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkGrid" id="grid4">
@@ -339,7 +341,6 @@
                     <child>
                       <object class="GtkCheckButton" id="checkPasswordCheckOnProgramStart">
                         <property name="label" translatable="yes">Passworthinweis beim Start ausblenden</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
@@ -393,29 +394,29 @@
                       </packing>
                     </child>
                     <child>
-                        <object class="GtkBox" id="boxCheckOTRCredentials">
+                      <object class="GtkBox" id="boxCheckOTRCredentials">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkButton" id="checkOTRCredentials">
+                            <property name="label" translatable="yes">Prüfe Zugangsdaten</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <child>
-                                <object class="GtkButton" id="checkOTRCredentials">
-                                    <property name="label" translatable="yes">Prüfe Zugangsdaten</property>
-                                    <property name="use_action_appearance">False</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">True</property>
-                                    <signal name="clicked" handler="_on_button_check_otr_credentials_clicked" swapped="no"/>
-                                </object>
-                                <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                </packing>
-                            </child>
-                        </object>
-                        <packing>
-                            <property name="left_attach">1</property>
-                            <property name="top_attach">4</property>
-                        </packing>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <signal name="clicked" handler="_on_button_check_otr_credentials_clicked" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">4</property>
+                      </packing>
                     </child>
                     <child>
                       <object class="GtkLabel" id="OTRCredentialCheckResponse">
@@ -457,6 +458,7 @@
                             <items>
                               <item id="interotrdecoder" translatable="yes">intern-otrdecoder</item>
                               <item id="intereasydecoder" translatable="yes">intern-easydecoder</item>
+                              <item id="otrtool" translatable="yes">otrtool</item>
                             </items>
                           </object>
                           <packing>
@@ -468,8 +470,8 @@
                         <child>
                           <object class="GtkButton" id="button_set_file">
                             <property name="label" translatable="yes">...</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
+                            <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <signal name="clicked" handler="_on_button_set_file_clicked" swapped="no"/>
@@ -485,6 +487,30 @@
                         <property name="left_attach">1</property>
                         <property name="top_attach">0</property>
                       </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>
@@ -519,6 +545,7 @@
               <object class="GtkBox" id="vboxCutConfiguration">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin_left">5</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkGrid" id="grid5">
@@ -1196,6 +1223,7 @@
               <object class="GtkBox" id="vboxCutlistConfiguration">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin_left">5</property>
                 <property name="border_width">8</property>
                 <property name="orientation">vertical</property>
                 <child>
@@ -1229,7 +1257,6 @@
                     <child>
                       <object class="GtkRadioButton" id="radio_size">
                         <property name="label" translatable="yes">Größe der Datei (empfohlen)</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
@@ -1245,7 +1272,6 @@
                     <child>
                       <object class="GtkRadioButton" id="radio_filename">
                         <property name="label" translatable="yes">Dateiname</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
@@ -1261,7 +1287,6 @@
                     <child>
                       <object class="GtkCheckButton" id="check_delete_cutlists">
                         <property name="label" translatable="yes">Cutlisten nach dem Schneiden löschen</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
@@ -1367,12 +1392,10 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="check_mplayer_fullscreen">
-                    <property name="label" translatable="yes">MPlayer beim Prüfen der Cutlist maximieren</property>
-                    <property name="use_action_appearance">False</property>
+                    <property name="label" translatable="yes">MPlayer/mpv beim Prüfen der Cutlist maximieren</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
-                    <property name="xalign">0.5</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
@@ -1380,6 +1403,27 @@
                     <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton">
+                    <property name="label" translatable="yes">Mpv bevorzugen</property>
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
                 </child>
               </object>
               <packing>
@@ -1401,6 +1445,7 @@
               <object class="GtkBox" id="vboxRenameConfiguration">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin_left">5</property>
                 <property name="border_width">7</property>
                 <property name="orientation">vertical</property>
                 <child>
