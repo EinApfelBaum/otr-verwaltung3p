@@ -91,7 +91,7 @@ install_deps () {
             ## Only install packages if they are not alredy installed
             pacman -S --noconfirm --needed "$package" 2>&1 | grep -v " there is nothing to do" | grep -ve ".* skipping" | tee -a /tmp/otrv3p-install-arch.log
         done
-        if [ $? = 0 ]: then echo -e "Alle Abhängigkeiten sind (jetzt) installiert.\n"; fi
+        if [ $? = 0 ]; then echo -e "Alle Abhängigkeiten sind (jetzt) installiert.\n"; fi
         exit
     else
         echo -e "\n\n${RED}otrv3p:install_deps: Diese Skriptfunktion muss als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install-arch.log

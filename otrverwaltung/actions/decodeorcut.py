@@ -116,7 +116,7 @@ class DecodeOrCut(Cut):
         otrtool = shutil.which("otrtool")
         # no decoder
         # --> otrtool
-        if not "decode" or not "otrtool" in self.config.get('programs', 'decoder'): # no decoder specified
+        if not "decode" and not "otrtool" in self.config.get('programs', 'decoder'):  # no decoder specified
             # dialog box: no decoder
             self.gui.message_error_box("Es ist kein korrekter Dekoder angegeben!")
             return False
