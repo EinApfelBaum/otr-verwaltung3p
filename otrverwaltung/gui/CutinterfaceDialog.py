@@ -189,15 +189,14 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.hide_cuts = self.config.get('general', 'cutinterface_hide_cuts')
 
         # before we get info, we need to create the player
-        #self.init_Player()
-        # Set properties
-        self.player.set_property('uri', "file://" + self.filename)
-        self.player.set_state(Gst.State.PLAYING)
-        self.player.set_state(Gst.State.PAUSED)
+        # NOPE discoverer doesn't need player. Maybe a racing condition if player uri is
+        # set before strem properties are known.
 
         # get video info
-        self.discover = GstPbutils.Discoverer.new(Gst.SECOND)
-        self.d = self.discover.discover_uri("file://" + self.filename)
+        self.log.debug("Discoverer start")
+        # Discoverer timeout set to 5 * Gst.SECOND
+        self.discoverer = GstPbutils.Discoverer.new(5 * Gst.SECOND)
+        self.d = self.discoverer.discover_uri("file://" + self.filename)
         for vinfo in self.d.get_video_streams():
             self.framerate_num = vinfo.get_framerate_num()
             self.framerate_denom = vinfo.get_framerate_denom()
@@ -209,24 +208,22 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.timelines = [self.get_cuts_in_frames(self.initial_cutlist, 
                                                   self.initial_cutlist_in_frames)]
 
+        # Set player uri only after discoverer is done
+        self.player.set_property('uri', "file://" + self.filename)
+
         self.ready_callback()
 
         if Gtk.ResponseType.OK == self.run():
+            self.log.debug("self.run() = OK")
             self.set_cuts(self.cutlist, self.timelines[-1])
         else:
+            self.log.debug("self.run() not OK")
             self.set_cuts(self.cutlist, [])
 
         if self.timer != None:
             GObject.source_remove(self.timer)
 
         return self.cutlist
-
-    # def init_Player(self):
-    #     # Set properties
-    #     self.player.set_property('uri', "file://" + self.filename)
-
-    #     self.player.set_state(Gst.State.PLAYING)
-    #     self.player.set_state(Gst.State.PAUSED)
 
     def ready_callback(self):
         self.builder.get_object('label_filename').\
