@@ -94,7 +94,7 @@ install_deps () {
             ## dkpg -s <packagename> returns 0 if package is installed else 1
             dpkg -s "$package" > /dev/null 2>&1 || apt-get -qq -y install "$package" 2>&1 | grep -ve "Preparing to unpack.*" | tee -a /tmp/otrv3p-install-arch.log
         done
-        if [ $? = 0 ]: then echo -e "Alle Abhängigkeiten sind (jetzt) installiert.\n"; fi
+        if [ $? = 0 ]; then echo -e "Alle Abhängigkeiten sind (jetzt) installiert.\n"; fi
         exit
     else
         echo -e "\n\n${RED}otrv3p:install_deps: Diese Skriptfunktion muss als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install-arch.log
