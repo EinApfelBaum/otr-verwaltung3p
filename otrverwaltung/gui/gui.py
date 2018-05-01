@@ -51,7 +51,7 @@ class Gui:
         self.dialog_plugins = PluginsDialog.NewPluginsDialog(self)
 
         for window in [self.main_window]:
-            window.set_icon(GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('icon3.png')))
+            window.set_icon(GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('icon.png')))
 
     def run(self):
         Gtk.main()
