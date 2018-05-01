@@ -77,7 +77,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.slider.set_digits(0)
         # TODO: make slider.set_draw_value an option
         #       needs formatting: offset to the right at start position, to the left at end
-        #self.slider.set_draw_value(True)
+        self.slider.set_draw_value(False)
 
         self.movie_window = self.builder.get_object('movie_window')
         self.movie_window.connect('realize', self.on_realize)
@@ -606,13 +606,22 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.update_frames_and_time()
 
     def on_button_play_clicked(self, button, data=None):
-        self.is_playing = True
-        self.player.set_state(Gst.State.PLAYING)
+        if self.is_playing:
+            #self.on_button_pause_clicked(None)
+            self.is_playing = False
+            self.player.set_state(Gst.State.PAUSED)
+            button.set_label("  Play  ")  # The surrounding spaces avoid the button changing size
+            self.update_frames_and_time()
+        else:
+            #self.on_button_play_clicked(None)
+            self.is_playing = True
+            self.player.set_state(Gst.State.PLAYING)
+            button.set_label("Pause")
 
-    def on_button_pause_clicked(self, button, data=None):
-        self.is_playing = False
-        self.player.set_state(Gst.State.PAUSED)
-        self.update_frames_and_time()
+    # def on_button_pause_clicked(self, button, data=None):
+        # self.is_playing = False
+        # self.player.set_state(Gst.State.PAUSED)
+        # self.update_frames_and_time()
 
     def jump_relative(self, frames, flags = Gst.SeekFlags.ACCURATE):
         try:
