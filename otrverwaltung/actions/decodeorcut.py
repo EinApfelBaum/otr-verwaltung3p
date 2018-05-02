@@ -458,9 +458,9 @@ class DecodeOrCut(Cut):
                         local_cutlist = p + "/" + match.group()
 
             ci = CutinterfaceDialog.NewCutinterfaceDialog()
-            cutlist = ci._run(filename, local_cutlist, self.app)
             ci.set_transient_for(self.gui.main_window)
             ci.set_modal(True)
+            cutlist = ci._run(filename, local_cutlist, self.app)
             ci.destroy()
 
             if cutlist.cuts_frames is None or len(cutlist.cuts_frames) == 0:
