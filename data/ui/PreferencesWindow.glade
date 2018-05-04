@@ -435,7 +435,7 @@
                       <object class="GtkLabel" id="label1">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">&lt;i&gt;Achtung: Das Passworts wird nun verschlüsselt gespeichert(AES-256).
+                        <property name="label" translatable="yes">&lt;i&gt;Achtung: Das Passwort wird nun verschlüsselt gespeichert(AES-256).
                     Dennoch kann dieses Feld auch leer gelassen werden.&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
                         <property name="wrap">True</property>
