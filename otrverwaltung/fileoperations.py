@@ -35,9 +35,11 @@ def __error(message_text):
         None,
         Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
         Gtk.MessageType.ERROR,
-        Gtk.ResponseType.OK,
+        Gtk.ButtonsType.OK,
         message_text)
 
+    global gui
+    dialog.set_transient_for(gui.main_window)
     dialog.run()
     dialog.destroy()
 
@@ -49,9 +51,11 @@ def handle_error(error_cb, message):
         print(message)
 
 
-def remove_file(filename, error_cb=__error):
+def remove_file(__gui, filename, error_cb=__error):
     """ Entfernt die angegebene Datei. """
 
+    global gui
+    gui = __gui
     print("[Fileoperations] Remove ", filename)
     try:
         if os.path.isfile(filename):
@@ -62,9 +66,11 @@ def remove_file(filename, error_cb=__error):
         handle_error(error_cb, "Fehler beim Löschen von %s (%s)." % (filename, e))
 
 
-def rename_file(old_filename, new_filename, error_cb=__error):
+def rename_file(__gui, old_filename, new_filename, error_cb=__error):
     """ Benennt eine Datei um. Wenn die Datei bereits existiert, wird der neue Name um eine Zahl erweitert. """
 
+    global gui
+    gui = __gui
     if old_filename == new_filename:
         handle_error(error_cb, "Umbenennen: Die beiden Dateinamen stimmen überein! (%s)" % old_filename)
         return
@@ -82,10 +88,11 @@ def rename_file(old_filename, new_filename, error_cb=__error):
     return new_filename
 
 
-def move_file(filename, target, error_cb=__error):
+def move_file(__gui, filename, target, error_cb=__error):
     """ Verschiebt eine Datei in den angegebenen Ordner."""
     """ return: new filename """
-
+    global gui
+    gui = __gui
     new_filename = join(target, basename(filename))
 
     if exists(new_filename):

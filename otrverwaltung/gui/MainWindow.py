@@ -611,7 +611,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         about_dialog.set_transient_for(self.gui.main_window)
         about_dialog.set_destroy_with_parent(True)
         about_dialog.set_name(self.app.app_name)
-        about_dialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('icon3.png')))
+        about_dialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('icon.png')))
 
         version = open(path.getdatapath("VERSION"), 'r').read().strip()
         about_dialog.set_version(version)
