@@ -39,9 +39,9 @@ class Delete(BaseAction):
             self.update_list = True
             for f in filenames:
                 if f.endswith("otrkey"):
-                    fileoperations.move_file(self.__gui, f, self.__app.config.get('general', 'folder_trash_otrkeys'))
+                    fileoperations.move_file(f, self.__app.config.get('general', 'folder_trash_otrkeys'))
                 else:
-                    fileoperations.move_file(self.__gui, f, self.__app.config.get('general', 'folder_trash_avis'))
+                    fileoperations.move_file(f, self.__app.config.get('general', 'folder_trash_avis'))
 
 
 class RealDelete(BaseAction):
@@ -58,7 +58,7 @@ class RealDelete(BaseAction):
 
         if self.__gui.question_box(message + "endgültig gelöscht werden?"):
             for f in filenames:
-                fileoperations.remove_file(self.__gui, f)
+                fileoperations.remove_file(f)
 
 
 class Restore(BaseAction):
@@ -71,13 +71,13 @@ class Restore(BaseAction):
     def do(self, filenames, cut_action=None):
         for f in filenames:
             if f.endswith("otrkey"):
-                fileoperations.move_file(self.__gui, f, self.__app.config.get('general', 'folder_new_otrkeys'))
+                fileoperations.move_file(f, self.__app.config.get('general', 'folder_new_otrkeys'))
             elif f.endswith("ac3"):
-                fileoperations.move_file(self.__gui, f, self.__app.config.get('general', 'folder_uncut_avis'))
+                fileoperations.move_file(f, self.__app.config.get('general', 'folder_uncut_avis'))
             elif self.__app.uncut_video.match(f):
-                fileoperations.move_file(self.__gui, f, self.__app.config.get('general', 'folder_uncut_avis'))
+                fileoperations.move_file(f, self.__app.config.get('general', 'folder_uncut_avis'))
             else:
-                fileoperations.move_file(self.__gui, f, self.__app.config.get('general', 'folder_cut_avis'))
+                fileoperations.move_file(f, self.__app.config.get('general', 'folder_cut_avis'))
 
 
 class Rename(BaseAction):
@@ -99,7 +99,7 @@ class Rename(BaseAction):
                 if f.endswith(extension) and not new_name.endswith(extension):
                     new_name += extension
 
-                fileoperations.rename_file(self.__gui, f, new_name)
+                fileoperations.rename_file(f, new_name)
         else:
             self.update_list = False
 

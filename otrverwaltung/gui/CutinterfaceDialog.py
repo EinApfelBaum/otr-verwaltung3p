@@ -644,21 +644,20 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.jump_to(nanoseconds=nano_seconds, flags=flags)
 
     def jump_key(self, direction):
-        # gcurse
-
+        frame = self.current_frame_position
         if direction == "backward":
             jumpto = self.get_keyframe_in_front_of_frame(self.keyframes, frame)
         else:
             jumpto = self.get_keyframe_after_frame(self.keyframes, frame)
 
-        self.log.info("jumpto = {0}".format(jumpto))
-        self.jump_to(frames=jumpto, flags=flags)
+        self.log.debug("jumpto = {0}".format(jumpto))
+        self.jump_to(frames=jumpto)
 
     def on_button_keyfast_back_clicked(self, widget, data=None):
-        #self.jump_key('backward')
-        # gcurse
-        self.jump_to(frames=self.current_frame_position - 1,
-                    flags=Gst.SeekFlags.KEY_UNIT | Gst.SeekFlags.SNAP_BEFORE)
+        self.jump_key('backward')
+        # Doesn't work on ubuntu, oh my
+        #self.jump_to(frames=self.current_frame_position - 1,
+                    #flags=Gst.SeekFlags.KEY_UNIT | Gst.SeekFlags.SNAP_BEFORE)
 
     def on_button_ffast_back_clicked(self, widget, data=None):
         self.jump_relative(-100)
@@ -679,10 +678,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.jump_relative(100)
 
     def on_button_keyfast_forward_clicked(self, widget, data=None):
-        #self.jump_key('forward')
-        # gcurse
-        self.jump_to(frames=self.current_frame_position + 1,
-                    flags=Gst.SeekFlags.KEY_UNIT | Gst.SeekFlags.SNAP_AFTER)
+        self.jump_key('forward')
+        # Doesn't work on ubuntu, oh my
+        #self.jump_to(frames=self.current_frame_position + 1,
+                    #flags=Gst.SeekFlags.KEY_UNIT | Gst.SeekFlags.SNAP_AFTER)
 
     def on_button_a_clicked(self, *args):
         # TODO: warn if Marker A = B or distance between them to low
