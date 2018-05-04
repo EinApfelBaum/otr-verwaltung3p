@@ -885,6 +885,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def on_load_button_clicked(self, widget):
         load_dialog = LoadCutDialog.NewLoadCutDialog(self.app, self.app.gui)
+        load_dialog.set_transient_for(self)
+        load_dialog.set_modal(True)
         load_dialog.setup(self.filename)
         response = load_dialog.run()
         load_dialog.destroy()

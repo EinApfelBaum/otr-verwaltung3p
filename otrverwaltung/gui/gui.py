@@ -34,21 +34,38 @@ class Gui:
     def __init__(self, app):
         self.app = app
 
+        def set_transient_modal(self, instance):
+            instance.set_transient_for(self.main_window)
+            instance.set_modal(True)
+
         # TODO: einheitliches benennungsschema für widgets: MainWindow oder main_window        
         self.main_window = MainWindow.NewMainWindow(app, self)
         self.main_window.post_init()
+
         self.preferences_window = PreferencesWindow.NewPreferencesWindow(app, self)
         self.preferences_window.bind_config(app.config)
-        self.preferences_window.set_transient_for(self.main_window)
-        self.preferences_window.set_modal(True)
+        set_transient_modal(self, self.preferences_window)
 
         self.dialog_archive = ArchiveDialog.NewArchiveDialog()
+        set_transient_modal(self, self.dialog_archive)
+
         self.dialog_conclusion = ConclusionDialog.NewConclusionDialog(app, self)
+        set_transient_modal(self, self.dialog_conclusion)
+
         self.dialog_cut = CutDialog.NewCutDialog(app, self)
+        set_transient_modal(self, self.dialog_cut)
+
         self.dialog_email_password = EmailPasswordDialog.NewEmailPasswordDialog()
+        set_transient_modal(self, self.dialog_email_password)
+
         self.dialog_rename = RenameDialog.NewRenameDialog()
+        set_transient_modal(self, self.dialog_rename)
+
         self.dialog_planning = PlanningDialog.NewPlanningDialog(self)
+        set_transient_modal(self, self.dialog_planning)
+
         self.dialog_plugins = PluginsDialog.NewPluginsDialog(self)
+        set_transient_modal(self, self.dialog_plugins)
 
         for window in [self.main_window]:
             window.set_icon(GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('icon.png')))
