@@ -191,7 +191,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                 self.builder.get_object('OTRCredentialCheckResponse').set_markup("<span color='red'>✘</span>")
         else:
             self.builder.get_object('checkOTRCredentials').modify_fg(Gtk.StateType.NORMAL, Gdk.color_parse('#d87107'))
-            self.builder.get_object('OTRCredentialCheckResponse').set_markup("<span color='red'>🖧</span>")
+            self.builder.get_object('OTRCredentialCheckResponse').set_markup("<span color='red'>🖧 Keine Internetverbindung!</span>")
 
     def _on_button_set_file_clicked(self, entry, data=None):
         chooser = Gtk.FileChooserDialog(title="Datei auswählen",
