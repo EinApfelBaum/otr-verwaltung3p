@@ -21,7 +21,7 @@ import urllib.request as urllib2
 import gi
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Pango
+from gi.repository import Gtk, Gdk, Pango
 
 from otrverwaltung.constants import Cut_action
 from otrverwaltung.gui.config_bindings import EntryBinding, FileChooserFolderBinding, \
@@ -184,11 +184,14 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             request_answer = r.text;
         if internet_on():
             if 'yes' in request_answer:
+                self.builder.get_object('checkOTRCredentials').modify_fg(Gtk.StateType.NORMAL, Gdk.color_parse('#008000'))
                 self.builder.get_object('OTRCredentialCheckResponse').set_markup("<span color='green'>✓</span>")
             else:
+                self.builder.get_object('checkOTRCredentials').modify_fg(Gtk.StateType.NORMAL, Gdk.color_parse('#c70002'))
                 self.builder.get_object('OTRCredentialCheckResponse').set_markup("<span color='red'>✘</span>")
         else:
-            self.builder.get_object('OTRCredentialCheckResponse').set_markup("<span color='red'>🖧</span>")
+            self.builder.get_object('checkOTRCredentials').modify_fg(Gtk.StateType.NORMAL, Gdk.color_parse('#d87107'))
+            self.builder.get_object('OTRCredentialCheckResponse').set_markup("<span color='red'>🖧 Keine Internetverbindung!</span>")
 
     def _on_button_set_file_clicked(self, entry, data=None):
         chooser = Gtk.FileChooserDialog(title="Datei auswählen",
