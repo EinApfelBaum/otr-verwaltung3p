@@ -18,8 +18,7 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-import os
-import re
+import os, re, logging
 
 from otrverwaltung.constants import Cut_action
 import otrverwaltung.cutlists as cutlists_management
@@ -36,9 +35,11 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
 
     def __init__(self):
         Gtk.Dialog.__init__(self)
+        self.log = logging.getLogger(self.__class__.__name__)
         self.download_error = False
 
     def do_parser_finished(self, builder):
+        self.log.debug("Function start")
         self.builder = builder
         self.builder.connect_signals(self)
 

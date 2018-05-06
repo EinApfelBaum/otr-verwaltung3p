@@ -19,8 +19,6 @@
     </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="vbox_top">
-        <property name="width_request">1087</property>
-        <property name="height_request">775</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
@@ -60,14 +58,43 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">0</property>
+            <property name="position">2</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="label_filename">
+          <object class="GtkBox" id="hbox_label_filename_undo">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Aktuelle Datei: </property>
+            <child>
+              <object class="GtkLabel" id="label_filename">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_left">10</property>
+                <property name="label" translatable="yes">Aktuelle Datei: </property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_undo">
+                <property name="label" translatable="yes">Undo</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="margin_right">10</property>
+                <signal name="clicked" handler="on_button_undo_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="pack_type">end</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -98,7 +125,7 @@
                     <signal name="unrealize" handler="on_unrealize" swapped="no"/>
                   </object>
                   <packing>
-                    <property name="expand">True</property>
+                    <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">0</property>
                   </packing>
@@ -107,6 +134,7 @@
                   <object class="GtkButtonBox" id="bbox01">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="margin_top">5</property>
                     <property name="layout_style">center</property>
                     <child>
                       <object class="GtkButton" id="button_play">
@@ -139,6 +167,7 @@
                         <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="position">2</property>
+                        <property name="non_homogeneous">True</property>
                       </packing>
                     </child>
                     <child>
@@ -173,34 +202,19 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkToggleButton" id="checkbutton_hide_cuts">
-                        <property name="label" translatable="yes">Cuts ausbl.</property>
+                      <object class="GtkCheckButton" id="checkbutton_hide_cuts">
+                        <property name="label" translatable="yes">Ausblenden</property>
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="margin_left">20</property>
+                        <property name="receives_default">False</property>
+                        <property name="margin_left">10</property>
+                        <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="on_checkbutton_hide_cuts_toggled" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">5</property>
-                        <property name="non_homogeneous">True</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="button_undo">
-                        <property name="label" translatable="yes">Undo</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
                         <property name="fill">True</property>
                         <property name="position">6</property>
-                        <property name="non_homogeneous">True</property>
                       </packing>
                     </child>
                   </object>
@@ -383,6 +397,7 @@
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Frame: 0/0, Zeit 0s/0s</property>
                         <property name="track_visited_links">False</property>
+                        <property name="xalign">0</property>
                         <attributes>
                           <attribute name="gravity" value="west"/>
                         </attributes>
@@ -494,6 +509,7 @@
                   <object class="GtkScrolledWindow" id="scrolledwindow">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="margin_bottom">5</property>
                     <property name="shadow_type">in</property>
                     <property name="propagate_natural_width">True</property>
                     <child>

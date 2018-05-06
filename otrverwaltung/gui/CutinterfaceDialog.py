@@ -22,6 +22,7 @@ Gst.init(None)
 
 import os
 import time
+import inspect
 #from otrverwaltung.elements import KeySeekElement
 #from otrverwaltung.elements import DecoderWrapper
 from otrverwaltung import path
@@ -68,26 +69,23 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         bus.enable_sync_message_emission()
         bus.connect("sync-message::element", self.on_sync_message)
         bus.connect("message", self.on_message)
-        
 
     def do_parser_finished(self, builder):
+        self.log.info("funtion start")
         self.builder = builder
         self.builder.connect_signals(self)
         self.slider = self.builder.get_object('slider')
         self.slider.set_digits(0)
-        # TODO: make slider.set_draw_value an option
-        #       needs formatting: offset to the right at start position, to the left at end
         self.slider.set_draw_value(False)
 
         self.movie_window = self.builder.get_object('movie_window')
         self.movie_window.connect('realize', self.on_realize)
         self.movie_window.connect('unrealize', self.on_unrealize)
 
-
         self.hide_cuts = self.builder.get_object('checkbutton_hide_cuts').get_active()
 
         cutslistmodel = self.builder.get_object('cutslist')
-        #cutslistmodel.set_default_sort_func(None)
+        #cutslistmodel.set_default_sort_func(None) # Throws error 1st argument cannot be None
         cutslistselection = self.builder.get_object('cutsview').get_selection()
         cutslistselection.connect('changed', self.on_cuts_selection_changed)
 
@@ -98,9 +96,11 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         #player state
         self.is_playing = False
+        self.log.info("funtion end")
 
     def on_realize(self, widget, data=None):
         self.log.debug ("function start")
+
         window = widget.get_window()
         # xid must be retrieved first in GUI-thread and before creating player to
         # prevent racing conditions. You need to get the XID after window.show_all().
@@ -110,6 +110,11 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         # pass it to playbin, which implements XOverlay and will forward
         # it to the video sink
         self.player.set_window_handle(self.xid)
+
+        # movie_window_width = self.movie_window.get_allocated_width()
+        # movie_window_height = int(movie_window_width / (16/9))
+        # self.log.error("movie_window size: {0} x {1}".format(movie_window_width, movie_window_height))
+        # self.movie_window.set_size_request(movie_window_width, movie_window_height)
 
         self.ready_callback()
 
@@ -163,6 +168,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         return cutlist
 
     def set_cuts(self, cutlist, cuts):
+        self.log.info("Function start")
+        self.log.info("var cutlist: {}".format(cutlist))
+        self.log.info("var cuts: {}".format(cuts))
         cutlist.fps = float(self.framerate_num) / float(self.framerate_denom)
         cutlist.cuts_frames = cuts
         cutlist.cuts_seconds = []
@@ -173,24 +181,25 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             cutlist.cuts_seconds.append((s,d))
 
     def _run(self, filename, cutlist, app):
-        self.log.info("function start")
+        self.log.info("Function start")
         self.app = app
         self.config = app.config
         self.filename = filename
         self.cutlist = self.load_cutlist(cutlist)
 
         self.keyframes, error = self.get_keyframes_from_file(self.filename)
-        if self.keyframes == None:
+        if self.keyframes is None:
             self.log.warning("Error: Keyframes konnten nicht ausgelesen werden.")
 
-        self.movie_window.set_size_request(self.config.get('general', 'cutinterface_resolution_x'),\
-                                           self.config.get('general', 'cutinterface_resolution_y'))
+        # self.movie_window.set_size_request(self.config.get('general', 'cutinterface_resolution_x'),
+        #                                      self.config.get('general', 'cutinterface_resolution_y'))
+        self.movie_window.set_size_request(800, 450)
 
         self.hide_cuts = self.config.get('general', 'cutinterface_hide_cuts')
 
         # before we get info, we need to create the player
         # NOPE discoverer doesn't need player. Maybe a racing condition if player uri is
-        # set before strem properties are known.
+        # set before stream properties are known.
 
         # get video info
         self.log.debug("Discoverer start")
@@ -220,7 +229,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.log.debug("self.run() not OK")
             self.set_cuts(self.cutlist, [])
 
-        if self.timer != None:
+        if self.timer is not None:
+            self.log.debug("Function Removing timer tick")
             GObject.source_remove(self.timer)
 
         return self.cutlist
@@ -228,14 +238,27 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
     def ready_callback(self):
         self.log.debug("Function start")
         self.builder.get_object('label_filename').\
-            set_markup("Aktuelle Datei: <b>%s</b>" % os.path.basename(self.filename))
+            set_markup("Aktuelle Datei: <b>%s</b>" %
+            os.path.basename(self.filename))
 
         self.update_timeline()
         self.update_listview()
 
         self.timer = GObject.timeout_add(200, self.tick)
+        self.timer2 = GObject.timeout_add(500, self.update_listview)
+
+    def on_cutsview_columns_changed(self, widget):
+        # self.log.debug("Function start")
+        # if self.timer2 is not None:
+        #     self.log.debug("Function Removing timer")
+        #     GObject.source_remove(self.timer2)
+        pass
 
     def tick(self):
+        self.log.debug("Function start")
+        # curframe = inspect.currentframe()
+        # calframe = inspect.getouterframes(curframe, 2)
+        # self.log.debug("Caller: {}".format(calframe[1][3]))
         self.update_frames_and_time()
         self.update_slider()
         self.builder.get_object('checkbutton_hide_cuts').set_active(self.hide_cuts)
@@ -253,7 +276,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH | flags, int(nanoseconds))
 
     def set_marker(self, a=None, b=None):
-        """ Set markers a and/or b to a specific frame posititon and update the buttons """
+        """ Set markers a and/or b to a specific frame position and update the buttons """
 
         if a is not None:
             self.marker_a = a
@@ -407,6 +430,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         return frames
 
     def update_frames_and_time(self):
+        # self.log.debug("Function start")
+        # curframe = inspect.currentframe()
+        # calframe = inspect.getouterframes(curframe, 2)
+        # self.log.debug("Function start. Caller: {}".format(calframe[1][3]))
         #Versuch, Informationen zu erhalten und zu updaten
         try:
             current_position = self.player.query_position(Gst.Format.TIME)[1]
@@ -417,7 +444,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         self.current_frame_position = current_position * self.framerate_num / self.framerate_denom / Gst.SECOND
 
-        if self.keyframes != None and self.current_frame_position in self.keyframes :
+        if self.keyframes is not None and self.current_frame_position in self.keyframes :
             self.builder.get_object('label_time').set_text('Frame(K): %i/%i, Zeit %s/%s' % (self.current_frame_position, self.get_frames() - 1, self.convert_sec(current_position), self.convert_sec(duration)))
         else:
             self.builder.get_object('label_time').set_text('Frame: %i/%i, Zeit %s/%s' % (self.current_frame_position, self.get_frames() - 1, self.convert_sec(current_position), self.convert_sec(duration)))
@@ -698,6 +725,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.slider.queue_draw()
 
     def on_button_remove_clicked(self, widget):
+        self.log.info("Function start")
         self.log.info("marker a = ".format(self.marker_a))
         self.log.info("marker b = ".format(self.marker_b))
         if self.is_remove_modus():
@@ -738,6 +766,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.jump_to(frames=self.marker_b)
 
     def on_checkbutton_hide_cuts_toggled(self, widget):
+        self.log.debug("Function start")
         # TODO: Find a better way to update the listview after run() if local cutlist is present
         self.update_listview()
         self.is_playing = False
@@ -767,6 +796,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.jump_to(frames=pos)
 
     def on_cuts_selection_changed(self, treeselection):
+        self.log.info("Function start")
         cutslist, cutsiter = treeselection.get_selected()
         button_delete_cut = self.builder.get_object('button_delete_cut')
         button_deselect = self.builder.get_object('button_deselect')
@@ -792,6 +822,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             button_deselect.set_sensitive(False)
 
     def on_button_delete_cut_clicked(self, widget):
+        self.log.info("Function start")
         global marker_a, marker_b, pos, playing
         if self.hide_cuts:
             playing = self.is_playing
@@ -824,22 +855,25 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.update_listview()
 
     def on_button_deselect_clicked(self, widget):
+        self.log.info("Function start")
         self.builder.get_object('cutsview').get_selection().unselect_all()
         self.slider.clear_marks()
         self.marker_a = -1
         self.marker_b = -1
 
     def on_button_cut_clicked(self, widget, data=None):
+        self.log.info("Function start")
         self.buttonOk = True
         self.set_cuts(self.cutlist, self.timelines[-1])
-        if self.timer != None:
+        if self.timer is not None:
             GObject.source_remove(self.timer)
         self.close()
 
     def on_button_cancel_clicked(self, widget, data=None):
+        self.log.info("Function start")
         self.buttonClose = True
         self.set_cuts(self.cutlist, [])
-        if self.timer != None:
+        if self.timer is not None:
             GObject.source_remove(self.timer)
         self.callback(self.cutlist)
         self.close()
@@ -862,7 +896,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                     marker_a = border + int(round(self.marker_a * one_frame_in_pixels))
                     marker_b = border + int(round(self.marker_b * one_frame_in_pixels))
 
-                    cr.set_source_rgb(1.0,0.0,0.0)  # red
+                    cr.set_source_rgb(1.0, 0.0, 0.0)  # red
                     cr.rectangle(marker_a, 0, marker_b - marker_a, 5)
                     cr.fill()
 
@@ -874,9 +908,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                         
                         # draw keyframe cuts that don't need reencoding with a different color
                         if ((start + duration) in self.keyframes) or (start + duration == self.frames):
-                            cr.set_source_rgb(0.0,0.6,0.0)  # green
+                            cr.set_source_rgb(0.0, 0.6, 0.0)  # green
                         else:
-                            cr.set_source_rgb(1.0,0.6,0.0)  # orange
+                            cr.set_source_rgb(1.0, 0.6, 0.0)  # orange
 
                         cr.rectangle(pixel_start, slider.get_allocation().height - 5, pixel_duration, 5)
                         cr.fill()
@@ -887,6 +921,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 pass
 
     def on_load_button_clicked(self, widget):
+        self.log.info("Function start")
         load_dialog = LoadCutDialog.NewLoadCutDialog(self.app, self.app.gui)
         load_dialog.set_transient_for(self)
         load_dialog.set_modal(True)
