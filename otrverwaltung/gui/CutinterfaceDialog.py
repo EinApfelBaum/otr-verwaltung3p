@@ -100,8 +100,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.is_playing = False
 
     def on_realize(self, widget, data=None):
-        self.log.warn("function start")
-
+        self.log.debug ("function start")
         window = widget.get_window()
         # xid must be retrieved first in GUI-thread and before creating player to
         # prevent racing conditions. You need to get the XID after window.show_all().
@@ -135,6 +134,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         return res
 
     def load_cutlist(self, filename):
+        self.log.debug("Function start")
         cutlist = cutlists.Cutlist()
         cutlist.intended_app = 'VirtualDub.exe'
         if filename != None and os.path.exists(filename):
@@ -226,6 +226,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         return self.cutlist
 
     def ready_callback(self):
+        self.log.debug("Function start")
         self.builder.get_object('label_filename').\
             set_markup("Aktuelle Datei: <b>%s</b>" % os.path.basename(self.filename))
 
@@ -285,7 +286,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.slider.queue_draw()
 
     def update_timeline(self):
-
+        self.log.debug("Function start")
         self.player.set_state(Gst.State.PLAYING)
         self.player.set_state(Gst.State.PAUSED)
 
@@ -439,6 +440,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
            pass
 
     def update_listview(self):
+        self.log.debug("Function start")
         global path
         listview = self.builder.get_object('cutsview')
         listselection = listview.get_selection()
@@ -727,6 +729,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.jump_to(frames=self.marker_b)
 
     def on_checkbutton_hide_cuts_toggled(self, widget):
+        # TODO: Find a better way to update the listview after run() if local cutlist is present
+        self.update_listview()
         self.is_playing = False
         self.player.set_state(Gst.State.PAUSED)
         self.update_frames_and_time()
