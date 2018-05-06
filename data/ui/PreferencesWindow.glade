@@ -355,7 +355,6 @@
                     <child>
                       <object class="GtkCheckButton" id="checkCorrect">
                         <property name="label" translatable="yes">Dateien auf Korrektheit prüfen</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
@@ -400,11 +399,25 @@
                         <child>
                           <object class="GtkButton" id="checkOTRCredentials">
                             <property name="label" translatable="yes">Prüfe Zugangsdaten</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <signal name="clicked" handler="_on_button_check_otr_credentials_clicked" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="OTRCredentialCheckResponse">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="margin_left">15</property>
+                            <property name="use_markup">True</property>
+                            <property name="wrap">True</property>
+                            <property name="xalign">0</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -419,23 +432,10 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="OTRCredentialCheckResponse">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_markup">True</property>
-                        <property name="wrap">True</property>
-                        <property name="xalign">0</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">2</property>
-                        <property name="top_attach">4</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkLabel" id="label1">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">&lt;i&gt;Achtung: Das Passworts wird nun verschlüsselt gespeichert(AES-256).
+                        <property name="label" translatable="yes">&lt;i&gt;Achtung: Das Passwort wird nun verschlüsselt gespeichert(AES-256).
                     Dennoch kann dieses Feld auch leer gelassen werden.&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
                         <property name="wrap">True</property>
@@ -487,6 +487,9 @@
                         <property name="left_attach">1</property>
                         <property name="top_attach">0</property>
                       </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>
