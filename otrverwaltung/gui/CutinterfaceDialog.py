@@ -48,6 +48,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.xid = 0
         self.buttonClose = False
         self.buttonOk = False
+        self.timeoutcontrol = True
 
         self.state = Gst.State.NULL
         self.player = Gst.ElementFactory.make("playbin", "playbin")
@@ -188,10 +189,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         self.hide_cuts = self.config.get('general', 'cutinterface_hide_cuts')
 
-        # before we get info, we need to create the player
-        # NOPE discoverer doesn't need player. Maybe a racing condition if player uri is
-        # set before strem properties are known.
-
         # get video info
         self.log.debug("Discoverer start")
         # Discoverer timeout set to 5 * Gst.SECOND
@@ -212,16 +209,16 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.player.set_property('uri', "file://" + self.filename)
 
         self.ready_callback()
+        self.timer2 = GLib.timeout_add(600, self.update_listview)
 
         if Gtk.ResponseType.OK == self.run():
-            self.log.debug("self.run() = OK")
             self.set_cuts(self.cutlist, self.timelines[-1])
         else:
-            self.log.debug("self.run() not OK")
             self.set_cuts(self.cutlist, [])
 
-        if self.timer != None:
-            GObject.source_remove(self.timer)
+        # Set return value of self.tick to false, so self.timer
+        # is stopped if it still exists
+        self.timeoutcontrol = False
 
         return self.cutlist
 
@@ -239,7 +236,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.update_frames_and_time()
         self.update_slider()
         self.builder.get_object('checkbutton_hide_cuts').set_active(self.hide_cuts)
-        return True
+        return self.timeoutcontrol
 
     def jump_to(self, frames=None, seconds=None, nanoseconds=0, flags=Gst.SeekFlags.ACCURATE):
         if frames:
@@ -729,8 +726,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.jump_to(frames=self.marker_b)
 
     def on_checkbutton_hide_cuts_toggled(self, widget):
-        # TODO: Find a better way to update the listview after run() if local cutlist is present
-        self.update_listview()
+        self.log.debug("Function start")
         self.is_playing = False
         self.player.set_state(Gst.State.PAUSED)
         self.update_frames_and_time()
@@ -823,15 +819,13 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
     def on_button_cut_clicked(self, widget, data=None):
         self.buttonOk = True
         self.set_cuts(self.cutlist, self.timelines[-1])
-        if self.timer != None:
-            GObject.source_remove(self.timer)
+        self.timeoutcontrol = False  # Stops self.timer
         self.close()
 
     def on_button_cancel_clicked(self, widget, data=None):
         self.buttonClose = True
         self.set_cuts(self.cutlist, [])
-        if self.timer != None:
-            GObject.source_remove(self.timer)
+        self.timeoutcontrol = False  # Stops self.timer
         self.callback(self.cutlist)
         self.close()
 
