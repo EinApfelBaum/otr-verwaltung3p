@@ -9,8 +9,7 @@ gi.require_version('Gst', '1.0')
 gi.require_version('GstPbutils', '1.0')
 gi.require_version('GdkX11', '3.0')
 gi.require_version('GstVideo', '1.0')
-gi.require_version('GLib', '2.0')
-from gi.repository import Gtk, Gdk, GLib, Gst, GstPbutils
+from gi.repository import Gtk, Gdk, GObject, Gst, GstPbutils
 
 #import pathlib
 import logging
@@ -248,14 +247,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.update_timeline()
         self.update_listview()
 
-        self.timer = GLib.timeout_add(200, self.tick)
-        self.timer2 = GLib.timeout_add(1000, self.update_listview)
-
-    def timeout_add(self, interval, callback):
-        source = GLib.timeout_source_new(interval)
-        source.set_callback(callback)
-        src_id = GLib.Source.attach(source)
-        return source
+        self.timer = GObject.timeout_add(200, self.tick)
 
     def tick(self):
         # self.log.debug("Function start")
