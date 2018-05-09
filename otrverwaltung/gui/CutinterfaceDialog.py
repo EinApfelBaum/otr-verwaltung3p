@@ -209,7 +209,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.player.set_property('uri', "file://" + self.filename)
 
         self.ready_callback()
-        self.timer2 = GLib.timeout_add(600, self.update_listview)
+        self.timer2 = GObject.timeout_add(600, self.update_listview)
 
         if Gtk.ResponseType.OK == self.run():
             self.set_cuts(self.cutlist, self.timelines[-1])
