@@ -634,10 +634,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                     self.on_load_button_clicked(None)
                     return True
                 elif keyname == 'SPACE':
-                    if self.is_playing:
-                        self.on_button_pause_clicked(None)
-                    else:
-                        self.on_button_play_clicked(None)
+                    self.on_button_play_pause_clicked(self.builder.get_object('button_play'))
                     return True
             else:
                 self.log.debug("keyname: {}".format(keyname))
@@ -675,7 +672,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.log.debug("update_frames_and_time() by slider change")
             self.update_frames_and_time()
 
-    def on_button_play_clicked(self, button, data=None):
+    def on_button_play_pause_clicked(self, button, data=None):
         if self.is_playing:
             self.is_playing = False
             self.player.set_state(Gst.State.PAUSED)
