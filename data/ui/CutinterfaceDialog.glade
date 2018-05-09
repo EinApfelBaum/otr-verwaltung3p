@@ -207,6 +207,7 @@
                       <object class="GtkCheckButton" id="checkbutton_hide_cuts">
                         <property name="label" translatable="yes">Ausblenden</property>
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="margin_left">10</property>
