@@ -24,6 +24,7 @@ import time
 import hashlib
 import optparse
 import logging
+import shutil
 import dbus, dbus.service, dbus.glib
 from base64 import b64encode
 
@@ -156,6 +157,7 @@ class App:
                 'cutinterface_resolution_y': 450,
                 'cutinterface_hide_cuts': False,
                 'mplayer_fullscreen': True,
+                'prefer_mpv': False,
                 'merge_ac3s': True,
                 'merge_ac3s_by': 'mkvmerge',
                 'move_otrkey_to_trash_after_decode': True,
@@ -230,7 +232,7 @@ class App:
             }
         }
 
-        self.app_name = 'OTR-Verwaltung++'
+        self.app_name = 'OTR-Verwaltung3p'
 
         if local:
             self.config = Config(os.path.join(launch_dir, "..", "conf"), configuration)
@@ -242,7 +244,7 @@ class App:
 
         self.__search_text = ""
         self.locked = False
-
+       
         # regex
         self.uncut_video = re.compile(
             '.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])*_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|mp4|HQ\.mkv|HD\.mkv|HQ\.mp4|HD\.mp4)$')
@@ -696,33 +698,61 @@ class App:
         f_sub = join(video_filename_dirname, ".tmp.sub")
         f_mpv_sub = join(video_filename_dirname, ".tmp_mpv.sub")
 
-        cmd_exists = lambda x: any(
-            os.access(os.path.join(pathx, x), os.X_OK) for pathx in os.environ["PATH"].split(os.pathsep))
+        # cmd_exists = lambda x: any(
+            # os.access(os.path.join(pathx, x), os.X_OK) for pathx in os.environ["PATH"].split(os.pathsep))
 
-        if cmd_exists('mplayer'):
-            if self.config.get('general', 'mplayer_fullscreen'):
-                p = subprocess.Popen(
-                    [self.config.get_program('mplayer'), "-fs", "-zoom", "-geometry", "50%:50%", "-osdlevel", "3",
-                     "-edl", f_edl, "-sub", f_sub, video_filename])
+        def check_prog(prog):
+            cmdfound = False
+            plays = False
+            
+            if shutil.which(prog):
+                cmdfound = True
+                if not subprocess.call(prog, stdin=subprocess.PIPE,
+                                             stdout=subprocess.DEVNULL,
+                                             stderr=subprocess.STDOUT):
+                    plays = True
+                else:
+                    self.log.error("{} failed to start.".format(prog))
             else:
-                p = subprocess.Popen(
-                    [self.config.get_program('mplayer'), "-geometry", "50%:50%", "-osdlevel", "3", "-edl", f_edl,
-                     "-sub", f_sub, video_filename])
-        elif cmd_exists('mpv'):
-            if self.config.get('general', 'mplayer_fullscreen'):
-                p = subprocess.Popen(
-                    [self.config.get_program('mpv'), "-fs", "-geometry", "50%:50%", "-sub-file",
-                     f_mpv_sub, f_mpv_edl])
-            else:
-                 p = subprocess.Popen(
-                    [self.config.get_program('mpv'), "-geometry", "50%:50%", "-sub-file", f_mpv_sub,
-                     f_mpv_edl])
+                exist = False
+                self.log.error("{} is not installed.".format(prog))
+            return cmdfound and plays
+
+        def play_with(prog):
+            if prog == 'mplayer':
+                if self.config.get('general', 'mplayer_fullscreen'):
+                    self.p = subprocess.Popen(
+                        [self.config.get_program('mplayer'), "-fs", "-zoom", "-geometry", "50%:50%", "-osdlevel", "3",
+                         "-edl", f_edl, "-sub", f_sub, video_filename])
+                else:
+                    self.p = subprocess.Popen(
+                        [self.config.get_program('mplayer'), "-geometry", "50%:50%", "-osdlevel", "3", "-edl", f_edl,
+                         "-sub", f_sub, video_filename])
+            elif prog == 'mpv':
+                if self.config.get('general', 'mplayer_fullscreen'):
+                    self.p = subprocess.Popen(
+                        [self.config.get_program('mpv'), "-fs", "-geometry", "50%:50%", "-sub-file",
+                         f_mpv_sub, f_mpv_edl])
+                else:
+                     self.p = subprocess.Popen(
+                        [self.config.get_program('mpv'), "-geometry", "50%:50%", "-sub-file", f_mpv_sub,
+                             f_mpv_edl])
+
+        if self.config.get('general', 'prefer_mpv'):
+            self.playprog = ['mpv', 'mplayer']
         else:
-            self.__gui.message_error_box("Weder mpv noch mplayer sind zum Anzeigen der Schnitte installiert.")
+            self.playprog = ['mplayer', 'mpv']
+ 
+        if check_prog(self.playprog[0]):
+            play_with(self.playprog[0])
+        elif check_prog(self.playprog[1]):
+            play_with(self.playprog[1])
+        else:
+            self.__gui.message_error_box("Zum Anzeigen der Schnitte sind weder mpv noch mplayer installiert bzw. funktionieren nicht.")
             return
 
         # wait
-        while p.poll() == None:
+        while self.p.poll() == None:
             time.sleep(1)
             while Gtk.events_pending():
                 Gtk.main_iteration()
