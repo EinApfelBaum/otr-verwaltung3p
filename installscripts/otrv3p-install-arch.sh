@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # otrv3p-install-arch.sh
-version="0.0.2"
+version="0.0.3"
 # 2018-04-27
 # https://raw.githubusercontent.com/einapfelbaum/otr-verwaltung3p/master/installscripts/otrv3p-install-arch.sh
 
@@ -50,7 +50,7 @@ check_root () {
 }
 
 create_desktop_file () {
-    echo "otrv3p:create_desktop_file: Erzeuge otrv3p-git.desktop in $HOME/.local/share/applications" | tee -a /tmp/otrv3p-install-arch.log
+    echo "otrv3p:create_desktop_file: Erzeuge otrv3p-git.desktop in $HOME/.local/share/applications" | tee -a /tmp/otrv3p-install.log
     echo "[Desktop Entry]
 Type=Application
 Name=OTR-Verwaltung3p-git
@@ -69,7 +69,7 @@ Icon=$HOME/otr-verwaltung3p/data/media/icon.png
 install_deps () {
     check_root
     if [ $root = 1 ]; then
-        echo "otrv3p:install_deps: Installiere Abhängigkeiten" | tee -a /tmp/otrv3p-install-arch.log
+        echo "otrv3p:install_deps: Installiere Abhängigkeiten" | tee -a /tmp/otrv3p-install.log
         for package in  python-gobject \
                         gst-python \
                         python-xdg \
@@ -89,12 +89,12 @@ install_deps () {
                         mpv \
                         git; do
             ## Only install packages if they are not alredy installed
-            pacman -S --noconfirm --needed "$package" 2>&1 | grep -v " there is nothing to do" | grep -ve ".* skipping" | tee -a /tmp/otrv3p-install-arch.log
+            pacman -S --noconfirm --needed "$package" 2>&1 | grep -v " there is nothing to do" | grep -ve ".* skipping" | tee -a /tmp/otrv3p-install.log
         done
         if [ $? = 0 ]; then echo -e "Alle Abhängigkeiten sind (jetzt) installiert.\n"; fi
         exit
     else
-        echo -e "\n\n${RED}otrv3p:install_deps: Diese Skriptfunktion muss als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install-arch.log
+        echo -e "\n\n${RED}otrv3p:install_deps: Diese Skriptfunktion muss als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install.log
         exit
     fi
 }
@@ -104,20 +104,20 @@ install_otrv3p_git () {
     if [ $root = 0 ]; then
         cd $HOME
         if [[ -d "otr-verwaltung3p" ]]; then
-            echo -e "otrv3p:install_otrv3p_git: Das Verzeichnis $HOME/otr-verwaltung3p existiert. Das Repo wird nicht geklont." | tee -a /tmp/otrv3p-install-arch.log
+            echo -e "otrv3p:install_otrv3p_git: Das Verzeichnis $HOME/otr-verwaltung3p existiert. Das Repo wird nicht geklont." | tee -a /tmp/otrv3p-install.log
             echo "no" > /tmp/otrv3pCloneYesNo
         else
-            git clone https://github.com/EinApfelBaum/otr-verwaltung3p.git 2>&1 | tee -a /tmp/otrv3p-install-arch.log
+            git clone https://github.com/EinApfelBaum/otr-verwaltung3p.git 2>&1 | tee -a /tmp/otrv3p-install.log
             echo "yes" > /tmp/otrv3pCloneYesNo
         fi
-        mkdir -p $HOME/.local/share/applications 2>&1 | tee -a /tmp/otrv3p-install-arch.log
-        mkdir -p $HOME/.local/share/otrverwaltung 2>&1 | tee -a /tmp/otrv3p-install-arch.log
+        mkdir -p $HOME/.local/share/applications 2>&1 | tee -a /tmp/otrv3p-install.log
+        mkdir -p $HOME/.local/share/otrverwaltung 2>&1 | tee -a /tmp/otrv3p-install.log
         create_desktop_file
-        echo "otrv3p:install_otrv3p_git: Updating desktop database" | tee -a /tmp/otrv3p-install-arch.log
-        update-desktop-database $HOME/.local/share/applications 2>&1 | tee -a /tmp/otrv3p-install-arch.log
+        echo "otrv3p:install_otrv3p_git: Updating desktop database" | tee -a /tmp/otrv3p-install.log
+        update-desktop-database $HOME/.local/share/applications 2>&1 | tee -a /tmp/otrv3p-install.log
         exit
     else
-        echo -e "\n\n${RED}otrv3p:install_otrv3p_git: Diese Skriptfunktion darf nicht als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install-arch.log
+        echo -e "\n\n${RED}otrv3p:install_otrv3p_git: Diese Skriptfunktion darf nicht als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install.log
         exit
     fi
 }
@@ -134,12 +134,12 @@ usage () {
 if [ -z "$1" ]; then
     check_root
     if [ $root = 1 ]; then
-        echo -e "\n\n${RED}Dieses Skript darf nicht als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install-arch.log
+        echo -e "\n\n${RED}Dieses Skript darf nicht als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install.log
         exit 1
     fi
 
     #export myhome=$HOME
-    echo -e "\n"$(date +"%Y-%m-%d_%H:%M:%S")" LOG BEGINS\n" >> /tmp/otrv3p-install-arch.log
+    echo -e "\n"$(date +"%Y-%m-%d_%H:%M:%S")" LOG BEGINS\n" >> /tmp/otrv3p-install.log
     usage
 elif [ "$1" = "deps" ]; then
     #myhome="$2"
@@ -148,25 +148,25 @@ elif [ "$1" = "prog" ]; then
     #myhome="$2"
     install_otrv3p_git
 else
-    echo -e "\n\n${RED}otrv3p: Das hätte niemals passieren dürfen! THE END${NOC}\n\n" 2>&1 | tee -a /tmp/otrv3p-install-arch.log
+    echo -e "\n\n${RED}otrv3p: Das hätte niemals passieren dürfen! THE END${NOC}\n\n" 2>&1 | tee -a /tmp/otrv3p-install.log
     exit 1
 fi
 
 # Recursive call
-echo "otrv3p: Start sudo $0 deps" | tee -a /tmp/otrv3p-install-arch.log
+echo "otrv3p: Start sudo $0 deps" | tee -a /tmp/otrv3p-install.log
 sudo "$0" deps #$HOME
 # Recursive call
-echo "otrv3p: Start $0 prog" | tee -a /tmp/otrv3p-install-arch.log
+echo "otrv3p: Start $0 prog" | tee -a /tmp/otrv3p-install.log
 "$0" prog #$HOME
 clone=$(cat /tmp/otrv3pCloneYesNo)
 rm /tmp/otrv3pCloneYesNo
 # check for wine and hint
-echo "otrv3p: checking for wine" | tee -a /tmp/otrv3p-install-arch.log
+echo "otrv3p: checking for wine" | tee -a /tmp/otrv3p-install.log
 which wine > /dev/null 2>&1
 if [ "$?" = 0 ]; then
-    echo -e "otrv3p: wine ist installiert." | tee -a /tmp/otrv3p-install-arch.log
+    echo -e "otrv3p: wine ist installiert." | tee -a /tmp/otrv3p-install.log
 else
-    echo -e "otrv3p: wine ist nicht installiert.\nFalls mp4 geschnitten werden sollen, muss wine installiert werden.\n" | tee -a /tmp/otrv3p-install-arch.log
+    echo -e "otrv3p: wine ist nicht installiert.\nFalls mp4 geschnitten werden sollen, muss wine installiert werden.\n" | tee -a /tmp/otrv3p-install.log
     echo -n "Soll wine installiert werden? (j/N)? "
     read answer
     if [ "$answer" != "${answer#[Jj]}" ]; then

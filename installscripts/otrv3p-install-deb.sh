@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # otrv3p-install-deb.sh
-version="0.0.4"
+version="0.0.5"
 # 2018-04-27
 # https://raw.githubusercontent.com/einapfelbaum/otr-verwaltung3p/master/installscripts/otrv3p-install-deb.sh
 
@@ -50,7 +50,7 @@ check_root () {
 }
 
 create_desktop_file () {
-    echo "otrv3p:create_desktop_file: Erzeuge otrv3p-git.desktop in $HOME/.local/share/applications" | tee -a /tmp/otrv3p-install-arch.log
+    echo "otrv3p:create_desktop_file: Erzeuge otrv3p-git.desktop in $HOME/.local/share/applications" | tee -a /tmp/otrv3p-install.log
     echo "[Desktop Entry]
 Type=Application
 Name=OTR-Verwaltung3p-git
@@ -69,7 +69,7 @@ Icon=$HOME/otr-verwaltung3p/data/media/icon.png
 install_deps () {
     check_root
     if [ $root = 1 ]; then
-        echo "otrv3p:install_deps: Installiere Abhängigkeiten" | tee -a /tmp/otrv3p-install-arch.log
+        echo "otrv3p:install_deps: Installiere Abhängigkeiten" | tee -a /tmp/otrv3p-install.log
         for package in  python3-xdg \
                         python3-gst-1.0 \
                         gir1.2-gstreamer-1.0 \
@@ -92,12 +92,12 @@ install_deps () {
                         git; do
             ## Only install packages if they are not alredy installed
             ## dkpg -s <packagename> returns 0 if package is installed else 1
-            dpkg -s "$package" > /dev/null 2>&1 || apt-get -qq -y install "$package" 2>&1 | grep -ve "Preparing to unpack.*" | tee -a /tmp/otrv3p-install-arch.log
+            dpkg -s "$package" > /dev/null 2>&1 || apt-get -qq -y install "$package" 2>&1 | grep -ve "Preparing to unpack.*" | tee -a /tmp/otrv3p-install.log
         done
         if [ $? = 0 ]; then echo -e "Alle Abhängigkeiten sind (jetzt) installiert.\n"; fi
         exit
     else
-        echo -e "\n\n${RED}otrv3p:install_deps: Diese Skriptfunktion muss als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install-arch.log
+        echo -e "\n\n${RED}otrv3p:install_deps: Diese Skriptfunktion muss als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install.log
         exit
     fi
 }
@@ -107,28 +107,28 @@ install_otrv3p_git () {
     if [ $root = 0 ]; then
         cd $HOME
         if [[ -d "otr-verwaltung3p" ]]; then
-            echo -e "otrv3p:install_otrv3p_git: Das Verzeichnis $HOME/otr-verwaltung3p existiert. Das Repo wird nicht geklont." | tee -a /tmp/otrv3p-install-arch.log
+            echo -e "otrv3p:install_otrv3p_git: Das Verzeichnis $HOME/otr-verwaltung3p existiert. Das Repo wird nicht geklont." | tee -a /tmp/otrv3p-install.log
             echo "no" > /tmp/otrv3pCloneYesNo
         else
-            git clone https://github.com/EinApfelBaum/otr-verwaltung3p.git 2>&1 | tee -a /tmp/otrv3p-install-arch.log
+            git clone https://github.com/EinApfelBaum/otr-verwaltung3p.git 2>&1 | tee -a /tmp/otrv3p-install.log
             echo "yes" > /tmp/otrv3pCloneYesNo
         fi
-        mkdir -p $HOME/.local/share/applications 2>&1 | tee -a /tmp/otrv3p-install-arch.log
-        mkdir -p $HOME/.local/share/otrverwaltung 2>&1 | tee -a $HOME/otrv3p-install-deb.log
+        mkdir -p $HOME/.local/share/applications 2>&1 | tee -a /tmp/otrv3p-install.log
+        mkdir -p $HOME/.local/share/otrverwaltung 2>&1 | tee -a /tmp/otrv3p-install.log
         create_desktop_file
-        echo "otrv3p:install_otrv3p_git: Updating desktop database" | tee -a /tmp/otrv3p-install-arch.log
-        update-desktop-database $HOME/.local/share/applications 2>&1 | tee -a /tmp/otrv3p-install-arch.log
+        echo "otrv3p:install_otrv3p_git: Updating desktop database" | tee -a /tmp/otrv3p-install.log
+        update-desktop-database $HOME/.local/share/applications 2>&1 | tee -a /tmp/otrv3p-install.log
         ## Check if gitpython is installed. If not install it
         python3 -c "import git" > /dev/null 2>&1
         if [ "$?" = 1 ]; then
-            echo "otrv3p:install_otrv3p_git: Installiere gitpython." | tee -a /tmp/otrv3p-install-arch.log
-            pip3 install gitpython --user 2>&1 | tee -a /tmp/otrv3p-install-arch.log
+            echo "otrv3p:install_otrv3p_git: Installiere gitpython." | tee -a /tmp/otrv3p-install.log
+            pip3 install gitpython --user 2>&1 | tee -a /tmp/otrv3p-install.log
         else
-            echo "otrv3p:install_otrv3p_git: gitpython ist bereits installiert." | tee -a /tmp/otrv3p-install-arch.log
+            echo "otrv3p:install_otrv3p_git: gitpython ist bereits installiert." | tee -a /tmp/otrv3p-install.log
         fi
         exit
     else
-        echo -e "\n\n${RED}install_otrv3p_git: Diese Skriptfunktion darf nicht als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install-arch.log
+        echo -e "\n\n${RED}install_otrv3p_git: Diese Skriptfunktion darf nicht als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install.log
         exit
     fi
 }
@@ -146,12 +146,12 @@ usage () {
 if [ -z "$1" ]; then
     check_root
     if [ $root = 1 ]; then
-        echo -e "\n\n${RED}Dieses Skript darf nicht als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install-arch.log
+        echo -e "\n\n${RED}Dieses Skript darf nicht als root ausgeführt werden${NOC}\n\n" | tee -a /tmp/otrv3p-install.log
         exit 1
     fi
 
     #export myhome=$HOME
-    echo -e "\n"$(date +"%Y-%m-%d_%H:%M:%S")" LOG BEGINS\n" >> /tmp/otrv3p-install-arch.log
+    echo -e "\n"$(date +"%Y-%m-%d_%H:%M:%S")" LOG BEGINS\n" >> /tmp/otrv3p-install.log
     usage
 elif [ "$1" = "deps" ]; then
     #myhome="$2"
@@ -160,25 +160,25 @@ elif [ "$1" = "prog" ]; then
     #myhome="$2"
     install_otrv3p_git
 else
-    echo -e "\n\n${RED}otrv3p: Das hätte niemals passieren dürfen! THE END${NOC}\n\n" 2>&1 | tee -a /tmp/otrv3p-install-arch.log
+    echo -e "\n\n${RED}otrv3p: Das hätte niemals passieren dürfen! THE END${NOC}\n\n" 2>&1 | tee -a /tmp/otrv3p-install.log
     exit 1
 fi
 
 # Recursive call
-echo "otrv3p: Start sudo $0 deps $myhome" | tee -a /tmp/otrv3p-install-arch.log
+echo "otrv3p: Start sudo $0 deps $myhome" | tee -a /tmp/otrv3p-install.log
 sudo "$0" deps #$myhome
 # Recursive call
-echo "otrv3p: Start $0 prog $myhome" | tee -a /tmp/otrv3p-install-arch.log
+echo "otrv3p: Start $0 prog $myhome" | tee -a /tmp/otrv3p-install.log
 "$0" prog #$myhome
 clone=$(cat /tmp/otrv3pCloneYesNo)
 rm /tmp/otrv3pCloneYesNo
 # check for wine and hint
-echo "otrv3p: checking for wine" | tee -a /tmp/otrv3p-install-arch.log
+echo "otrv3p: checking for wine" | tee -a /tmp/otrv3p-install.log
 which wine > /dev/null 2>&1
 if [ "$?" = 0 ]; then
-    echo -e "otrv3p: wine ist installiert." | tee -a /tmp/otrv3p-install-arch.log
+    echo -e "otrv3p: wine ist installiert." | tee -a /tmp/otrv3p-install.log
 else
-    echo -e "otrv3p: wine ist nicht installiert.\nFalls mp4 geschnitten werden sollen, muss wine installiert werden." | tee -a /tmp/otrv3p-install-arch.log
+    echo -e "otrv3p: wine ist nicht installiert.\nFalls mp4 geschnitten werden sollen, muss wine installiert werden." | tee -a /tmp/otrv3p-install.log
     echo -n "Soll wine installiert werden? (j/N)? "
     read answer
     if [ "$answer" != "${answer#[Jj]}" ]; then
