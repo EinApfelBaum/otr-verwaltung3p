@@ -135,6 +135,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         CheckButtonBinding(self.builder.get_object('check_merge_ac3'), self.app.config, 'general', 'merge_ac3s')
         CheckButtonBinding(self.builder.get_object('check_mplayer_fullscreen'), self.app.config, 'general',
                            'mplayer_fullscreen')
+        CheckButtonBinding(self.builder.get_object('check_prefer_mpv'), self.app.config, 'general', 'prefer_mpv')
         CheckButtonBinding(self.builder.get_object('smkv_normalize'), self.app.config, 'smartmkvmerge',
                            'normalize_audio')
         CheckButtonBinding(self.builder.get_object('smkv_mp4'), self.app.config, 'smartmkvmerge', 'remux_to_mp4')
