@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # otrv3p-install-deb.sh
-version="0.0.5"
+version="0.0.6"
 # 2018-04-27
 # https://raw.githubusercontent.com/einapfelbaum/otr-verwaltung3p/master/installscripts/otrv3p-install-deb.sh
 
@@ -80,6 +80,7 @@ install_deps () {
                         python3-crypto \
                         python3-requests \
                         python3-pip \
+                        gstreamer1.0-x \
                         gstreamer1.0-tools \
                         gstreamer1.0-plugins-base \
                         gstreamer1.0-plugins-base-apps \
