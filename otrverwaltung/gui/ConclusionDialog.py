@@ -108,6 +108,14 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
 
         return string
 
+    def set_entry_suggested_on_close(self):
+        """ Called by _on_button_abort_clicked and _on_buttonConclusionClose_clicked
+            Set entry_suggested (the suggested movie name) to the value of combobox_rename"""
+
+        if self.builder.get_object('check_create_cutlist').get_active():
+            if self.builder.get_object('entry_suggested').get_text() == "":
+                self.builder.get_object('entry_suggested').set_text(self.file_conclusion.cut.rename)
+
     ###
     ### Controls
     ###
@@ -120,6 +128,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         self.forward_clicks += 1
 
     def _on_button_abort_clicked(self, widget, data=None):
+        self.set_entry_suggested_on_close()
         widgets_hidden = ['button_play_cut', 'box_rating', 'check_delete_uncut', 'box_rename', 'box_archive',
                           'button_play', 'box_create_cutlist']
         for widget in widgets_hidden:
@@ -133,6 +142,9 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
 
         if os.path.isfile(self.file_conclusion.cut_video):
             os.remove(self.file_conclusion.cut_video)
+
+    def _on_buttonConclusionClose_clicked(self, widget, data=None):
+        self.set_entry_suggested_on_close()
 
     def show_conclusion(self, new_iter):
         self.conclusion_iter = new_iter
@@ -189,33 +201,37 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
 
             self.builder.get_object('check_delete_uncut').props.visible = cut_ok
             if cut_ok:
-                self.builder.get_object('check_delete_uncut').set_active(self.file_conclusion.cut.delete_uncut)
+                self.builder.get_object('check_delete_uncut').set_active(
+                                                            self.file_conclusion.cut.delete_uncut)
 
             self.builder.get_object('box_rename').props.visible = cut_ok
 
             if cut_ok:
-                # if not self.file_conclusion.cut.rename == "":
-                    # rename_list = [self.file_conclusion.cut.rename]
-                # else:
                 rename_list = []
 
-                ## gcurse   reversed the order of rename entries and set_active last list entry later
-                ##          so if there is a filename in the cutlist it will be shown first in the combobox
+                # reversed the order of rename entries and set_active last list entry later
                 rename_list.append(os.path.basename(self.file_conclusion.cut_video))
-                #if not self.rename_by_schema(os.path.basename(self.file_conclusion.cut_video)) in rename_list:
-                rename_list.append(self.rename_by_schema(os.path.basename(self.file_conclusion.cut_video)))
+                rename_list.append(self.rename_by_schema(os.path.basename(
+                                                                self.file_conclusion.cut_video)))
 
                 if self.file_conclusion.cut.cutlist.filename:
                     rename_list.append(self.file_conclusion.cut.cutlist.filename)
                     rename_label = self.builder.get_object('label5')
                     ## gcurse   set background of label 'Umbenennen' to yellow to indicate there is
                     ##          a suggested filename in cutlist. Set font color to black
-                    rename_label.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(100, 100, 0, 0.8))
+                    rename_label.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(100, 100,
+                                                                                            0, 0.8))
                     rename_label.override_color(Gtk.StateType.NORMAL, Gdk.RGBA(0, 0, 0, 1.0))
 
+                if not self.file_conclusion.cut.rename == "" \
+                                        and not self.file_conclusion.cut.rename in rename_list:
+                    rename_list.append(self.file_conclusion.cut.rename)
+
                 self.builder.get_object('comboboxentry_rename').remove_all()
-                self.gui.set_model_from_list(self.builder.get_object('comboboxentry_rename'), rename_list)
-                self.builder.get_object('comboboxentry_rename').set_active(len(rename_list)-1) # set last entry of list active
+                self.gui.set_model_from_list(self.builder.get_object(
+                                                        'comboboxentry_rename'), rename_list)
+                # set last entry of list active
+                self.builder.get_object('comboboxentry_rename').set_active(len(rename_list)-1)
 
                 archive_to = self.file_conclusion.cut.archive_to
                 if not archive_to:
@@ -298,7 +314,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     def _on_combobox_archive_changed(self, widget, data=None):
         if self.file_conclusion != Action.DECODE:
             archive_to = self.combobox_archive.get_active_path()
-            self.log.info("cut.archive_to = {}".format(archive_to))
+            # self.log.info("cut.archive_to = {}".format(archive_to))
             self.file_conclusion.cut.archive_to = archive_to
 
     # box_create_cutlist
@@ -350,7 +366,6 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     def _on_entry_comment_changed(self, widget, data=None):
         self.log.info("cut.cutlist.usercomment = {}".format(widget.get_text()))
         self.file_conclusion.cut.cutlist.usercomment = widget.get_text()
-
 
 def NewConclusionDialog(app, gui):
     glade_filename = path.getdatapath('ui', 'ConclusionDialog.glade')

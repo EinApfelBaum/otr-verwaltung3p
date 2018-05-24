@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
-  <!-- interface-requires MainWindow 1.0 -->
-  <!-- interface-naming-policy project-wide -->
+  <requires lib="MainWindow" version="1.0"/>
   <object class="MainWindow" id="main_window">
     <property name="name">MainWindow</property>
     <property name="width_request">700</property>
@@ -14,6 +13,9 @@
     <signal name="delete-event" handler="_on_main_window_delete_event" swapped="no"/>
     <signal name="destroy" handler="_on_main_window_destroy" swapped="no"/>
     <signal name="window-state-event" handler="_on_main_window_window_state_event" swapped="no"/>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="vbox_main">
         <property name="visible">True</property>
@@ -435,8 +437,10 @@
               <object class="GtkImage" id="image_status">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xpad">2</property>
-                <property name="ypad">2</property>
+                <property name="margin_left">2</property>
+                <property name="margin_right">2</property>
+                <property name="margin_top">2</property>
+                <property name="margin_bottom">2</property>
                 <property name="stock">gtk-missing-image</property>
               </object>
               <packing>
@@ -449,7 +453,9 @@
               <object class="GtkLabel" id="label_statusbar">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="ypad">2</property>
+                <property name="margin_top">2</property>
+                <property name="margin_bottom">2</property>
+                <property name="wrap">True</property>
                 <property name="xalign">0</property>
               </object>
               <packing>

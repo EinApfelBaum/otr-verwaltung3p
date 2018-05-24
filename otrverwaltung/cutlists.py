@@ -144,21 +144,6 @@ class Cutlist:
         except IOError as error:
             return "Cutlist konnte nicht heruntergeladen werden (%s)." % error
 
-    def _check_string(self, string_to_check):
-        try:
-            res = string_to_check.decode('utf-8')
-        except Exception as e:
-            self.log.info("Exception: {}".format(e))
-            self.log.info("No utf-8 string, trying latin-1: {0}".format(string_to_check))
-            try:
-                res = string_to_check.decode('latin-1')
-            except Exception as e:
-                self.log.info("Exception: {}".format(e))
-                self.log.info("Returning undecoded string: {}".format(string_to_check))
-                res = string_to_check
-
-        return res
-
     def read_from_file(self):
         config_parser = configparser.ConfigParser()
 
@@ -166,15 +151,15 @@ class Cutlist:
             # configparser now reads local cutlist assuming utf-8 encoding
             config_parser.read(self.local_filename, encoding='utf-8')
 
-            self.filename = self._check_string(config_parser.get('Info', 'SuggestedMovieName'))
-            self.author = self._check_string(config_parser.get('Info', 'Author'))
+            self.filename = config_parser.get('Info', 'SuggestedMovieName')
+            self.author = config_parser.get('Info', 'Author')
             self.ratingbyauthor = int(config_parser.get('Info', 'RatingByAuthor'))
             self.rating = 0
             self.ratingcount = 0
-            self.usercomment = self._check_string(config_parser.get('Info', 'UserComment'))
+            self.usercomment = config_parser.get('Info', 'UserComment')
             self.countcuts = int(config_parser.get('General', 'NoOfCuts'))
-            self.actualcontent = self._check_string(config_parser.get('Info', 'ActualContent'))
-            self.filename_original = self._check_string(config_parser.get('General', 'ApplyToFile'))
+            self.actualcontent = config_parser.get('Info', 'ActualContent')
+            self.filename_original = config_parser.get('General', 'ApplyToFile')
         except Exception as e:
             self.log.error("Exception: {0}".format(e))
             self.log.error("Malformed cutlist: ".format(self.local_filename))
