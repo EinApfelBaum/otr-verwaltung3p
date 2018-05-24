@@ -130,7 +130,8 @@ class Config:
                             self.set(category, option, json_config[category][option])
                     elif category is 'general' and option is 'server':
                         if not json_config[category][option].endswith("/"):
-                            self.set(category, option, json_config[category][option] + "/")
+                            json_config[category][option] += "/"
+                        self.set(category, option, json_config[category][option])
                     else:
                         self.set(category, option, json_config[category][option])
                     if option in newConfFields:
