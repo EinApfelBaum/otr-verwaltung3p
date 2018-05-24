@@ -41,7 +41,6 @@
             <child>
               <object class="GtkButton" id="button_cancel">
                 <property name="label">gtk-cancel</property>
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -56,7 +55,6 @@
             <child>
               <object class="GtkButton" id="button_ok">
                 <property name="label">Schneiden</property>
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -100,7 +98,6 @@
                 <child>
                   <object class="GtkButton" id="button_undo">
                     <property name="label">gtk-undo</property>
-                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
@@ -141,7 +138,6 @@
                             <child>
                               <object class="GtkButton" id="button_play">
                                 <property name="label">gtk-media-play</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -157,7 +153,6 @@
                             <child>
                               <object class="GtkButton" id="button_pause">
                                 <property name="label">gtk-media-pause</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -185,7 +180,6 @@
                             <child>
                               <object class="GtkButton" id="button_a">
                                 <property name="label" translatable="yes">Marker A [</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -200,7 +194,6 @@
                             <child>
                               <object class="GtkButton" id="button_b">
                                 <property name="label" translatable="yes">] Marker B</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -215,7 +208,6 @@
                             <child>
                               <object class="GtkButton" id="button_remove">
                                 <property name="label" translatable="yes">Bereich entfernen</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -241,7 +233,6 @@
                             <child>
                               <object class="GtkButton" id="button_keyfast_back">
                                 <property name="label" translatable="yes">&lt;&lt; Key</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -256,7 +247,6 @@
                             <child>
                               <object class="GtkButton" id="button_ffast_back">
                                 <property name="label" translatable="yes">&lt;&lt; 100</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -271,7 +261,6 @@
                             <child>
                               <object class="GtkButton" id="button_fast_back">
                                 <property name="label" translatable="yes">&lt;&lt; 10</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -286,7 +275,6 @@
                             <child>
                               <object class="GtkButton" id="button_back">
                                 <property name="label" translatable="yes">&lt; Frame</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -301,7 +289,6 @@
                             <child>
                               <object class="GtkButton" id="button_forward">
                                 <property name="label" translatable="yes">Frame &gt;</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -316,7 +303,6 @@
                             <child>
                               <object class="GtkButton" id="button_fast_forward">
                                 <property name="label" translatable="yes">10 &gt;&gt;</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -331,7 +317,6 @@
                             <child>
                               <object class="GtkButton" id="button_ffast_forward">
                                 <property name="label" translatable="yes">100 &gt;&gt;</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -346,7 +331,6 @@
                             <child>
                               <object class="GtkButton" id="button_keyfast_forward">
                                 <property name="label" translatable="yes">Key &gt;&gt;</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -380,7 +364,6 @@
                         <child>
                           <object class="GtkButton" id="load_button">
                             <property name="label" translatable="yes">Lade Cutlist</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -470,7 +453,6 @@
                         <child>
                           <object class="GtkButton" id="button_jump_to_marker_a">
                             <property name="label" translatable="yes">0</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -509,7 +491,6 @@
                         <child>
                           <object class="GtkButton" id="button_jump_to_marker_b">
                             <property name="label" translatable="yes">-</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -557,7 +538,6 @@
             <child>
               <object class="GtkCheckButton" id="checkbutton_hide_cuts">
                 <property name="label" translatable="yes">Geschnittene Szenen ausblenden</property>
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
@@ -644,7 +624,6 @@
                     <child>
                       <object class="GtkButton" id="button_delete_cut">
                         <property name="label" translatable="yes">Lösche Cut</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -659,7 +638,6 @@
                     <child>
                       <object class="GtkButton" id="button_deselect">
                         <property name="label" translatable="yes">Auswahl aufheben</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>

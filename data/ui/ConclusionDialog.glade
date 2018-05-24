@@ -173,6 +173,7 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
+                <signal name="clicked" handler="_on_buttonConclusionClose_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -216,7 +217,7 @@
                   <object class="GtkImage" id="image_decode">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="yalign">0</property>
+                    <property name="valign">start</property>
                     <property name="pixbuf">../media/decode.png</property>
                   </object>
                   <packing>
@@ -228,7 +229,7 @@
                   <object class="GtkImage" id="image_cut">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="yalign">0</property>
+                    <property name="valign">start</property>
                     <property name="pixbuf">../media/cut.png</property>
                   </object>
                   <packing>
@@ -316,7 +317,6 @@
                 <child>
                   <object class="GtkButton" id="button_play_cut">
                     <property name="label" translatable="yes">Schnitte anspielen</property>
-                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
@@ -331,11 +331,10 @@
                 <child>
                   <object class="GtkCheckButton" id="check_delete_uncut">
                     <property name="label" translatable="yes">Ungeschnittene Datei in den Müll verschieben</property>
-                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
-                    <property name="xalign">0</property>
+                    <property name="halign">start</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                     <signal name="toggled" handler="_on_check_delete_uncut_toggled" swapped="no"/>
@@ -488,7 +487,6 @@
                 <child>
                   <object class="GtkButton" id="button_play">
                     <property name="label" translatable="yes">Abspielen</property>
-                    <property name="use_action_appearance">False</property>
                     <property name="width_request">111</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -534,11 +532,10 @@
                     <child>
                       <object class="GtkCheckButton" id="check_create_cutlist">
                         <property name="label" translatable="yes">Cutlist erstellen</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0.5</property>
+                        <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="_on_check_create_cutlist_toggled" swapped="no"/>
                       </object>
@@ -551,11 +548,10 @@
                     <child>
                       <object class="GtkCheckButton" id="check_upload_cutlist">
                         <property name="label" translatable="yes">Cutlist hochladen</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0.5</property>
+                        <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="_on_check_upload_cutlist_toggled" swapped="no"/>
                       </object>
@@ -729,11 +725,10 @@
                         <child>
                           <object class="GtkCheckButton" id="check_wrong_content">
                             <property name="label" translatable="yes">Falscher Inhalt, EPG-Fehler</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
-                            <property name="xalign">0.5</property>
+                            <property name="halign">start</property>
                             <property name="draw_indicator">True</property>
                             <signal name="toggled" handler="_on_check_wrong_content_toggled" swapped="no"/>
                           </object>
@@ -786,11 +781,10 @@
                         <child>
                           <object class="GtkCheckButton" id="check_missing_beginning">
                             <property name="label" translatable="yes">Fehlender Anfang</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
-                            <property name="xalign">0.5</property>
+                            <property name="halign">start</property>
                             <property name="draw_indicator">True</property>
                             <signal name="toggled" handler="_on_check_missing_beginning_toggled" swapped="no"/>
                           </object>
@@ -803,11 +797,10 @@
                         <child>
                           <object class="GtkCheckButton" id="check_missing_ending">
                             <property name="label" translatable="yes">Fehlendes Ende</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
-                            <property name="xalign">0.5</property>
+                            <property name="halign">start</property>
                             <property name="draw_indicator">True</property>
                             <signal name="toggled" handler="_on_check_missing_ending_toggled" swapped="no"/>
                           </object>
@@ -825,11 +818,10 @@
                             <child>
                               <object class="GtkCheckButton" id="check_other_error">
                                 <property name="label" translatable="yes">Anderer Fehler:</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
-                                <property name="xalign">0.5</property>
+                                <property name="halign">start</property>
                                 <property name="draw_indicator">True</property>
                                 <signal name="toggled" handler="_on_check_other_error_toggled" swapped="no"/>
                               </object>

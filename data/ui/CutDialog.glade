@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
   <requires lib="CutDialog" version="1.0"/>
@@ -11,6 +11,9 @@
     <property name="window_position">center-on-parent</property>
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">dialog</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox9">
         <property name="visible">True</property>
@@ -128,7 +131,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
-                <property name="xalign">0.5</property>
+                <property name="halign">start</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
                 <signal name="toggled" handler="_on_radio_best_cutlist_toggled" swapped="no"/>
@@ -149,7 +152,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
-                    <property name="xalign">0</property>
+                    <property name="halign">start</property>
                     <property name="draw_indicator">True</property>
                     <property name="group">radio_best_cutlist</property>
                   </object>
@@ -162,7 +165,8 @@
                   <object class="GtkLabel" id="label_status">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xpad">11</property>
+                    <property name="margin_left">11</property>
+                    <property name="margin_right">11</property>
                     <property name="label" translatable="yes">&lt;b&gt;Status&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
                     <property name="xalign">0</property>
@@ -205,7 +209,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
-                    <property name="xalign">0</property>
+                    <property name="halign">start</property>
                     <property name="draw_indicator">True</property>
                     <property name="group">radio_best_cutlist</property>
                   </object>
@@ -264,7 +268,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0.5</property>
+                        <property name="halign">center</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">radio_best_cutlist</property>
                         <signal name="toggled" handler="_on_radio_manually_toggled" swapped="no"/>
@@ -299,7 +303,8 @@
                   <object class="GtkLabel" id="label_warning">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xpad">23</property>
+                    <property name="margin_left">23</property>
+                    <property name="margin_right">23</property>
                     <property name="label" translatable="yes">&lt;span size="small"&gt;Wichtig!&lt;/span&gt;</property>
                     <property name="use_markup">True</property>
                     <property name="wrap">True</property>
