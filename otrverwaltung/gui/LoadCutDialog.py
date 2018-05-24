@@ -95,18 +95,15 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
 
         # start looking for downloadable cutlists
         self.treeview_download_cutlists.get_model().clear()
-        self.builder.get_object('label_status').set_markup("<b>Cutlisten werden heruntergeladen...</b>")
+        self.builder.get_object('label_status').set_markup(
+                                                "<b>Cutlisten werden heruntergeladen...</b>")
         self.download_error = False
 
-        GeneratorTask(cutlists_management.download_cutlists, None, self._completed).start(video_file,
-                                                                                          self.app.config.get('general',
-                                                                                                              'server'),
-                                                                                          self.app.config.get('general',
-                                                                                                              'choose_cutlists_by'),
-                                                                                          self.app.config.get('general',
-                                                                                                              'cutlist_mp4_as_hq'),
-                                                                                          self._error_cb,
-                                                                                          self._cutlist_found_cb)
+        GeneratorTask(cutlists_management.download_cutlists, None, self._completed).\
+                                start(video_file, self.app.config.get('general', 'server'),
+                                      self.app.config.get('general', 'choose_cutlists_by'),
+                                      self.app.config.get('general', 'cutlist_mp4_as_hq'),
+                                      self._error_cb, self._cutlist_found_cb)
 
     def _error_cb(self, error):
         print("Error: %s" % error)

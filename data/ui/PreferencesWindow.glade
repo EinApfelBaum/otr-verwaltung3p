@@ -344,7 +344,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0</property>
+                        <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
@@ -358,7 +358,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0</property>
+                        <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
@@ -542,7 +542,6 @@
                           <object class="GtkLabel" id="labelHeader">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="xpad">1</property>
                             <property name="label" translatable="yes">&lt;i&gt;Achtung: Die vorgeschlagenen Werte sind übliche Standardwerte. Sie wurden nicht auf diesem System ermittelt. Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                             <property name="use_markup">True</property>
                             <property name="wrap">True</property>
@@ -679,7 +678,6 @@
                                 <child>
                                   <object class="GtkButton" id="button_set_file_avi">
                                     <property name="label" translatable="yes">...</property>
-                                    <property name="use_action_appearance">False</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
@@ -720,7 +718,6 @@
                                 <child>
                                   <object class="GtkButton" id="button_set_file_HDHQ">
                                     <property name="label" translatable="yes">...</property>
-                                    <property name="use_action_appearance">False</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
@@ -760,7 +757,6 @@
                                 <child>
                                   <object class="GtkButton" id="button_set_file_mp4">
                                     <property name="label" translatable="yes">...</property>
-                                    <property name="use_action_appearance">False</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
@@ -826,7 +822,6 @@
                                 <child>
                                   <object class="GtkButton" id="button_set_file_ac3">
                                     <property name="label" translatable="yes">...</property>
-                                    <property name="use_action_appearance">False</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
@@ -867,7 +862,6 @@
                                 <child>
                                   <object class="GtkButton" id="button_set_file_avi1">
                                     <property name="label" translatable="yes">...</property>
-                                    <property name="use_action_appearance">False</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
@@ -908,7 +902,6 @@
                                 <child>
                                   <object class="GtkButton" id="button_set_file_hq">
                                     <property name="label" translatable="yes">...</property>
-                                    <property name="use_action_appearance">False</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
@@ -949,7 +942,6 @@
                                 <child>
                                   <object class="GtkButton" id="button_set_file_mp1">
                                     <property name="label" translatable="yes">...</property>
-                                    <property name="use_action_appearance">False</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
@@ -983,11 +975,10 @@
                         <child>
                           <object class="GtkCheckButton" id="check_merge_ac3">
                             <property name="label" translatable="yes">ac3-Dateien schneiden und mit Video-Datei muxen (Avidemux/Virtualdub)</property>
-                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
-                            <property name="xalign">0</property>
+                            <property name="halign">start</property>
                             <property name="active">True</property>
                             <property name="draw_indicator">True</property>
                           </object>
@@ -1136,11 +1127,10 @@
                             <child>
                               <object class="GtkCheckButton" id="smkv_normalize">
                                 <property name="label" translatable="yes">Sound normalisieren</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
-                                <property name="xalign">0</property>
+                                <property name="halign">start</property>
                                 <property name="draw_indicator">True</property>
                               </object>
                               <packing>
@@ -1152,11 +1142,10 @@
                             <child>
                               <object class="GtkCheckButton" id="smkv_mp4">
                                 <property name="label" translatable="yes">am Ende automatisch MP4 erzeugen</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
-                                <property name="xalign">0</property>
+                                <property name="halign">start</property>
                                 <property name="draw_indicator">True</property>
                               </object>
                               <packing>
@@ -1216,7 +1205,7 @@
                       <object class="GtkLabel" id="label10">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Cutlist-Server:</property>
+                        <property name="label" translatable="yes">Cutlist-Server/persönliche URL:</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -1242,7 +1231,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0</property>
+                        <property name="halign">start</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                       </object>
@@ -1257,7 +1246,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0</property>
+                        <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">radio_size</property>
                       </object>
@@ -1272,7 +1261,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0</property>
+                        <property name="halign">start</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                       </object>
@@ -1328,9 +1317,6 @@
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <placeholder/>
-                        </child>
-                        <child>
                           <object class="GtkEntry" id="entry_server">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1339,20 +1325,6 @@
                             <property name="expand">False</property>
                             <property name="fill">True</property>
                             <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="label15">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">&lt;span font-size='small'&gt;Achtung: Am Ende den Slash ('/') nicht vergessen!&lt;/span&gt;</property>
-                            <property name="use_markup">True</property>
-                            <property name="xalign">0</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">3</property>
                           </packing>
                         </child>
                       </object>
@@ -1378,6 +1350,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
+                    <property name="halign">start</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
@@ -1392,6 +1365,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
+                    <property name="halign">start</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
@@ -1438,11 +1412,10 @@
                     <child>
                       <object class="GtkCheckButton" id="check_rename_cut">
                         <property name="label" translatable="yes">Nach dem Schneiden geschnittene avi-Datei umbenennen</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0.5</property>
+                        <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
@@ -1538,7 +1511,8 @@
                   <object class="GtkLabel" id="label36">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="ypad">16</property>
+                    <property name="margin_top">16</property>
+                    <property name="margin_bottom">16</property>
                     <property name="label" translatable="yes">&lt;b&gt;Die Ausdrücke in geschweiften Klammern werden mit den Information aus der Datei ersetzt:&lt;/b&gt;
 {titel}         	z.B. 		James Bond 007
 {titel_}				James_Bond_007
@@ -1599,7 +1573,6 @@
             <child>
               <object class="GtkButton" id="buttonClose">
                 <property name="label">gtk-close</property>
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>

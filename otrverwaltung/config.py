@@ -60,8 +60,8 @@ class Config:
 
     def get(self, category, option):
         """ Gets a configuration option. """
-        value = self.__fields[category][option]
 
+        value = self.__fields[category][option]
         if option in ['email', 'password']:
             self.log.debug("[%(category)s][%(option)s]: *****" % {"category": category, "option": option})
         else:
@@ -128,6 +128,9 @@ class Config:
                             self.set(category, option, plain_text)
                         except ValueError:
                             self.set(category, option, json_config[category][option])
+                    elif category is 'general' and option is 'server':
+                        if not json_config[category][option].endswith("/"):
+                            self.set(category, option, json_config[category][option] + "/")
                     else:
                         self.set(category, option, json_config[category][option])
                     if option in newConfFields:

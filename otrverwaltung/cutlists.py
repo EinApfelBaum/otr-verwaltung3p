@@ -23,6 +23,24 @@ import logging
 
 from otrverwaltung import fileoperations
 
+# UTF-8 Encoding Debugging
+# see https://www.i18nqa.com/debug/utf8-debug.html
+# wrong_right_chars = {"Ã€" : "À", "Ã"  : "Á", "Ã‚" : "Â", "Ãƒ" : "Ã", "Ã„" : "Ä", "Ã…" : "Å",
+                     # "Ã†" : "Æ", "Ã‡" : "Ç", "Ãˆ" : "È", "Ã‰" : "É", "ÃŠ" : "Ê", "Ã‹" : "Ë",
+                     # "ÃŒ" : "Ì", "Ã"  : "Í", "ÃŽ" : "Î", "Ã"  : "Ï", "Ã"  : "Ð", "Ã‘" : "Ñ",
+                     # "Ã’" : "Ò", "Ã“" : "Ó", "Ã”" : "Ô", "Ã•" : "Õ", "Ã–" : "Ö", "Ã—" : "×",
+                     # "Ã˜" : "Ø", "Ã™" : "Ù", "Ãš" : "Ú", "Ã›" : "Û", "Ãœ" : "Ü", "Ã"  : "Ý",
+                     # "Ãž" : "Þ", "ÃŸ" : "ß", "Ã " : "à", "Ã¡" : "á", "Ã¢" : "â", "Ã£" : "ã",
+                     # "Ã¤" : "ä", "Ã¥" : "å", "Ã¦" : "æ", "Ã§" : "ç", "Ã¨" : "è", "Ã©" : "é",
+                     # "Ãª" : "ê", "Ã«" : "ë", "Ã¬" : "ì", "Ã­"  : "í", "Ã®" : "î", "Ã¯" : "ï",
+                     # "Ã°" : "ð", "Ã±" : "ñ", "Ã²" : "ò", "Ã³" : "ó", "Ã´" : "ô", "Ãµ" : "õ",
+                     # "Ã¶" : "ö", "Ã·" : "÷", "Ã¸" : "ø", "Ã¹" : "ù", "Ãº" : "ú", "Ã»" : "û",
+                     # "Ã¼" : "ü", "Ã½" : "ý", "Ã¾" : "þ", "Ã¿" : "ÿ"}
+
+wrong_right_chars = {"Ã„" : "Ä", "Ã¤" : "ä", "Ã–" : "Ö", "Ã¶" : "ö", "Ãœ" : "Ü",
+                     "Ã¼" : "ü", "ÃŸ" : "ß", "Ã " : "à", "Ã¡" : "á", "Ã¢" : "â",
+                     "Ã§" : "ç", "Ã©" : "é", "Ã¨" : "è", "Ãª" : "ê", "Ã´" : "ô", 
+                     "Ã«" : "ë"}
 
 class Cutlist:
     def __init__(self):
@@ -92,7 +110,7 @@ class Cutlist:
         headers = {'Content-Type': 'multipart/form-data; boundary=%s' % boundary}
 
         try:
-            connection.request('POST', server + "index.php?upload=2", body, headers)
+            connection.request('POST', server + "", body, headers)
         except Exception as error_message:
             return error_message
 
@@ -127,15 +145,16 @@ class Cutlist:
             return "Cutlist konnte nicht heruntergeladen werden (%s)." % error
 
     def _check_string(self, string_to_check):
-        #gcurse
         try:
             res = string_to_check.decode('utf-8')
-        except:
+        except Exception as e:
+            self.log.info("Exception: {}".format(e))
             self.log.info("No utf-8 string, trying latin-1: {0}".format(string_to_check))
             try:
                 res = string_to_check.decode('latin-1')
-            except:
-                self.log.info("Returning undecoded string: {0}".format(string_to_check))
+            except Exception as e:
+                self.log.info("Exception: {}".format(e))
+                self.log.info("Returning undecoded string: {}".format(string_to_check))
                 res = string_to_check
 
         return res
@@ -144,7 +163,8 @@ class Cutlist:
         config_parser = configparser.ConfigParser()
 
         try:
-            config_parser.read(self.local_filename, encoding='latin-1')
+            # configparser now reads local cutlist assuming utf-8 encoding
+            config_parser.read(self.local_filename, encoding='utf-8')
 
             self.filename = self._check_string(config_parser.get('Info', 'SuggestedMovieName'))
             self.author = self._check_string(config_parser.get('Info', 'Author'))
@@ -229,18 +249,16 @@ class Cutlist:
                 "[General]\n",
                 "Application=%s\n" % self.app,
                 "Version=%s\n" % self.intended_version,
-                "comment1=The following parts of the movie will be kept, the rest will be cut out.\n",
-                "ApplyToFile=%s\n" % os.path.basename(uncut_video),
-                "OriginalFileSizeBytes=%s\n" % str(fileoperations.get_size(uncut_video)),
-                "FramesPerSecond=%s\n" % str(self.fps),
+                "FramesPerSecond=%.2f\n" % self.fps,
                 "IntendedCutApplicationName=%s\n" % intended_app_name,
                 "IntendedCutApplication=%s\n" % self.intended_app,
-                "IntendedCutApplicationVersion=\n",
                 "VDUseSmartRendering=%s\n" % str(int(self.smart)),
                 "VDSmartRenderingCodecFourCC=0x53444646\n",
-                "VDSmartRenderingCodecVersion=0x00000000\n",
-                "NoOfCuts=%s\n" % str(len(self.cuts_frames)),
+                "comment1=The following parts of the movie will be kept, the rest will be cut out.\n",
                 "comment2=All values are given in seconds.\n",
+                "NoOfCuts=%s\n" % str(len(self.cuts_frames)),
+                "ApplyToFile=%s\n" % os.path.basename(uncut_video),
+                "OriginalFileSizeBytes=%s\n" % str(fileoperations.get_size(uncut_video)),
                 "\n",
                 "[Info]\n",
                 "Author=%s\n" % self.author,
@@ -261,9 +279,9 @@ class Cutlist:
             for count, (start_frame, duration_frames) in enumerate(self.cuts_frames):
                 cutlist.writelines([
                     "[Cut%i]\n" % count,
-                    "Start=%f\n" % (start_frame / self.fps),
+                    "Start=%.2f\n" % (start_frame / self.fps),
                     "StartFrame=%i\n" % start_frame,
-                    "Duration=%f\n" % (duration_frames / self.fps),
+                    "Duration=%.2f\n" % (duration_frames / self.fps),
                     "DurationFrames=%i\n" % duration_frames,
                     "\n"
                 ])
@@ -293,6 +311,7 @@ def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq, e
         Returns: error, a list of Cutlist instances    
     """
 
+    llog = logging.getLogger(__name__)
     global extension
     if choose_cutlists_by == 0:  # by size
         size = fileoperations.get_size(filename)
@@ -314,7 +333,7 @@ def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq, e
     cutlists = []
 
     for url in urls:
-        print("[Cutlists] Download by : %s" % url)
+        llog.debug("Download from : {}".format(url))
         try:
             handle = urllib.request.urlopen(url)
         except IOError:
@@ -367,7 +386,12 @@ def __read_value(cutlist_element, node_name):
     try:
         elements = cutlist_element.getElementsByTagName(node_name)
         for node in elements[0].childNodes:
-            return node.nodeValue
+            bad_string = node.nodeValue
+            for key, value in wrong_right_chars.items():
+                if key in bad_string:
+                    bad_string = bad_string.replace(key, value)
+
+            return bad_string  # hopefully not bad anymore
     except:
         return ''
 
