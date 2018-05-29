@@ -246,7 +246,7 @@ class Cut(BaseAction):
                 try:
                     m = re.search(video_infos_match, line.decode('latin-1'))
                 except UnicodeDecodeError as ex:
-                    self.log.error("Exeption: {0}".format(ex))
+                    self.log.error("Exeption: {}".format(ex))
 
             if m:
                 if "Duration" == m.group(1):
@@ -260,6 +260,7 @@ class Cut(BaseAction):
                         sar = m.group(6)
                         dar = m.group(7)
                         fps = float(m.group(8))
+                        self.log.debug("FPS: {}".format(fps))
                     except ValueError:
                         self.log.debug("Leave function")
                         return None, None, None, None, "Video Stream Informationen konnte nicht ausgelesen werden."
@@ -317,7 +318,8 @@ class Cut(BaseAction):
         i = bisect.bisect_left(keyframes, frame)
         if i:
             return keyframes[i - 1]
-        raise ValueError
+        else:
+            raise ValueError
 
     def get_keyframe_after_frame(self, keyframes, frame):
         """Find keyframe greater-than to frame."""
@@ -325,7 +327,8 @@ class Cut(BaseAction):
         i = bisect.bisect_right(keyframes, frame)
         if i != len(keyframes):
             return keyframes[i]
-        raise ValueError
+        else:
+            raise ValueError
 
     def complete_x264_opts(self, x264_opts, filename):
         """Analyse filename and complete the x264 options 
@@ -376,6 +379,7 @@ class Cut(BaseAction):
                 elif 'Frame rate' in line:
                     try:
                         fps = ['--fps', str(float(line.strip().split(' ')[3]))]
+                        self.log.debug("FPS: {}".format(fps))
                     except ValueError as e:
                         continue
                     except IndexError as e:

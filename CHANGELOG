@@ -1,3 +1,14 @@
+n.n,
+    * Cutinterface: Neues Feature "seeker".
+    * Down-/Upload von Schnittlisten funktioniert mit der neuen Seite cutlist.at
+    * Neue Option: 'mpv bevorzugen' für 'Schnitte anspielen'
+    * Die Funktion Zugangsdaten prüfen zeigt das Ergbnis jetzt deutlich an.
+    * Keyframe jump funktioniert jetzt auch für Ubuntu etc.
+    * Neues Icon
+    * setup.py funktioniert nun.
+    * Der open source Dekoder otrtool kann verwendet werden.
+    * Bugfixes
+
 3.2.1-A, 2018-04-27
     * Cutinterface stabilisert (OpenGL Fenster Ausbruch (no xvideo) und leeres
       Videofenster gefixt)
