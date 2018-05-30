@@ -49,6 +49,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.buttonClose = False
         self.buttonOk = False
         self.timeoutcontrol = True
+        self.last_direction = "none"
+        self.seek_distance_default = 0
+        self.seek_distance = 0
+        self.gst_version = Gst.version()[0] * 100 + Gst.version()[1]
 
         self.state = Gst.State.NULL
         self.player = Gst.ElementFactory.make("playbin", "playbin")
@@ -121,7 +125,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
     def get_cuts_in_frames(self, cuts, in_frames):
         if cuts == []:
             res = [(0, self.frames)]
-            self.log.info("Framelist: {0}".format(self.frames))
+            self.log.debug("Framelist: {0}".format(self.frames))
         elif in_frames:
             res = cuts
         else:
@@ -129,8 +133,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             for start, duration in cuts:
                 start_frame = int(start * self.framerate_num / self.framerate_denom)
                 duration_frames = int(duration * self.framerate_num / self.framerate_denom)
-                self.log.info("Startframe = {0}".format(start_frame))
-                self.log.info("Duration = {0}".format(duration_frames))
+                self.log.debug("Startframe = {0}".format(start_frame))
+                self.log.debug("Duration = {0}".format(duration_frames))
                 res.append((start_frame,duration_frames))
         return res
 
@@ -174,11 +178,14 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             cutlist.cuts_seconds.append((s,d))
 
     def _run(self, filename, cutlist, app):
-        self.log.info("function start")
+        self.log.debug("function start")
         self.app = app
         self.config = app.config
         self.filename = filename
         self.cutlist = self.load_cutlist(cutlist)
+
+        self.seek_distance_default = self.config.get('general', 'seek_distance_default')
+        self.seek_distance = self.seek_distance_default
 
         self.keyframes, error = self.get_keyframes_from_file(self.filename)
         if self.keyframes == None:
@@ -200,8 +207,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.videowidth = vinfo.get_width()
             self.videoheight = vinfo.get_height()
 
+        self.log.debug("framerate_num: {}".format(self.framerate_num))
+        self.log.debug("framerate_denom: {}".format(self.framerate_denom))
         self.videolength = self.d.get_duration()
-        self.frames = self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND
+        self.frames = self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND  # ROUND
         self.timelines = [self.get_cuts_in_frames(self.initial_cutlist, 
                                                   self.initial_cutlist_in_frames)]
 
@@ -238,17 +247,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.builder.get_object('checkbutton_hide_cuts').set_active(self.hide_cuts)
         return self.timeoutcontrol
 
-    def jump_to(self, frames=None, seconds=None, nanoseconds=0, flags=Gst.SeekFlags.ACCURATE):
-        if frames:
-            if frames >= self.get_frames():
-                frames = self.get_frames()-1
-
-            nanoseconds = frames * Gst.SECOND * self.framerate_denom / self.framerate_num
-        elif seconds:
-            nanoseconds = seconds * Gst.SECOND
-
-        self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH | flags, int(nanoseconds))
-
     def set_marker(self, a=None, b=None):
         """ Set markers a and/or b to a specific frame posititon and update the buttons """
 
@@ -265,7 +263,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                     self.marker_a = 0
         
         if self.marker_a != -1 and self.marker_b != -1 and self.marker_a > self.marker_b:
-            self.log.info("Switch a and b")
+            self.log.debug("Switch a and b")
             c = self.marker_b
             self.marker_b = self.marker_a
             self.marker_a = c
@@ -370,8 +368,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         return inverted
 
     def remove_segment(self, rel_s, rel_d):
-        self.log.info("\n\033[1;31m-- Entering remove_segment\033[1;m")
-        self.log.info("Current timeline is: {0}".format(self.timelines[-1]))
+        self.log.debug("\n\033[1;31m-- Entering remove_segment\033[1;m")
+        self.log.debug("Current timeline is: {0}".format(self.timelines[-1]))
 
         abs_start = self.get_absolute_position(rel_s)
         abs_end = self.get_absolute_position(rel_s + rel_d - 1)
@@ -380,18 +378,18 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         inverted_timeline.append((abs_start, abs_end - abs_start + 1))
         self.timelines.append(self.invert_full(inverted_timeline))
 
-        self.log.info("Current timeline is: {0}".format(self.timelines[-1]))
-        self.log.info("\033[1;31m-- Leaving remove_segment\033[1;m\n")
+        self.log.debug("Current timeline is: {0}".format(self.timelines[-1]))
+        self.log.debug("\033[1;31m-- Leaving remove_segment\033[1;m\n")
 
         self.update_timeline()
         self.update_listview()
 
         time.sleep(0.2)
         if self.hide_cuts:
-            self.log.info("Seek To: {0}".format(rel_s))
+            self.log.debug("Seek To: {0}".format(rel_s))
             self.jump_to(frames=rel_s)
         else:
-            self.log.info("Seek To: {0}".format(abs_end + 1))
+            self.log.debug("Seek To: {0}".format(abs_end + 1))
             self.jump_to(frames=abs_end+1)
 
     def get_frames(self):
@@ -404,20 +402,21 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         return frames
 
     def update_frames_and_time(self):
-        #Versuch, Informationen zu erhalten und zu updaten
         try:
             current_position = self.player.query_position(Gst.Format.TIME)[1]
             duration = self.player.query_duration(Gst.Format.TIME)[1]
-        except Exception as e:    #manchmal geht es nicht, bspw. wenn gerade erst geseekt wurde
-            self.log.warning("except!", e)
+        except Exception as e:  # manchmal geht es nicht, bspw. wenn gerade erst geseekt wurde
+            self.log.warning("Exception: {}".format(e))
             return
 
-        self.current_frame_position = current_position * self.framerate_num / self.framerate_denom / Gst.SECOND
+        self.current_frame_position = current_position * self.framerate_num / self.framerate_denom / Gst.SECOND  # ROUND
 
         if self.keyframes != None and self.current_frame_position in self.keyframes :
-            self.builder.get_object('label_time').set_text('Frame(K): %i/%i, Zeit %s/%s' % (self.current_frame_position, self.get_frames() - 1, self.convert_sec(current_position), self.convert_sec(duration)))
+            self.builder.get_object('label_time').set_text('Frame(K): %i/%i, Zeit %s/%s' % (self.current_frame_position,
+                                    self.get_frames() - 1, self.convert_sec(current_position), self.convert_sec(duration)))
         else:
-            self.builder.get_object('label_time').set_text('Frame: %i/%i, Zeit %s/%s' % (self.current_frame_position, self.get_frames() - 1, self.convert_sec(current_position), self.convert_sec(duration)))
+            self.builder.get_object('label_time').set_text('Frame: %i/%i, Zeit %s/%s' % (self.current_frame_position,
+                                    self.get_frames() - 1, self.convert_sec(current_position), self.convert_sec(duration)))
 
     def update_slider(self):
         try:
@@ -426,7 +425,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             # block seek handler so we don't seek when we set_value()
             self.builder.get_object('slider').handler_block_by_func(self.on_slider_value_changed)
 
-            frames = nanosecs * self.framerate_num / self.framerate_denom / Gst.SECOND
+            frames = nanosecs * self.framerate_num / self.framerate_denom / Gst.SECOND  # ROUND
             self.builder.get_object('slider').set_value(frames)
 
             self.builder.get_object('slider').handler_unblock_by_func(self.on_slider_value_changed)
@@ -435,6 +434,32 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         # catch Gst.QueryError
         except TypeError as typeError:
            pass
+
+    def seeker(self, direction):
+        """ Jump forward or backward by self.seek_distance.
+            Value is divided by 2 on each direction change.
+        """
+
+        if not direction == 'reset' and not self.last_direction == 'none':
+            # if direction has changed, bisect the seek_distance
+            if not direction == self.last_direction:
+                self.seek_distance /= 2
+                if self.seek_distance < 1:
+                    self.seek_distance = 1
+                self.log.debug("BISECT: direction: {0}, last_direction: {1}, seek_distance: {2}"
+                                                .format(direction, self.last_direction, self.seek_distance))
+            
+        if direction == 'left':
+            self.jump_relative(int(self.seek_distance * -1))
+            self.last_direction = direction
+        elif direction == 'right':
+            self.jump_relative(int(self.seek_distance))
+            self.last_direction = direction
+        elif direction == 'reset':
+            self.seek_distance = self.seek_distance_default
+            self.last_direction == 'none'
+            self.log.debug("RESET: direction: {0}, last_direction: {1}, seek_distance: {2}"
+                                                .format(direction, self.last_direction, self.seek_distance))
 
     def update_listview(self):
         self.log.debug("Function start")
@@ -503,18 +528,18 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         if t == Gst.MessageType.ASYNC_DONE:
             if self.getVideoLength:
                 self.getVideoLength = not self.getVideoLength
-                self.log.info("Async done")
+                self.log.debug("Async done")
                 self.videolength = self.player.query_duration(Gst.Format.TIME)
-                self.frames = self.videolength[1] * self.framerate_num / self.framerate_denom / Gst.SECOND
+                self.frames = self.videolength[1] * self.framerate_num / self.framerate_denom / Gst.SECOND  # ROUND
                 self.slider.set_range(0, self.get_frames())
                 self.timelines = [self.get_cuts_in_frames(self.initial_cutlist, self.initial_cutlist_in_frames)]
                 self.builder.get_object('slider').set_range(0, self.get_frames())
                 self.slider.queue_draw()
-                self.log.info("Timelines: {0}".format(self.timelines))
-                self.log.info("framerate_num: {0}".format(self.framerate_num))
-                self.log.info("framerate_denom: {0}".format(self.framerate_denom))
-                self.log.info("videolength: {0}".format(self.videolength))
-                self.log.info("frames: {0}".format(self.frames))
+                self.log.debug("Timelines: {0}".format(self.timelines))
+                self.log.debug("framerate_num: {0}".format(self.framerate_num))
+                self.log.debug("framerate_denom: {0}".format(self.framerate_denom))
+                self.log.debug("videolength: {0}".format(self.videolength))
+                self.log.debug("frames: {0}".format(self.frames))
 
     # signals #
 
@@ -534,58 +559,80 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         return False
 
     def on_window_key_press_event(self, widget, event, *args):
-        """handle keyboard events"""
+        """ handle keyboard events """
         keyname = Gdk.keyval_name(event.keyval).upper()
+        mod_ctrl = (event.state & Gdk.ModifierType.CONTROL_MASK)
+        mod_shift = (event.state & Gdk.ModifierType.SHIFT_MASK)
+
         if event.type == Gdk.EventType.KEY_PRESS:
-            if keyname == 'LEFT':
-                return True
-            elif keyname == 'RIGHT':
-                return True
-            elif keyname == 'UP':
-                self.on_button_keyfast_forward_clicked(None)
-                return True
-            elif keyname == 'DOWN':
-                self.on_button_keyfast_back_clicked(None)
-                return True
-            elif keyname == 'HOME' or keyname == 'BRACKETLEFT':
-                self.on_button_a_clicked(None)
-                return True
-            elif keyname == 'END' or keyname == 'BRACKETRIGHT':
-                self.on_button_b_clicked(None)
-                return True
-            elif keyname == 'PAGE_UP':
-                self.on_button_jump_to_marker_a_clicked(None)
-                return True
-            elif keyname == 'PAGE_DOWN':
-                self.on_button_jump_to_marker_b_clicked(None)
-                return True
-            elif keyname == 'DELETE':
-                self.on_button_remove_clicked(None)
-                return True
-            elif keyname == 'L':
-                self.on_load_button_clicked(None)
-                return True
-            elif keyname == 'SPACE':
-                if self.is_playing:
-                    self.on_button_pause_clicked(None)
-                else:
-                    self.on_button_play_clicked(None)
-                return True
+            # CONTROL
+            if not mod_shift and mod_ctrl:
+                if keyname == 'LEFT':
+                    self.seeker("left")
+                    time.sleep(0.05)
+                    return True
+                if keyname == 'RIGHT':
+                    self.seeker("right")
+                    time.sleep(0.05)
+                    return True
+                if keyname == 'DOWN':
+                    self.seeker("reset")
+                    time.sleep(0.05)
+                    return True
+            # Not shift, not ctrl
+            if not mod_ctrl and not mod_shift:
+                if keyname == 'LEFT':
+                    return True
+                elif keyname == 'RIGHT':
+                    return True
+                elif keyname == 'UP':
+                    self.on_button_keyfast_forward_clicked(None)
+                    return True
+                elif keyname == 'DOWN':
+                    self.on_button_keyfast_back_clicked(None)
+                    return True
+                elif keyname == 'HOME' or keyname == 'BRACKETLEFT':
+                    self.on_button_a_clicked(None)
+                    return True
+                elif keyname == 'END' or keyname == 'BRACKETRIGHT':
+                    self.on_button_b_clicked(None)
+                    return True
+                elif keyname == 'PAGE_UP':
+                    self.on_button_jump_to_marker_a_clicked(None)
+                    return True
+                elif keyname == 'PAGE_DOWN':
+                    self.on_button_jump_to_marker_b_clicked(None)
+                    return True
+                elif keyname == 'DELETE':
+                    self.on_button_remove_clicked(None)
+                    return True
+                elif keyname == 'L':
+                    self.on_load_button_clicked(None)
+                    return True
+                elif keyname == 'SPACE':
+                    if self.is_playing:
+                        self.on_button_pause_clicked(None)
+                    else:
+                        self.on_button_play_clicked(None)
+                    return True
             else:
-                self.log.info("keyname: {0}".format(keyname))
+                self.log.debug("keyname: {0}".format(keyname))
 
         return False
 
     def on_window_key_release_event(self, widget, event, *args):
-        """handle keyboard events"""
+        """ handle keyboard events """
         keyname = Gdk.keyval_name(event.keyval).upper()
-        if event.type == Gdk.EventType.KEY_RELEASE:
-            if keyname == 'LEFT':
-                self.on_button_back_clicked(None)
-                return True
-            elif keyname == 'RIGHT':
-                self.on_button_forward_clicked(None)
-                return True
+        mod_ctrl = (event.state & Gdk.ModifierType.CONTROL_MASK)
+        mod_shift = (event.state & Gdk.ModifierType.SHIFT_MASK)
+        if not mod_ctrl and not mod_shift:
+            if event.type == Gdk.EventType.KEY_RELEASE:
+                if keyname == 'LEFT':
+                    self.on_button_back_clicked(None)
+                    return True
+                elif keyname == 'RIGHT':
+                    self.on_button_forward_clicked(None)
+                    return True
 
     def on_slider_key_press_event(self, widget, event):
         # override normal keybindings for slider (HOME and END are used for markers)
@@ -595,13 +642,13 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def on_slider_value_changed(self, slider):
         frames = slider.get_value()
-        self.log.info("Slider value = {0}".format(frames))
+        self.log.debug("Slider value = {0}".format(frames))
         if frames >= self.get_frames():
-            self.log.info("restrict")
+            self.log.debug("slider.get_value() >= self.get_frames(). Restricting.")
             frames = self.get_frames() - 1
         self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT, frames * Gst.SECOND * self.framerate_denom / self.framerate_num)
         if not self.is_playing:
-            self.log.info("update by slider change")
+            self.log.debug("update_frames_and_time() by slider change")
             self.update_frames_and_time()
 
     def on_button_play_clicked(self, button, data=None):
@@ -621,33 +668,76 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             nano_seconds = self.player.query_position(Gst.Format.TIME)[1]
 
         self.videolength = self.player.query_duration(Gst.Format.TIME)[1]
-        self.frames = self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND
+        self.frames = self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND  # ROUND
 
         nano_seconds += frames * (1 * Gst.SECOND * self.framerate_denom / self.framerate_num)
         if nano_seconds < 0:
-            self.log.info("restrict")
+            self.log.debug("restrict")
             nano_seconds = 0
-        elif nano_seconds * self.framerate_num / self.framerate_denom / Gst.SECOND >= self.get_frames():
-            self.log.info("restrict")
+        elif nano_seconds * self.framerate_num / self.framerate_denom / Gst.SECOND >= self.get_frames():  # ROUND
+            self.log.debug("restrict")
             nano_seconds = (self.get_frames() - 1) * Gst.SECOND * self.framerate_denom / self.framerate_num
 
         self.jump_to(nanoseconds=nano_seconds, flags=flags)
 
-    def jump_key(self, direction):
+    def jump_key(self, direction, playing=None):
+        time.sleep(0.05)
         frame = self.current_frame_position
         if direction == "backward":
             jumpto = self.get_keyframe_in_front_of_frame(self.keyframes, frame)
         else:
             jumpto = self.get_keyframe_after_frame(self.keyframes, frame)
 
-        self.log.debug("jumpto = {0}".format(jumpto))
+        self.log.debug("jumpto = {}".format(jumpto))
         self.jump_to(frames=jumpto)
+        if playing:
+            self.player.set_state(Gst.State.PLAYING)
+
+    def jump_to(self, frames=None, seconds=None, nanoseconds=0, flags=Gst.SeekFlags.ACCURATE, playing=None):
+        time.sleep(0.05)
+        if frames:
+            if frames >= self.get_frames():
+                frames = self.get_frames()-1
+
+            nanoseconds = frames * Gst.SECOND * self.framerate_denom / self.framerate_num
+        elif seconds:
+            nanoseconds = seconds * Gst.SECOND
+
+        self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH | flags, int(nanoseconds))
+        if playing:
+            self.player.set_state(Gst.State.PLAYING)
 
     def on_button_keyfast_back_clicked(self, widget, data=None):
-        self.jump_key('backward')
-        # Doesn't work on ubuntu, oh my
-        #self.jump_to(frames=self.current_frame_position - 1,
-                    #flags=Gst.SeekFlags.KEY_UNIT | Gst.SeekFlags.SNAP_BEFORE)
+        if self.is_playing:
+            was_playing = True
+            self.player.set_state(Gst.State.PAUSED)
+        else:
+            was_playing = False
+
+        # if self.gst_version < 114:
+        if True:
+            self.jump_key('backward', was_playing)
+        else:
+            # self.jump_to(nanoseconds=self.current_position - 1,
+                    # flags=Gst.SeekFlags.KEY_UNIT | Gst.SeekFlags.SNAP_BEFORE, playing=was_playing)
+            self.jump_to(frames=self.current_frame_position - 1,
+                    flags=Gst.SeekFlags.KEY_UNIT | Gst.SeekFlags.SNAP_BEFORE, playing=was_playing)
+
+    def on_button_keyfast_forward_clicked(self, widget, data=None):
+        if self.is_playing:
+            was_playing = True
+            self.player.set_state(Gst.State.PAUSED)
+        else:
+            was_playing = False
+
+        # if self.gst_version < 114:
+        if True:
+            self.jump_key('forward', was_playing)
+        else:
+            # self.jump_to(nanoseconds=self.current_position + 1,
+                    # flags=Gst.SeekFlags.KEY_UNIT | Gst.SeekFlags.SNAP_AFTER, playing=was_playing)
+            self.jump_to(frames=self.current_frame_position + 1,
+                    flags=Gst.SeekFlags.KEY_UNIT | Gst.SeekFlags.SNAP_AFTER, playing=was_playing)
 
     def on_button_ffast_back_clicked(self, widget, data=None):
         self.jump_relative(-100)
@@ -667,27 +757,21 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
     def on_button_ffast_forward_clicked(self, widget, data=None):
         self.jump_relative(100)
 
-    def on_button_keyfast_forward_clicked(self, widget, data=None):
-        self.jump_key('forward')
-        # Doesn't work on ubuntu, oh my
-        #self.jump_to(frames=self.current_frame_position + 1,
-                    #flags=Gst.SeekFlags.KEY_UNIT | Gst.SeekFlags.SNAP_AFTER)
-
     def on_button_a_clicked(self, *args):
         # TODO: warn if Marker A = B or distance between them to low
-        self.log.info('marker a = {0}'.format(self.current_frame_position))
+        self.log.debug('marker a = {0}'.format(self.current_frame_position))
         self.set_marker(a=self.current_frame_position)
         self.slider.queue_draw()
 
     def on_button_b_clicked(self, *args):
         # TODO: warn if Marker A = B or distance between them to low
-        self.log.info('marker b = {0}'.format(self.current_frame_position))
+        self.log.debug('marker b = {0}'.format(self.current_frame_position))
         self.set_marker(b=self.current_frame_position)
         self.slider.queue_draw()
 
     def on_button_remove_clicked(self, widget):
-        self.log.info("marker a = ".format(self.marker_a))
-        self.log.info("marker b = ".format(self.marker_b))
+        self.log.debug("marker a = ".format(self.marker_a))
+        self.log.debug("marker b = ".format(self.marker_b))
         if self.is_remove_modus():
             if self.marker_a >= 0 and self.marker_b >= 0:
                 self.remove_segment(self.marker_a, self.marker_b-self.marker_a+1)
@@ -760,7 +844,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         if cutsiter:
             self.cut_selected = cutslist.get_path(cutsiter)[0]
-            self.log.info("Selected cut = {0}".format(self.cut_selected))
+            self.log.debug("Selected cut = {0}".format(self.cut_selected))
             a = cutslist.get_value(cutsiter, 0)
             b = cutslist.get_value(cutsiter, 1)
             if self.hide_cuts:
@@ -886,6 +970,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
             self.slider.queue_draw()
             self.update_listview()
+
+    def on_eventbox_button_press_event(self, widget, event):
+        # print("mouseX: {}".format(event.x))
+        pass
 
 def NewCutinterfaceDialog():
     glade_filename = path.getdatapath('ui', 'CutinterfaceDialog.glade')

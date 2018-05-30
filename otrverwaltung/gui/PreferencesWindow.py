@@ -25,7 +25,8 @@ from gi.repository import Gtk, Gdk, Pango
 
 from otrverwaltung.constants import Cut_action
 from otrverwaltung.gui.config_bindings import EntryBinding, FileChooserFolderBinding, \
-                        CheckButtonBinding, ComboBoxEntryBinding, RadioButtonsBinding
+                        CheckButtonBinding, ComboBoxEntryBinding, RadioButtonsBinding, \
+                        SpinbuttonBinding
 from otrverwaltung import path
 
 
@@ -100,6 +101,10 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         EntryBinding(self.builder.get_object('entry_schema'), self.app.config, 'general', 'rename_schema')
         EntryBinding(self.builder.get_object('smkv_workingdir'), self.app.config, 'smartmkvmerge', 'workingdir')
         EntryBinding(self.builder.get_object('entry_server'), self.app.config, 'general', 'server')
+       
+        SpinbuttonBinding(self.builder.get_object('spinbuttonSeeker'), self.app.config, 'general', 'seek_distance_default')
+        SpinbuttonBinding(self.builder.get_object('spinbuttonX'), self.app.config, 'general', 'cutinterface_resolution_x')
+        SpinbuttonBinding(self.builder.get_object('spinbuttonY'), self.app.config, 'general', 'cutinterface_resolution_y')
 
         def rename_schema_changed(value):
             new = self.app.rename_by_schema(self.example_cut_filename, value)

@@ -76,6 +76,19 @@ class EntryBinding(ConfigBinding):
         else:
             self.config.set(self.category, self.option, self.widget.get_text())
 
+class SpinbuttonBinding(ConfigBinding):
+    def __init__(self, widget, config, category, option, encode=False):
+        ConfigBinding.__init__(self, widget, config, category, option)
+
+        # add signal
+        self.widget.connect('value_changed', self.on_value_changed)
+
+    def change_value(self, value):
+        self.widget.set_value(value)
+
+    def on_value_changed(self, widget, data=None):
+        self.config.set(self.category, self.option, self.widget.get_value_as_int())
+
 
 class FileChooserFolderBinding(ConfigBinding):
     def __init__(self, widget, config, category, option):

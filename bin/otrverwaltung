@@ -155,6 +155,7 @@ class App:
                 'cut_mp4s_man_by': 'CutInterface',
                 'cutinterface_resolution_x': 800,
                 'cutinterface_resolution_y': 450,
+                'seek_distance_default': 2000,
                 'cutinterface_hide_cuts': False,
                 'mplayer_fullscreen': True,
                 'prefer_mpv': False,
