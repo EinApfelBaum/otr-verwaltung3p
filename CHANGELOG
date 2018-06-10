@@ -1,12 +1,13 @@
 n.n,
-    * Cutinterface: Neues Feature "seeker".
-    * Down-/Upload von Schnittlisten funktioniert mit der neuen Seite cutlist.at
+    * Cutinterface: Widgets skalieren mit Fenstergröße
+    * Cutinterface: Neues Feature "Sucher (seeker)"
+    * Down-/Upload von Schnittlisten funktioniert mit der neuen cutlist.at (sniplist)
     * Neue Option: 'mpv bevorzugen' für 'Schnitte anspielen'
     * Die Funktion Zugangsdaten prüfen zeigt das Ergbnis jetzt deutlich an.
     * Keyframe jump funktioniert jetzt auch für Ubuntu etc.
     * Neues Icon
     * setup.py funktioniert nun.
-    * Der open source Dekoder otrtool kann verwendet werden.
+    * Der opensource Dekoder otrtool kann verwendet werden.
     * Bugfixes
 
 3.2.1-A, 2018-04-27
@@ -33,8 +34,8 @@ n.n,
 ________________________________________________________________________________________________________________________________
 
 0.9.7, 30. Mai. 16:
-    * Plugin ConvertToMP3 hinzugfügt (Danke beli3ver)
-    * Icon für "In den Müll verschieben" geändert
+    * Plugin ConvertToMP3 hinzugfügt. Danke beli3ver).
+    * Icon für "In den Müll verschieben" geändert.
 
 0.9.1, 10. Sept. 10:
     * HQ-Dateinamen werden beim Download korrekt angezeigt.
@@ -44,7 +45,8 @@ ________________________________________________________________________________
 0.9, 26. Mai 10:
     * Downloadmöglichkeit
     * Abhängigkeiten wie mplayer, wget usw. sind im deb-Paket vorhanden.
-    * Der Zusammenfassungsdialog wird nicht mehr automatisch angezeigt, sondern es wird ein Hinweis in der Leiste eingeblendet.
+    * Der Zusammenfassungsdialog wird nicht mehr automatisch angezeigt,
+      sondern es wird ein Hinweis in der Leiste eingeblendet.
 
 0.8.4, 17. April 10:
     * Bugfix: http://www.otrforum.com/showthread.php/59666, Danke @Artemis1121
