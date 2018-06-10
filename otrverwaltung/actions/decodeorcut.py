@@ -404,6 +404,9 @@ class DecodeOrCut(Cut):
                 if os.path.isfile(file_conclusion.uncut_video + '.ffindex_track00.kf.txt'):
                     os.remove(file_conclusion.uncut_video + '.ffindex_track00.kf.txt')
 
+                if os.path.isfile(file_conclusion.uncut_video + '.ffindex_track00.tc.txt'):
+                    os.remove(file_conclusion.uncut_video + '.ffindex_track00.tc.txt')
+
         return True
 
     def cut_file_manually(self, filename):

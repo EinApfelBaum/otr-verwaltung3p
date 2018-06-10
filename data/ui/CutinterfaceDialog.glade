@@ -14,8 +14,8 @@
   <object class="CutinterfaceDialog" id="cutinterface_dialog">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
-    <signal name="key-press-event" handler="on_cutinterface_dialog_key_press_event" swapped="no"/>
-    <signal name="key-release-event" handler="on_cutinterface_dialog_key_release_event" swapped="no"/>
+    <signal name="key-press-event" handler="on_window_key_press_event" swapped="no"/>
+    <signal name="key-release-event" handler="on_window_key_release_event" swapped="no"/>
     <child>
       <placeholder/>
     </child>
@@ -72,7 +72,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">10</property>
-                <property name="label" translatable="yes">Aktuelle Datei: </property>
+                <property name="label" translatable="yes">Datei: </property>
                 <property name="xalign">0</property>
               </object>
               <packing>
@@ -140,16 +140,18 @@
                     <property name="layout_style">center</property>
                     <child>
                       <object class="GtkButton" id="button_play">
-                        <property name="label" translatable="yes">  Play  </property>
+                        <property name="label" translatable="yes"> Play </property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="always_show_image">True</property>
                         <signal name="clicked" handler="on_button_play_pause_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="position">0</property>
+                        <property name="non_homogeneous">True</property>
                       </packing>
                     </child>
                     <child>
@@ -190,17 +192,18 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="button_remove">
-                        <property name="label" translatable="yes">Bereich entf.</property>
+                        <property name="label" translatable="yes">Entfernen</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="halign">baseline</property>
+                        <property name="always_show_image">True</property>
                         <signal name="clicked" handler="on_button_remove_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="position">4</property>
-                        <property name="non_homogeneous">True</property>
                       </packing>
                     </child>
                     <child>
@@ -376,6 +379,7 @@
                         <property name="can_focus">True</property>
                         <property name="round_digits">0</property>
                         <property name="digits">0</property>
+                        <property name="has_origin">False</property>
                         <signal name="draw" handler="on_slider_draw_event" swapped="no"/>
                         <signal name="value-changed" handler="on_slider_value_changed" swapped="no"/>
                       </object>
@@ -511,7 +515,7 @@
                 <child>
                   <object class="GtkScrolledWindow" id="scrolledwindow">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can_focus">False</property>
                     <property name="margin_bottom">5</property>
                     <property name="shadow_type">in</property>
                     <property name="propagate_natural_width">True</property>
@@ -529,8 +533,11 @@
                           <object class="GtkTreeViewColumn" id="cutsviewcolumn_start">
                             <property name="title" translatable="yes">Start</property>
                             <property name="expand">True</property>
+                            <property name="alignment">1</property>
                             <child>
-                              <object class="GtkCellRendererText" id="cellrenderertext_start"/>
+                              <object class="GtkCellRendererText" id="cellrenderertext_start">
+                                <property name="xalign">1</property>
+                              </object>
                               <attributes>
                                 <attribute name="text">0</attribute>
                               </attributes>
@@ -541,8 +548,11 @@
                           <object class="GtkTreeViewColumn" id="cutsviewcolumn_ende">
                             <property name="title" translatable="yes">Ende</property>
                             <property name="expand">True</property>
+                            <property name="alignment">1</property>
                             <child>
-                              <object class="GtkCellRendererText" id="cellrenderertext_ende"/>
+                              <object class="GtkCellRendererText" id="cellrenderertext_ende">
+                                <property name="xalign">1</property>
+                              </object>
                               <attributes>
                                 <attribute name="text">1</attribute>
                               </attributes>

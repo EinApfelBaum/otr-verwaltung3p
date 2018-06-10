@@ -144,6 +144,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         CheckButtonBinding(self.builder.get_object('smkv_normalize'), self.app.config, 'smartmkvmerge',
                            'normalize_audio')
         CheckButtonBinding(self.builder.get_object('smkv_mp4'), self.app.config, 'smartmkvmerge', 'remux_to_mp4')
+        CheckButtonBinding(self.builder.get_object('check_alt_time_frame_conv'), self.app.config, 'general', 'alt_time_frame_conv')
 
         self.app.config.connect('general', 'rename_cut',
                                 lambda value: self.builder.get_object('entry_schema').set_sensitive(value))

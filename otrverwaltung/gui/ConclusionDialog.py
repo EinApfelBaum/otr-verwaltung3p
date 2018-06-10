@@ -18,8 +18,8 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Pango, Gdk
-import os.path
-import os
+# import os.path
+import os, re
 import logging
 
 from otrverwaltung.constants import Action, Status, Cut_action
@@ -207,22 +207,23 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
             self.builder.get_object('box_rename').props.visible = cut_ok
 
             if cut_ok:
-                rename_list = []
+                re_fname = re.compile(".*?\.[0-9]{2}\.[a-zA-Z0-9_-]*")
+                if self.file_conclusion.cut.cutlist.filename and \
+                            (self.file_conclusion.cut.cutlist.filename != \
+                            re_fname.match(os.path.basename(self.file_conclusion.uncut_video)).group()):
+                        rename_list = [self.file_conclusion.cut.cutlist.filename]  # SuggestedMovieName
+                        rename_label = self.builder.get_object('label5')
+                        ## set background of label 'Umbenennen' to yellow to indicate there is
+                        ## a suggested filename in cutlist. Set font color to black
+                        rename_label.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(100, 100,
+                                                                                                0, 0.8))
+                        rename_label.override_color(Gtk.StateType.NORMAL, Gdk.RGBA(0, 0, 0, 1.0))
+                else:
+                    rename_list = []
 
-                # reversed the order of rename entries and set_active last list entry later
                 rename_list.append(os.path.basename(self.file_conclusion.cut_video))
                 rename_list.append(self.rename_by_schema(os.path.basename(
                                                                 self.file_conclusion.cut_video)))
-
-                if self.file_conclusion.cut.cutlist.filename:
-                    rename_list.append(self.file_conclusion.cut.cutlist.filename)
-                    rename_label = self.builder.get_object('label5')
-                    ## gcurse   set background of label 'Umbenennen' to yellow to indicate there is
-                    ##          a suggested filename in cutlist. Set font color to black
-                    rename_label.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(100, 100,
-                                                                                            0, 0.8))
-                    rename_label.override_color(Gtk.StateType.NORMAL, Gdk.RGBA(0, 0, 0, 1.0))
-
                 if not self.file_conclusion.cut.rename == "" \
                                         and not self.file_conclusion.cut.rename in rename_list:
                     rename_list.append(self.file_conclusion.cut.rename)
@@ -231,7 +232,8 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                 self.gui.set_model_from_list(self.builder.get_object(
                                                         'comboboxentry_rename'), rename_list)
                 # set last entry of list active
-                self.builder.get_object('comboboxentry_rename').set_active(len(rename_list)-1)
+                # self.builder.get_object('comboboxentry_rename').set_active(len(rename_list)-1)
+                self.builder.get_object('comboboxentry_rename').set_active(0)
 
                 archive_to = self.file_conclusion.cut.archive_to
                 if not archive_to:

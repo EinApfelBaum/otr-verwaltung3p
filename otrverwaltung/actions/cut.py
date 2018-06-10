@@ -15,7 +15,9 @@
 # END LICENSE
 
 import gi
-from gi.repository import Gtk
+gi.require_version('Gtk', '3.0')
+gi.require_version('Gst', '1.0')
+from gi.repository import Gtk, Gst
 import os
 import re
 import subprocess
@@ -27,7 +29,7 @@ from otrverwaltung.constants import Format, Program
 from otrverwaltung import fileoperations
 from otrverwaltung import path
 
-gi.require_version('Gtk', '3.0')
+Gst.init(None)
 
 
 class Cut(BaseAction):
@@ -305,12 +307,95 @@ class Cut(BaseAction):
         try:
             list = [int(i) for i in index.read().splitlines()]
         except ValueError:
+            index.close()
             return None, "Keyframes konnten nicht ermittelt werden."
         index.close()
         if os.path.isfile(filename + '.ffindex'):
             fileoperations.remove_file(filename + '.ffindex')
 
         return list, None
+
+    def get_timecodes_from_file(self, filename):  # TESTING
+        """ returns frame->timecode and timecode->frame dict"""
+
+        if not os.path.isfile(filename + '.ffindex_track00.tc.txt'):
+            try:
+                command = [self.config.get_program('ffmsindex'), '-p', '-f', '-c', '-k', filename]
+                ffmsindex = subprocess.call(command)
+            except OSError:
+                return None, "ffmsindex konnte nicht aufgerufen werden."
+
+        if os.path.isfile(filename + '.ffindex_track00.tc.txt'):
+            filename_timecodes = filename + '.ffindex_track00.tc.txt'
+        elif os.path.isfile(filename + '.ffindex_track01.tc.txt'):
+            filename_timecodes = filename + '.ffindex_track01.tc.txt'
+        elif os.path.isfile(filename + '.ffindex_track02.tc.txt'):
+            filename_timecodes = filename + '.ffindex_track02.tc.txt'
+        else:
+            filename_timecodes = None
+
+        try:
+            index = open(filename_timecodes, 'r')
+        except (IOError, TypeError) as e:
+            return None, "Timecode Datei von ffmsindex konnte nicht geöffnet werden."
+        index.readline()
+        try:
+            frame_timecode = {}
+            for line_num, line in enumerate(index, start=0):
+                frame_timecode[line_num] = int(round(float(line.replace('\n', '').strip()), 2) / 1000 * Gst.SECOND)
+        except ValueError:
+            index.close()
+            return None, "Timecodes konnten nicht ermittelt werden."
+
+        index.close()
+        # Generate reversed dict
+        timecode_frame = {v: k for k, v in frame_timecode.items()}
+        if os.path.isfile(filename + '.ffindex'):
+            fileoperations.remove_file(filename + '.ffindex')
+
+        print()
+        print("Number of frames: {}".format(list(frame_timecode.keys())[-1] + 1))
+        print()
+        return frame_timecode, timecode_frame, None
+
+    def time_to_frame(self, nanoseconds):  # TESTING
+        """
+            Searches in dict self.timecode_frame for the nearest timecode
+            for the variable 'position' (in nanoseconds) and returns the frame number.
+        """
+        if nanoseconds in self.timecode_frame:
+            return self.timecode_frame[nanoseconds]
+        else:
+            nearest_position = self.find_closest(self.timecode_frame, nanoseconds)
+            self.log.debug("nearest_position: {}".format(nearest_position))
+            return self.timecode_frame[nearest_position]
+
+    def frame_to_time(self, frame_number):  # TESTING
+        """
+            Returns the time (nanoseconds) for frame_number.
+        """
+        if frame_number in self.frame_timecode:
+            return self.frame_timecode[frame_number]
+        else:
+            return self.videolength
+            
+        return self.timecode_frame[nearest_position]
+
+    def find_closest(self, find_in, position):  # TESTING
+        """ Assumes find_in (key_list) is sorted. Returns closest value to position.
+            If two numbers are equally close, return the smaller one."""
+        key_list = list(find_in.keys())
+        pos = bisect.bisect_left(key_list, position)
+        if pos == 0:
+            return key_list[0]
+        if pos == len(key_list):
+            return key_list[-1]
+        before = key_list[pos - 1]
+        after = key_list[pos]
+        if after - position < position - before:
+           return after
+        else:
+           return before
 
     def get_keyframe_in_front_of_frame(self, keyframes, frame):
         """Find keyframe less-than to frame."""

@@ -43,13 +43,13 @@
         <col id="0" translatable="yes">2 - Anfang und Ende halbwegs genau geschnitten</col>
       </row>
       <row>
-        <col id="0" translatable="yes">3 - Schnitte annehmbar, Werbung nicht entfernt</col>
+        <col id="0" translatable="yes">3 - Schnitte annehmbar, Werbung wurde entfernt</col>
       </row>
       <row>
         <col id="0" translatable="yes">4 - doppelte Szenen wurden nicht entfernt oder es sind schönere Schnitte möglich</col>
       </row>
       <row>
-        <col id="0" translatable="yes">5 - unerwünschtes Material framegenau entfernt</col>
+        <col id="0" translatable="yes">5 - Sämtliches unerwünschtes Material framegenau entfernt</col>
       </row>
     </data>
   </object>
