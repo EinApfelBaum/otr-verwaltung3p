@@ -432,15 +432,15 @@ class CutSmartMkvmerge(Cut):
                     return None
                 if lt_kf_before_end <= start:
                     self.encode_nr += 1
-                    encode = [(True, start, duration, 'video_encode-{:03}.mkv'.format(self.copy_nr)]
+                    encode = [(True, start, duration, 'video_encode-{:03}.mkv'.format(self.encode_nr))]
                     return encode
                 else:
                     self.copy_nr += 1
-                    copy = [(False, start + 1, lt_kf_before_end + 1, 'video_copy-{:03}.mkv'.format(self.copy_nr)]
+                    copy = [(False, start + 1, lt_kf_before_end + 1, 'video_copy-{:03}.mkv'.format(self.copy_nr))]
                     # encode to end of interval
                     self.encode_nr += 1
                     encode = [(True, lt_kf_before_end, end - lt_kf_before_end,
-                               'video_encode-{:03}.mkv'.format(self.copy_nr)]
+                               'video_encode-{:03}.mkv'.format(self.encode_nr))]
                     return copy + encode
         else:
             try:
@@ -450,11 +450,11 @@ class CutSmartMkvmerge(Cut):
             duration_nt_kf = nt_kf_from_start - start
             if end <= nt_kf_from_start:
                 self.encode_nr += 1
-                encode = [(True, start, duration, 'video_encode-{:03}.mkv'.format(self.encode_nr)]
+                encode = [(True, start, duration, 'video_encode-{:03}.mkv'.format(self.encode_nr))]
                 return encode
             else:
                 self.encode_nr += 1
-                encode = [(True, start, duration_nt_kf, 'video_encode-{:03}.mkv'.format(self.encode_nr)]
+                encode = [(True, start, duration_nt_kf, 'video_encode-{:03}.mkv'.format(self.encode_nr))]
                 if duration - duration_nt_kf > 0:
                     result = self.__simulate_smart_mkvmerge(nt_kf_from_start, duration - duration_nt_kf, keyframes)
                     if result != None:
