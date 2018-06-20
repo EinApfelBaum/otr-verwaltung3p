@@ -460,7 +460,7 @@ class DecodeOrCut(Cut):
                         res_num = number
                         local_cutlist = p + "/" + match.group()
 
-            ci = CutinterfaceDialog.NewCutinterfaceDialog()
+            ci = CutinterfaceDialog.NewCutinterfaceDialog(self.gui)
             ci.set_transient_for(self.gui.main_window)
             ci.set_modal(True)
             cutlist = ci._run(filename, local_cutlist, self.app)

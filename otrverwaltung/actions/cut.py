@@ -284,8 +284,12 @@ class Cut(BaseAction):
 
         if not os.path.isfile(filename + '.ffindex_track00.kf.txt'):
             try:
-                command = [self.config.get_program('ffmsindex'), '-p', '-f', '-k', filename]
-                ffmsindex = subprocess.call(command)
+                # ~ command = [self.config.get_program('ffmsindex'), '-p', '-f', '-k', filename]
+                # ~ ffmsindex = subprocess.call(command)
+                command = [self.config.get_program('ffmsindex'), '-f', '-k', filename]
+                process = subprocess.Popen(command, stdout=subprocess.PIPE,
+                                                    stderr=subprocess.PIPE)
+                self.show_indexing_progress(process)
             except OSError:
                 return None, "ffmsindex konnte nicht aufgerufen werden."
 
@@ -320,8 +324,12 @@ class Cut(BaseAction):
 
         if not os.path.isfile(filename + '.ffindex_track00.tc.txt'):
             try:
-                command = [self.config.get_program('ffmsindex'), '-p', '-f', '-c', '-k', filename]
-                ffmsindex = subprocess.call(command)
+                # ~ command = [self.config.get_program('ffmsindex'), '-p', '-f', '-c', '-k', filename]
+                # ~ ffmsindex = subprocess.call(command)
+                command = [self.config.get_program('ffmsindex'), '-f', '-c', '-k', filename]
+                process = subprocess.Popen(command, stdout=subprocess.PIPE,
+                                                    stderr=subprocess.PIPE)
+                self.show_indexing_progress(process)
             except OSError:
                 return None, "ffmsindex konnte nicht aufgerufen werden."
 
@@ -353,10 +361,41 @@ class Cut(BaseAction):
         if os.path.isfile(filename + '.ffindex'):
             fileoperations.remove_file(filename + '.ffindex')
 
-        print()
-        print("Number of frames: {}".format(list(frame_timecode.keys())[-1] + 1))
-        print()
+        self.log.debug("Number of frames (frame_timecode dict): {}".format(list(frame_timecode.keys())[-1] + 1))
         return frame_timecode, timecode_frame, None
+
+    def show_indexing_progress(self, process):
+        """ Shows the progress of keyframe/timecode indexing in main_window """
+        self.log.debug("Function start")
+        first_run = True
+        while True:
+            l = ""
+            while True:
+                c = process.stdout.read(1).decode('utf-8')
+                if c == "\r" or c == "\n":
+                    break
+                l += c
+
+            if not l or "done" in l:
+                self.log.debug("Outer while break")
+                break
+
+            try:
+                if first_run and "Indexing" in l:
+                    first_run = False
+                    self.gui.main_window.set_tasks_text("Datei wird indiziert")
+
+                if len(l) > 25 and l[25].isdigit():
+                    progress = int(l[25:].replace('%', ''))
+                    # update progress
+                    self.gui.main_window.set_tasks_progress(progress)
+
+                while Gtk.events_pending():
+                    Gtk.main_iteration()
+            except ValueError:
+                pass
+
+        return
 
     def time_to_frame(self, nanoseconds):  # TESTING
         """
@@ -367,7 +406,7 @@ class Cut(BaseAction):
             return self.timecode_frame[nanoseconds]
         else:
             nearest_position = self.find_closest(self.timecode_frame, nanoseconds)
-            self.log.debug("nearest_position: {}".format(nearest_position))
+            # self.log.debug("nearest_position: {}".format(nearest_position))
             return self.timecode_frame[nearest_position]
 
     def frame_to_time(self, frame_number):  # TESTING
@@ -400,20 +439,28 @@ class Cut(BaseAction):
     def get_keyframe_in_front_of_frame(self, keyframes, frame):
         """Find keyframe less-than to frame."""
 
-        i = bisect.bisect_left(keyframes, frame)
-        if i:
-            return keyframes[i - 1]
+        if frame == 0:
+            self.log.debug("Restricting! No keyframe before this position")
+            return keyframes[0]
         else:
-            raise ValueError
+            i = bisect.bisect_left(keyframes, frame)
+            if i:
+                return keyframes[i - 1]
+            else:
+                raise ValueError
 
     def get_keyframe_after_frame(self, keyframes, frame):
         """Find keyframe greater-than to frame."""
 
-        i = bisect.bisect_right(keyframes, frame)
-        if i != len(keyframes):
-            return keyframes[i]
+        if frame >= keyframes[-1]:
+            self.log.debug("Restricting! No keyframe after this position")
+            return keyframes[-1]
         else:
-            raise ValueError
+            i = bisect.bisect_right(keyframes, frame)
+            if i != len(keyframes):
+                return keyframes[i]
+            else:
+                raise ValueError
 
     def complete_x264_opts(self, x264_opts, filename):
         """Analyse filename and complete the x264 options 
