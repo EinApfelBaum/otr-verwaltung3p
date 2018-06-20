@@ -1,4 +1,13 @@
-n.n,
+3.2.2-A, 2018-06-20
+    * Während eine Datei indiziert wird (ffmsindex), wird dies durch einem Fortschrittsbalken
+      im Hauptfenster angezeigt.
+    * Neue Zeit -> Frame Konvertierungsmethode (kann in den Einstellungen - Cutinterface)
+      aktiviert werden). Hauptsächlich sinnvoll für Aufnahmen von NTSC-Sendern (US-Format)
+    * Fehler beim Anzeigen der Schnitte in grün behoben: Der erste markierte Frame muss ein
+      Keyframe sein, der letzte ein (Keyframe - 1)
+    * Neues Shellskript data/tools/otr-avi2hq.sh um otr-avi zu otr-avi.HQ zu konvertieren (falls
+      Anfang oder Ende einer Sendung fehlt und nicht als HQ zu haben ist).
+    * Neue Keyboard shortcuts (s. Wiki)
     * Cutinterface: Widgets skalieren mit Fenstergröße
     * Cutinterface: Neues Feature "Sucher (seeker)"
     * Down-/Upload von Schnittlisten funktioniert mit der neuen cutlist.at (sniplist)

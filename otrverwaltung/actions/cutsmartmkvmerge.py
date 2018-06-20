@@ -79,6 +79,7 @@ class CutSmartMkvmerge(Cut):
         mkvmerge = self.config.get_program('mkvmerge')
         x264 = self.config.get_program('x264')
         ffmpeg = self.config.get_program('ffmpeg')
+        self.log.debug("FFMPEG: {}".format(ffmpeg))
         encoder_engine = self.config.get('smartmkvmerge', 'encoder_engine')
         # env
         my_env = os.environ.copy()

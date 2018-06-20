@@ -442,28 +442,32 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         return success, cur_pos
 
     def update_frames_and_time(self):
-        try:
-            # current_position = self.player.query_position(Gst.Format.TIME)[1]
-            success, current_position = self.query_position(Gst.Format.TIME)
-            duration = self.player.query_duration(Gst.Format.TIME)[1]
-            if not success:
-                raise ValueError('query_position() was not successful')
-        except Exception as e:  # manchmal geht es nicht, bspw. wenn gerade erst geseekt wurde
-            self.log.warning("Exception: {}".format(e))
+        if self.state == Gst.State.NULL:
             return
-
-        if self.atfc:
-            self.current_frame_position = self.time_to_frame(current_position )  # TESTING_ACTIVE
         else:
-            self.current_frame_position = current_position * self.framerate_num / self.framerate_denom / Gst.SECOND  # ROUND
+            try:
+                # current_position = self.player.query_position(Gst.Format.TIME)[1]
+                success, current_position = self.query_position(Gst.Format.TIME)
+                duration = self.player.query_duration(Gst.Format.TIME)[1]
+                if not success:
+                    # self.log.warning('query_position() was not successful')
+                    return
+            except Exception as e:  # manchmal geht es nicht, bspw. wenn gerade erst geseekt wurde
+                self.log.warning("Exception: {}".format(e))
+                return
 
-        # ROUND
-        if self.keyframes != None and round(self.current_frame_position) in self.keyframes:
-            string = 'Frame(K): '
-        else:
-            string = 'Frame: '
-        self.builder.get_object('label_time').set_text(string + '%i/%i, Zeit %s/%s' % (self.current_frame_position,
-                                self.get_frames() - 1, self.convert_sec(current_position), self.convert_sec(duration)))
+            if self.atfc:
+                self.current_frame_position = self.time_to_frame(current_position )  # TESTING_ACTIVE
+            else:
+                self.current_frame_position = current_position * self.framerate_num / self.framerate_denom / Gst.SECOND  # ROUND
+
+            # ROUND
+            if self.keyframes != None and round(self.current_frame_position) in self.keyframes:
+                string = 'Frame(K): '
+            else:
+                string = 'Frame: '
+            self.builder.get_object('label_time').set_text(string + '%i/%i, Zeit %s/%s' % (self.current_frame_position,
+                                    self.get_frames() - 1, self.convert_sec(current_position), self.convert_sec(duration)))
 
     def update_slider(self):
         try:
@@ -547,20 +551,19 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             listselection.select_path(tree_path)
         else:  # No cut selected
             if direction == "next":
-                if self.cut_selected_last + 1:  # same as if not self.cut_selected_last == -1
+                if self.cut_selected_last + 1:  # same as "if not self.cut_selected_last == -1"
                     listiter = listmodel.iter_nth_child(None, self.cut_selected_last + 1)
                     if listiter is None:
                         listiter = listmodel.get_iter_first()
                 else:
                     listiter = listmodel.get_iter_first()
             elif direction == "prev":
-                if self.cut_selected_last + 1:  # same as if not self.cut_selected_last == -1
-                    listiter = listmodel.iter_nth_child(None, self.cut_selected_last + 1)
+                if self.cut_selected_last + 1:  # same as "if not self.cut_selected_last == -1"
+                    listiter = listmodel.iter_nth_child(None, self.cut_selected_last)
+                    # Is the following necessary? Can listiter be None here?
                     if listiter is None:
-                        # ~ rows = listmodel.iter_n_children(None)
                         listiter = listmodel.iter_nth_child(None, rows - 1)
                 else:
-                    # ~ rows = listmodel.iter_n_children(None)
                     listiter = listmodel.iter_nth_child(None, rows - 1)
 
             tree_path = listmodel.get_path(listiter)
@@ -593,6 +596,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def on_eos(self, bus, msg):
         self.player.set_state(Gst.State.NULL)
+        self.state = Gst.State.NULL
         self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
 
     def on_state_changed(self, bus, msg):
@@ -613,8 +617,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             if self.getVideoLength:
                 self.getVideoLength = not self.getVideoLength
                 self.log.debug("Async done")
-                self.videolength = self.player.query_duration(Gst.Format.TIME)
-                self.frames = round(self.videolength[1] * self.framerate_num / self.framerate_denom / Gst.SECOND)  # ROUND
+                self.videolength = self.player.query_duration(Gst.Format.TIME)[1]
+                self.frames = round(self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND)  # ROUND
                 self.slider.set_range(0, self.get_frames())
                 self.timelines = [self.get_cuts_in_frames(self.initial_cutlist, self.initial_cutlist_in_frames)]
                 self.builder.get_object('slider').set_range(0, self.get_frames())
@@ -774,7 +778,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         try:
             success, nano_seconds = self.query_position(Gst.Format.TIME)
             if not success:
-                raise ValueError('query_position() was not successful') 
+                # self.log.debug('query_position() was not successful')
+                return
         except Exception as e:
             self.log.debug("Exception: {}".format(e))
             return
@@ -1064,7 +1069,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
                         # draw keyframe cuts that don't need reencoding with a different color
                         # ROUND
-                        if (round(start + duration) in self.keyframes) or (round(start + duration) == self.frames):
+                        # ~ if (round(start + duration) in self.keyframes) or (round(start + duration) == self.frames):
+                        if round(start) in self.keyframes and (round(start + duration) in self.keyframes or round(start + duration) == self.frames):
+                            # self.log.debug("Number of frames: {}".format(self.frames))
+                            # self.log.debug("start+duration: {}".format(round(start + duration)))
                             cr.set_source_rgb(0.0, 0.6, 0.0)  # green
                         else:
                             cr.set_source_rgb(1.0, 0.6, 0.0)  # orange
@@ -1098,10 +1106,11 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         # print("mouseX: {}".format(event.x))
         pass
 
-def NewCutinterfaceDialog():
+def NewCutinterfaceDialog(gui):
     glade_filename = otrpath.getdatapath('ui', 'CutinterfaceDialog.glade')
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)
     dialog = builder.get_object("cutinterface_dialog")
+    dialog.gui = gui
     return dialog
