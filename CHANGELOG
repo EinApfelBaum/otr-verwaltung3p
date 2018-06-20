@@ -7,6 +7,8 @@
       Keyframe sein, der letzte ein (Keyframe - 1)
     * Neues Shellskript data/tools/otr-avi2hq.sh um otr-avi zu otr-avi.HQ zu konvertieren (falls
       Anfang oder Ende einer Sendung fehlt und nicht als HQ zu haben ist).
+    * Installationsskript für OpenSuse Leap 15 hinzugefügt. Dies erfordert die Aktivierung des
+      "packman" repository. Anleitungen findet man im Netz.
     * Neue Keyboard shortcuts (s. Wiki)
     * Cutinterface: Widgets skalieren mit Fenstergröße
     * Cutinterface: Neues Feature "Sucher (seeker)"
