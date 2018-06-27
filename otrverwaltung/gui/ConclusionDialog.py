@@ -26,6 +26,8 @@ from otrverwaltung.constants import Action, Status, Cut_action
 from otrverwaltung.gui.widgets.FolderChooserComboBox import FolderChooserComboBox
 from otrverwaltung import path
 
+replacements = {"Ä" : "Ae", "ä" : "ae", "Ö" : "Oe", "ö" : "oe", "Ü" : "Ue",
+                "ü" : "ue", "ß" : "ss"}
 
 class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     """ The dialog is organized in boxes:
@@ -50,7 +52,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     def __init__(self):
         Gtk.Dialog.__init__(self)
         self.log = logging.getLogger(self.__class__.__name__)
-        pass
+        self.widget_entry_suggested = None
 
     def do_parser_finished(self, builder):
         self.builder = builder
@@ -60,6 +62,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
 
         self.combobox_archive = FolderChooserComboBox(add_empty_entry=True)
         self.builder.get_object('box_archive').pack_end(self.combobox_archive, True, True, 0)
+        self.widget_entry_suggested = self.builder.get_object('entry_suggested')
 
         for combobox in ['combobox_external_rating', 'combobox_own_rating']:
             cell = Gtk.CellRendererText()
@@ -111,7 +114,6 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     def set_entry_suggested_on_close(self):
         """ Called by _on_button_abort_clicked and _on_buttonConclusionClose_clicked
             Set entry_suggested (the suggested movie name) to the value of combobox_rename"""
-
         if self.builder.get_object('check_create_cutlist').get_active():
             if self.builder.get_object('entry_suggested').get_text() == "":
                 self.builder.get_object('entry_suggested').set_text(self.file_conclusion.cut.rename)
@@ -121,9 +123,11 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     ###
 
     def _on_button_back_clicked(self, widget, data=None):
+        self.set_entry_suggested_on_close()
         self.show_conclusion(self.conclusion_iter - 1)
 
     def _on_button_forward_clicked(self, widget, data=None):
+        self.set_entry_suggested_on_close()
         self.show_conclusion(self.conclusion_iter + 1)
         self.forward_clicks += 1
 
@@ -159,7 +163,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         if action == Action.DECODE:
             self.builder.get_object('box_buttons').show()  # show buttons, but hide all except play button
             widgets_hidden = ['image_cut', 'label_cut', 'label_cut_status', 'button_play_cut', 'box_rating',
-                              'check_delete_uncut', 'box_rename', 'box_archive']
+                              'check_delete_uncut', 'box_rename', 'box_archive', 'hbox_replace']
         elif action == Action.CUT:
             widgets_hidden = ['image_decode', 'label_decode', 'label_decode_status']
 
@@ -317,10 +321,23 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     def _on_comboboxentry_rename_changed(self, widget, data=None):
         self.log.info("cut.rename = {}".format(widget.get_active_text()))
         self.file_conclusion.cut.rename = widget.get_active_text()
+        # ~ if self.file_conclusion.cut.create_cutlist:
+            # ~ self.widget_entry_suggested.set_text(widget.get_active_text())
 
-    def _on_button_rename_func_clicked(self, widget, data=None):
-        pass
-    
+    def _on_button_spaces_clicked(self, widget, data=None):
+        self.log.debug("Function start")
+        name = self.builder.get_object('comboboxentry_rename').get_active_text()
+        new_name = name.replace(' ', '_')
+        self.builder.get_object('comboboxtext-entry').set_text(new_name)
+
+    def _on_button_umlauts_clicked(self, widget, data=None):
+        self.log.debug("Function start")
+        name = self.builder.get_object('comboboxentry_rename').get_active_text()
+        for key, value in replacements.items():
+            if key in name:
+                name = name.replace(key, value)
+        self.builder.get_object('comboboxtext-entry').set_text(name)
+
     def _on_combobox_archive_changed(self, widget, data=None):
         if self.file_conclusion != Action.DECODE:
             archive_to = self.combobox_archive.get_active_path()
