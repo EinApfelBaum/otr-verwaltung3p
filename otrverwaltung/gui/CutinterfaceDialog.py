@@ -654,7 +654,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         mod_alt = (event.state & Gdk.ModifierType.MOD1_MASK)
 
         if event.type == Gdk.EventType.KEY_PRESS:
-            time.sleep(0.05)
             # CTRL
             if not mod_shift and not mod_alt and mod_ctrl:
                 if keyname == 'LEFT':
@@ -811,7 +810,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.jump_to(nanoseconds=nano_seconds, flags=flags)
 
     def jump_key(self, direction, playing=None):
-        time.sleep(0.05)
         frame = self.current_frame_position
         if direction == "backward":
             jumpto = self.get_keyframe_in_front_of_frame(self.keyframes, frame)
@@ -824,7 +822,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.player.set_state(Gst.State.PLAYING)
 
     def jump_to(self, frames=None, seconds=None, nanoseconds=0, flags=Gst.SeekFlags.ACCURATE, playing=None):
-        time.sleep(0.05)
         if frames:
             if frames >= self.get_frames():
                 frames = self.get_frames()-1
