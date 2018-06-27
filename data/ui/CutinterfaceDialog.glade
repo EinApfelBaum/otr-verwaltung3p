@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.22.1 -->
 <interface>
-  <requires lib="gtk+" version="3.20"/>
+  <requires lib="gtk+" version="3.18"/>
   <requires lib="CutinterfaceDialog" version="1.0"/>
   <object class="GtkListStore" id="cutslist">
     <columns>
@@ -73,6 +73,7 @@
                 <property name="can_focus">False</property>
                 <property name="margin_left">10</property>
                 <property name="label" translatable="yes">Datei: </property>
+                <property name="selectable">True</property>
                 <property name="xalign">0</property>
               </object>
               <packing>
@@ -518,7 +519,6 @@
                     <property name="can_focus">False</property>
                     <property name="margin_bottom">5</property>
                     <property name="shadow_type">in</property>
-                    <property name="propagate_natural_width">True</property>
                     <child>
                       <object class="GtkTreeView" id="cutsview">
                         <property name="visible">True</property>
