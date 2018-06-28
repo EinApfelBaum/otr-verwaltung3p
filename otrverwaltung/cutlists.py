@@ -42,6 +42,8 @@ wrong_right_chars = {"Ã„" : "Ä", "Ã¤" : "ä", "Ã–" : "Ö", "Ã¶" : "ö
                      "Ã§" : "ç", "Ã©" : "é", "Ã¨" : "è", "Ãª" : "ê", "Ã´" : "ô", 
                      "Ã«" : "ë"}
 
+qualities = {'.mpg.mp4' : 'MP4', '.mpg.avi' : 'AVI', '.HQ.avi' : 'HQ', '.HD.avi' : 'HD'}
+
 class Cutlist:
     def __init__(self):
 
@@ -77,11 +79,12 @@ class Cutlist:
         self.fps = 0
 
         # own additions
-        self.app = 'OTR-Verwaltung++'
+        self.app = 'OTR-Verwaltung3p'
         self.errors = False
         self.cuts_seconds = []  # (start, duration) list
         self.cuts_frames = []  # (start, duration) list
         self.local_filename = None
+        self.quality = ''
 
     def upload(self, server, cutlist_hash):
         """ Uploads a cutlist to cutlist.at "
@@ -160,6 +163,10 @@ class Cutlist:
             self.countcuts = int(config_parser.get('General', 'NoOfCuts'))
             self.actualcontent = config_parser.get('Info', 'ActualContent')
             self.filename_original = config_parser.get('General', 'ApplyToFile')
+            for key, value in qualities.items():
+                if key in self.filename_original:
+                    self.quality = value
+
         except Exception as e:
             self.log.error("Exception: {0}".format(e))
             self.log.error("Malformed cutlist: ".format(self.local_filename))
@@ -186,7 +193,8 @@ class Cutlist:
             for count in range(noofcuts):
                 cut = "Cut" + str(count)
 
-                if config_parser.has_option(cut, "StartFrame") and config_parser.has_option(cut, "DurationFrames"):
+                if config_parser.has_option(cut, "StartFrame") and \
+                                                config_parser.has_option(cut, "DurationFrames"):
                     start_frame = int(config_parser.get(cut, "StartFrame"))
                     duration_frames = int(config_parser.get(cut, "DurationFrames"))
                     if duration_frames > 0:
@@ -213,9 +221,9 @@ class Cutlist:
         url = "%srate.php?rate=%s&rating=%s" % (server, self.id, rating)
 
         try:
-            print("[Cutlist] Rate URL:", url)
+            self.log.debug("Rate URL: {}".format(url))
             message = urllib.request.urlopen(url).read()
-            print("[Cutlist] Rate message: ", message)
+            self.log.debug("Rate message: {}".format(message))
 
             if "Cutlist wurde bewertet. Vielen Dank!" in message:
                 return True, message
@@ -272,7 +280,7 @@ class Cutlist:
                 ])
 
         except IOError:
-            print("Konnte Cutlist-Datei nicht erstellen: " + self.local_filename)
+            self.log.warning("Konnte Cutlist-Datei nicht erstellen: " + self.local_filename)
             # finally:
             #    cutlist.close()
 
@@ -284,7 +292,8 @@ class Cutlist:
 #
 #
 
-def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq, error_cb=None, cutlist_found_cb=None):
+def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq, error_cb=None,
+                                                    cutlist_found_cb=None, get_all_qualities=None):
     """ Downloads all cutlists for the given file. 
             filename            - movie filename
             server              - cutlist server
@@ -302,7 +311,8 @@ def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq, e
         size = fileoperations.get_size(filename)
         urls = ["%sgetxml.php?ofsb=%s" % (server, str(size)),
                 # siehe http://www.otrforum.com/showthread.php?t=59666
-                "%sgetxml.php?ofsb=%s" % (server, str((size + 2 * 1024 ** 3) % (4 * 1024 ** 3) - 2 * 1024 ** 3))]
+                "%sgetxml.php?ofsb=%s" % (server, str((size + 2 * 1024 ** 3) % (4 * 1024 ** 3)
+                                                                                - 2 * 1024 ** 3))]
 
     else:  # by name
         if "/" in filename:
@@ -312,6 +322,11 @@ def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq, e
 
         if cutlist_mp4_as_hq and extension == '.mp4':
             root += ".HQ"
+
+        if get_all_qualities:
+            for q in [".HQ", ".HD"]:
+                if q in root:
+                    root = root.replace(q, '')
 
         urls = ["%sgetxml.php?name=%s" % (server, root)]
 
@@ -353,7 +368,11 @@ def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq, e
             c.othererrordescription = __read_value(cutlist, "othererrordescription")
             c.downloadcount = __read_value(cutlist, "downloadcount")
             c.autoname = __read_value(cutlist, "autoname")
-            c.filename_original = __read_value(cutlist, "filename_original")
+            # ~ c.filename_original = __read_value(cutlist, "filename_original")
+            c.filename_original = os.path.splitext(__read_value(cutlist, "name"))[0]
+            for key, value in qualities.items():
+                if key in c.filename_original:
+                    c.quality = value
 
             ids = [cutlist.id for cutlist in cutlists]
             if not c.id in ids:
@@ -368,6 +387,7 @@ def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq, e
 
 
 def __read_value(cutlist_element, node_name):
+    llog = logging.getLogger(__name__)
     try:
         elements = cutlist_element.getElementsByTagName(node_name)
         for node in elements[0].childNodes:
@@ -377,9 +397,11 @@ def __read_value(cutlist_element, node_name):
                     bad_string = bad_string.replace(key, value)
 
             return bad_string  # hopefully not bad anymore
-    except:
+    except Exception as e:
+        llog.debug("Exception: ".format(e))
         return ''
 
+    llog.debug("Reading node {} failed. Returning empty string.".format(node_name))
     return ''
 
 

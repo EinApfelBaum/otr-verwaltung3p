@@ -43,6 +43,7 @@ class CutlistsTreeView(Gtk.TreeView):
 
         # create the TreeViewColumns to display the data
         column_names = [
+            ("Art", 'quality'),
             ("Autor", 'author'),
             ("Autorwertung", 'ratingbyauthor'),
             ("Benutzerwertung", self._treeview_rating),
@@ -99,7 +100,8 @@ class CutlistsTreeView(Gtk.TreeView):
             if cutlist.ratingcount == 1:
                 cell.set_property('text', "%s (1 Bewertung)" % cutlist.rating)
             else:
-                cell.set_property('text', "%s (%s Bewertungen)" % (cutlist.rating, cutlist.ratingcount))
+                cell.set_property('text', "%s (%s Bewertungen)" % (cutlist.rating,
+                                                                            cutlist.ratingcount))
         else:
             cell.set_property('text', "Keine")
 
@@ -118,7 +120,8 @@ class CutlistsTreeView(Gtk.TreeView):
 
     def _treeview_error_desc(self, column, cell, model, iter):
         cutlist = model.get_value(iter, 0)
-        cell.set_property('markup', "<span foreground='red'>%s</span>" % cutlist.othererrordescription)
+        cell.set_property('markup', "<span foreground='red'>%s</span>" %
+                                                                    cutlist.othererrordescription)
 
     def add_cutlist(self, c):
         if c.errors in self.errors:

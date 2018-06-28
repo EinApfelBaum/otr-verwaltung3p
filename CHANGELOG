@@ -1,3 +1,12 @@
+3.2.3-A, 2018-06-28
+    * Sollte für HD oder HQ Dateien keine Schnittliste gefunden werden, so wird automatisch
+      noch einmal nach Schnittlisten für andere Qualitäten gesucht.
+    * In der Liste der auf cutlist.at verfügbaren Schnittlisten wird nun angezeigt, für welche
+      Qualität (MP4, AVI, HQ oder HD) sie gedacht sind.
+    * Neue Buttons im ConclusionDialog (Zusammenfassung) zum Umbenennen (Leerzeichen zu
+      Unterstrich, Umlaute inkl. ß zu Ae, ae, ss usw.)
+    * Upload mehrerer Cutlists funktioniert jetzt.
+
 3.2.2-A, 2018-06-20
     * Während eine Datei indiziert wird (ffmsindex), wird dies durch einem Fortschrittsbalken
       im Hauptfenster angezeigt.
@@ -9,6 +18,8 @@
       Anfang oder Ende einer Sendung fehlt und nicht als HQ zu haben ist).
     * Installationsskript für OpenSuse Leap 15 hinzugefügt. Dies erfordert die Aktivierung des
       "packman" repository. Anleitungen findet man im Netz.
+    * Bei mehr sehr vielen Schnitten kam das Programm bisher beim Schneiden durcheinander. Jetzt
+      sind beliebig viele Schnitte möglich (thx Mainboand).
     * Neue Keyboard shortcuts (s. Wiki)
     * Cutinterface: Widgets skalieren mit Fenstergröße
     * Cutinterface: Neues Feature "Sucher (seeker)"
