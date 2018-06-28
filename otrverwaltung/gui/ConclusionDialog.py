@@ -32,8 +32,8 @@ replacements = {"Ä" : "Ae", "ä" : "ae", "Ö" : "Oe", "ö" : "oe", "Ü" : "Ue",
 class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     """ The dialog is organized in boxes:
             box_filenames - Shows the filename and the statuses of a decode/cut action.
-            box_buttons - Play button, Cut-Play button, Put uncut file in trash, box_rename, box_rating
-            box_create_cutlist - Settings for a cutlist.
+            box_buttons - Play button, Cut-Play button, Put uncut file in trash, box_rename,
+            box_rating, box_create_cutlist - Settings for a cutlist.
 
 
         If cut.status == status.OK:                 v=Visible, x!=not visible
@@ -133,8 +133,8 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
 
     def _on_button_abort_clicked(self, widget, data=None):
         self.set_entry_suggested_on_close()
-        widgets_hidden = ['button_play_cut', 'box_rating', 'check_delete_uncut', 'box_rename', 'box_archive',
-                          'button_play', 'box_create_cutlist']
+        widgets_hidden = ['button_play_cut', 'box_rating', 'check_delete_uncut', 'box_rename',
+                            'box_archive', 'button_play', 'box_create_cutlist', 'hbox_replace']
         for widget in widgets_hidden:
             self.builder.get_object(widget).hide()
 
@@ -162,8 +162,9 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         widgets_hidden = []
         if action == Action.DECODE:
             self.builder.get_object('box_buttons').show()  # show buttons, but hide all except play button
-            widgets_hidden = ['image_cut', 'label_cut', 'label_cut_status', 'button_play_cut', 'box_rating',
-                              'check_delete_uncut', 'box_rename', 'box_archive', 'hbox_replace']
+            widgets_hidden = ['image_cut', 'label_cut', 'label_cut_status', 'button_play_cut',
+                                'box_rating', 'check_delete_uncut', 'box_rename', 'box_archive',
+                                'hbox_replace']
         elif action == Action.CUT:
             widgets_hidden = ['image_decode', 'label_decode', 'label_decode_status']
 
@@ -209,6 +210,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                                                             self.file_conclusion.cut.delete_uncut)
 
             self.builder.get_object('box_rename').props.visible = cut_ok
+            self.builder.get_object('hbox_replace').props.visible = cut_ok
 
             if cut_ok:
                 rename_list = []
