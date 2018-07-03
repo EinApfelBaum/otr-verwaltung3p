@@ -35,7 +35,7 @@ class EmailPasswordDialog(Gtk.Dialog, Gtk.Buildable):
 
     def set_email_password(self, email, password):
         self.builder.get_object('entryDialogEMail').set_text(email)
-        self.builder.get_object('entryDialogPassword').set_text(password.decode('utf-8'))
+        self.builder.get_object('entryDialogPassword').set_text(password)
 
     def get_email_password(self):
         return self.builder.get_object('entryDialogEMail').get_text(), self.builder.get_object(
