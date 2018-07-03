@@ -173,9 +173,9 @@ class ConclusionsManager:
             error_messages = []
 
             count = len(cutlists)
-            counter = 0
+            # ~ counter = 0
             for cutlist in cutlists:
-                counter += 1
+                # ~ counter += 1
                 error_message = cutlist.upload(self.app.config.get('general', 'server'),
                                                self.app.config.get('general', 'cutlist_hash'))
                 if error_message:
@@ -183,10 +183,10 @@ class ConclusionsManager:
                 else:
                     if self.app.config.get('general', 'delete_cutlists'):
                         fileoperations.remove_file(cutlist.local_filename)
-                self.log.debug("Counter: {}, Count: {}".format(counter, count))
-                if counter < count:
-                    self.log.debug("Multiple cutlists: Next upload delayed.")
-                    time.sleep(1.1)
+                # ~ self.log.debug("Counter: {}, Count: {}".format(counter, count))
+                # ~ if counter < count:
+                    # ~ self.log.debug("Multiple cutlists: Next upload delayed.")
+                    # ~ time.sleep(1.1)
 
             message = "Es wurden %s/%s Cutlisten hochgeladen!" % (str(count - len(error_messages)), str(count))
             if len(error_messages) > 0:

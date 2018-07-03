@@ -683,7 +683,7 @@
                                   <object class="GtkComboBoxText" id="combobox_avi">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="active_id">avidemux2_cli</property>
+                                    <property name="active_id">SmartMKVmerge</property>
                                     <items>
                                       <item id="SmartMKVmerge" translatable="yes">SmartMKVmerge</item>
                                       <item id="intern-vdub" translatable="yes">intern-vdub</item>
@@ -699,6 +699,7 @@
                                   <object class="GtkButton" id="button_set_file_avi">
                                     <property name="label" translatable="yes">...</property>
                                     <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
                                     <signal name="clicked" handler="_on_button_set_file_clicked" object="combobox_avi" swapped="no"/>
@@ -739,6 +740,7 @@
                                   <object class="GtkButton" id="button_set_file_HDHQ">
                                     <property name="label" translatable="yes">...</property>
                                     <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
                                     <signal name="clicked" handler="_on_button_set_file_clicked" object="combobox_hq" swapped="no"/>
@@ -766,6 +768,7 @@
                                     <property name="active_id">intern_vdub</property>
                                     <items>
                                       <item id="intern-vdub" translatable="yes">intern-vdub</item>
+                                      <item id="SmartMKVmerge" translatable="yes">SmartMKVmerge</item>
                                     </items>
                                   </object>
                                   <packing>
@@ -778,6 +781,7 @@
                                   <object class="GtkButton" id="button_set_file_mp4">
                                     <property name="label" translatable="yes">...</property>
                                     <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
                                     <signal name="clicked" handler="_on_button_set_file_clicked" object="hboxmp4Cutlist" swapped="no"/>
@@ -843,6 +847,7 @@
                                   <object class="GtkButton" id="button_set_file_ac3">
                                     <property name="label" translatable="yes">...</property>
                                     <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
                                     <signal name="clicked" handler="_on_button_set_file_clicked" object="combobox_ac3" swapped="no"/>
@@ -883,6 +888,7 @@
                                   <object class="GtkButton" id="button_set_file_avi1">
                                     <property name="label" translatable="yes">...</property>
                                     <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
                                     <signal name="clicked" handler="_on_button_set_file_clicked" object="combobox_man_avi" swapped="no"/>
@@ -923,6 +929,7 @@
                                   <object class="GtkButton" id="button_set_file_hq">
                                     <property name="label" translatable="yes">...</property>
                                     <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
                                     <signal name="clicked" handler="_on_button_set_file_clicked" object="combobox_man_hq" swapped="no"/>
@@ -963,6 +970,7 @@
                                   <object class="GtkButton" id="button_set_file_mp1">
                                     <property name="label" translatable="yes">...</property>
                                     <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
                                     <signal name="clicked" handler="_on_button_set_file_clicked" object="combobox_man_mp4" swapped="no"/>
@@ -1247,7 +1255,7 @@
                     </child>
                     <child>
                       <object class="GtkRadioButton" id="radio_size">
-                        <property name="label" translatable="yes">Größe der Datei (empfohlen)</property>
+                        <property name="label" translatable="yes">Größe der Datei</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>

@@ -207,10 +207,11 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                                         Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 
         if chooser.run() == Gtk.ResponseType.OK:
-            if type(entry) == Gtk.ComboBoxText:
-                entry.child.set_text(chooser.get_filename())
-            else:
-                entry.set_text(chooser.get_filename())
+            # ~ if type(entry) == Gtk.ComboBoxText:
+                # ~ entry.child.set_text(chooser.get_filename())
+            # ~ else:
+            entry.prepend(chooser.get_filename(), chooser.get_filename())
+            entry.set_active(0)
 
         chooser.destroy()
 
