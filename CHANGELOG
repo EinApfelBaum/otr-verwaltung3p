@@ -1,3 +1,9 @@
+n.n,
+    * Das Schneiden von mp4 mit SmartMKVmerge ist wieder aktiviert (Dies sollte genauso
+      (un-)zuverlässig wie in otrv++ sein).
+    * Easydecoder wurde auf neueste Version 0.4.1133 aktualisiert.
+    * Bugfixes
+
 3.2.3-A, 2018-06-28
     * Sollte für HD oder HQ Dateien keine Schnittliste gefunden werden, so wird automatisch
       noch einmal nach Schnittlisten für andere Qualitäten gesucht.
