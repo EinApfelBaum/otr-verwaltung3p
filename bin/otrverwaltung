@@ -48,7 +48,7 @@ sys.modules["gi.overrides.GstPbutils"] = None
 
 ## Logging
 logging.basicConfig(level=logging.WARNING, stream=sys.stdout,
-                    format='%(levelname).1s:%(module)s:%(name)s:%(funcName)s: %(message)s')
+                format='%(levelname).1s:%(module)s:%(name)s:%(funcName)s:%(lineno)s %(message)s')
 log = logging.getLogger("otrverwaltung")
 
 # Options and configuration
@@ -240,8 +240,7 @@ class App:
             self.config = Config(os.path.join(launch_dir, "..", "conf"), configuration)
         else:
             # TODO: Remove this line after one release
-            configuration = self.import_old_config(configuration)
-
+            # ~ configuration = self.import_old_config(configuration)
             self.config = Config(path.get_config_dir("conf"), configuration)
 
         self.__search_text = ""
@@ -255,11 +254,12 @@ class App:
             '.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])*_TVOON_DE.mpg(-cut\.avi|\.HQ-cut\.avi|\.HD-cut\.avi|-cut\.mp4|\.HQ-cut\.mp4|\.HD-cut\.mp4|\.HD-cut\.mkv|\.HQ-cut\.mkv|-cut\.mkv)$')
         self.cut_video = re.compile('.*(avi|mp4|mkv|wmv|ac3)$')
 
+        self.config.load()
         # load gui
         self.__gui = gui.Gui(self)  # for backwards compability
         self.gui = self.__gui
 
-        self.config.load()
+        # ~ self.config.load()
 
         if self.config.get('general', 'window_settings'):
             maximize, width, height = self.config.get('general', 'window_settings').split(',')
@@ -305,51 +305,50 @@ class App:
 
         self.__gui.main_window.broadcasts_badge()
 
-    def import_old_config(self, configuration):
-        # TODO: Remove after one release          
+    # ~ def import_old_config(self, configuration):
+        # ~ # TODO: Remove after one release          
 
-        # try to move plugins
-        import shutil
-        src = join(os.environ.get('HOME'), '.otr-verwaltung', 'plugins')
-        dst = path.get_storage_dir("plugins")
-        try:
-            shutil.copytree(src, dst)
-        except:
-            pass
+        # ~ # try to move plugins
+        # ~ import shutil
+        # ~ src = join(os.environ.get('HOME'), '.otr-verwaltung', 'plugins')
+        # ~ dst = path.get_storage_dir("plugins")
+        # ~ try:
+            # ~ shutil.copytree(src, dst)
+        # ~ except:
+            # ~ pass
 
-        try:
-            config = join(os.environ.get('HOME'), '.otr-verwaltung', 'conf')
-            config = open(config, 'r')
-        except:
-            return configuration
+        # ~ try:
+            # ~ config = join(os.environ.get('HOME'), '.otr-verwaltung', 'conf')
+            # ~ config = open(config, 'r')
+        # ~ except:
+            # ~ return configuration
 
-        # read file
-        for line in config:
-            if not '=' in line:
-                continue
-            key, value = line.split('=', 1)
-            key, value = key.strip(), value.strip()
+        # ~ # read file
+        # ~ for line in config:
+            # ~ if not '=' in line:
+                # ~ continue
+            # ~ key, value = line.split('=', 1)
+            # ~ key, value = key.strip(), value.strip()
 
-            if key in configuration['general'].keys():
-                datatype = type(configuration['general'][key])
+            # ~ if key in configuration['general'].keys():
+                # ~ datatype = type(configuration['general'][key])
 
-                # print "%5s: %15s=%15s" % (datatype, key.strip(), value)
-                if datatype == bool:
-                    value = bool(int(value))
-                else:
-                    value = datatype(value)
+                # ~ # print "%5s: %15s=%15s" % (datatype, key.strip(), value)
+                # ~ if datatype == bool:
+                    # ~ value = bool(int(value))
+                # ~ else:
+                    # ~ value = datatype(value)
 
-                self.info("IMPORT: %s of %s" % (key, datatype))
-                configuration['general'][key] = value
+                # ~ self.info("IMPORT: %s of %s" % (key, datatype))
+                # ~ configuration['general'][key] = value
 
-            elif key == "enabled_plugins":
-                configuration['plugins']['enabled'] = value
+            # ~ elif key == "enabled_plugins":
+                # ~ configuration['plugins']['enabled'] = value
 
-        os.rename(join(os.environ.get('HOME'), '.otr-verwaltung'), join(os.environ.get('HOME'), '.otr-verwaltung_ALT'))
+        # ~ os.rename(join(os.environ.get('HOME'), '.otr-verwaltung'), join(os.environ.get('HOME'), '.otr-verwaltung_ALT'))
 
-        return configuration
+        # ~ return configuration
 
-        ###
 
     ### Show sections
     ###

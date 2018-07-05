@@ -530,55 +530,61 @@ class Cut(BaseAction):
         max_sec = 0.0
 
         while True:
-            line = blocking_process.stdout.readline()
-            logging.debug(line)
-            if line == '':
-                break
-            elif 'x264 [info]: started' in line:
-                self.gui.main_window.set_tasks_text('Kodiere Video')
-                self.gui.main_window.set_tasks_progress(0)
-            elif 'x264 [info]' in line:
-                continue
-            elif 'time=' in line:
-                m = re.search(time_match, line)
-                if m:
-                    sec = float(m.group(1)) * 3600 + float(m.group(2)) * 60 + float(m.group(3))
-                    self.gui.main_window.set_tasks_progress(int(sec / max_sec * 100))
-            elif '%' in line:
-                m = re.search(progress_match, line)
-                if m:
-                    self.gui.main_window.set_tasks_progress(int(m.group(1)))
-            elif 'Importing' in line:
-                m = re.search(mp4box_match, line)
-                if m:
-                    self.gui.main_window.set_tasks_text('Importiere Stream')
-                    self.gui.main_window.set_tasks_progress(int(m.group(1)))
-            elif 'ISO File Writing' in line:
-                m = re.search(mp4box_match, line)
-                if m:
-                    self.gui.main_window.set_tasks_text('Schreibe MP4')
-                    self.gui.main_window.set_tasks_progress(int(m.group(1)))
-            elif 'Duration' in line:
-                m = re.search(time_match, line)
-                if m:
-                    max_sec = float(m.group(1)) * 3600 + float(m.group(2)) * 60 + float(m.group(3))
-            elif 'video_copy' in line and '.mkv\' has been opened for writing' in line:
-                self.gui.main_window.set_tasks_text('Splitte Video')
-                self.gui.main_window.set_tasks_progress(0)
-            elif 'audio_copy' in line and '.mkv\' has been opened for writing' in line:
-                self.gui.main_window.set_tasks_text('Schneide Audio')
-                self.gui.main_window.set_tasks_progress(0)
-            elif '.mkv\' has been opened for writing.' in line:
-                self.gui.main_window.set_tasks_text('Muxe MKV')
-                self.gui.main_window.set_tasks_progress(0)
-            elif 'ffmpeg version' in line:
-                self.gui.main_window.set_tasks_text('Kodiere Audio')
-                self.gui.main_window.set_tasks_progress(0)
-            else:
-                continue
+            try:
+                line = blocking_process.stdout.readline()
+                logging.debug(line)
+                if line == '':
+                    break
+                elif 'x264 [info]: started' in line:
+                    self.gui.main_window.set_tasks_text('Kodiere Video')
+                    self.gui.main_window.set_tasks_progress(0)
+                elif 'x264 [info]' in line:
+                    continue
+                elif 'time=' in line:
+                    m = re.search(time_match, line)
+                    if m:
+                        sec = float(m.group(1)) * 3600 + float(m.group(2)) * 60 + float(m.group(3))
+                        if max_sec >= 1.0:
+                            self.gui.main_window.set_tasks_progress(int(sec / max_sec * 100))
+                elif '%' in line:
+                    m = re.search(progress_match, line)
+                    if m:
+                        self.gui.main_window.set_tasks_progress(int(m.group(1)))
+                elif 'Importing' in line:
+                    m = re.search(mp4box_match, line)
+                    if m:
+                        self.gui.main_window.set_tasks_text('Importiere Stream')
+                        self.gui.main_window.set_tasks_progress(int(m.group(1)))
+                elif 'ISO File Writing' in line:
+                    m = re.search(mp4box_match, line)
+                    if m:
+                        self.gui.main_window.set_tasks_text('Schreibe MP4')
+                        self.gui.main_window.set_tasks_progress(int(m.group(1)))
+                elif 'Duration' in line:
+                    m = re.search(time_match, line)
+                    if m:
+                        max_sec = float(m.group(1)) * 3600 + float(m.group(2)) * 60 + float(m.group(3))
+                elif 'video_copy' in line and '.mkv\' has been opened for writing' in line:
+                    self.gui.main_window.set_tasks_text('Splitte Video')
+                    self.gui.main_window.set_tasks_progress(0)
+                elif 'audio_copy' in line and '.mkv\' has been opened for writing' in line:
+                    self.gui.main_window.set_tasks_text('Schneide Audio')
+                    self.gui.main_window.set_tasks_progress(0)
+                elif '.mkv\' has been opened for writing.' in line:
+                    self.gui.main_window.set_tasks_text('Muxe MKV')
+                    self.gui.main_window.set_tasks_progress(0)
+                elif 'ffmpeg version' in line:
+                    self.gui.main_window.set_tasks_text('Kodiere Audio')
+                    self.gui.main_window.set_tasks_progress(0)
+                else:
+                    continue
+
+            except UnicodeDecodeError as e:
+                self.log.debug("Execption: {}".format(e))
 
             while Gtk.events_pending():
                 Gtk.main_iteration()
+            
 
     def get_norm_volume(self, filename, stream):
         """ Gets the volume correction of a movie using ffprobe. 

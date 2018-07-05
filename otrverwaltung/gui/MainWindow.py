@@ -17,7 +17,8 @@
 from os.path import basename
 
 import time
-import urllib.request
+# ~ import urllib.request
+from urllib.request import Request, urlopen
 import webbrowser
 import logging
 import git
@@ -42,7 +43,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
     def __init__(self):
         Gtk.Window.__init__(self)
-        pass
+        self.log = logging.getLogger(self.__class__.__name__)
+        self.svn_version_url = ''
 
     def do_parser_finished(self, builder):
         self.builder = builder
@@ -64,7 +66,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.svn_version_url = "https://raw.githubusercontent.com/einapfelbaum/otr-verwaltung3p/master/data/VERSION"
 
         try:
-           svn_version = urllib.request.urlopen(self.svn_version_url).read().strip().decode('utf-8')
+           svn_version = urlopen(self.svn_version_url).read().strip().decode('utf-8')
         except IOError:
            self.set_title('OTR-Verwaltung3p' + ' ' + current_version)
         else:
@@ -573,28 +575,36 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         current_version = open(path.getdatapath("VERSION"), 'r').read().strip()
 
         try:
-            svn_version = urllib.request.urlopen(self.svn_version_url).read().strip().decode('utf-8')
+            svn_version = urlopen(self.svn_version_url).read().strip().decode('utf-8')
         except IOError:
             self.gui.message_error_box("Konnte keine Verbindung mit dem Internet herstellen!")
             return
 
         if current_version in svn_version:
-            self.gui.message_info_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s" % (current_version, svn_version))
+            self.gui.message_info_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s" % \
+                                                                    (current_version, svn_version))
         else:
-            if self.gui.question_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s\n\nAutomatisch updaten?\n" % (current_version, svn_version)):
+            if self.gui.question_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s\n\n\
+                                        Automatisch updaten?\n" % (current_version, svn_version)):
                 #get new version from git
                 script_root_dir = os.path.abspath(os.path.realpath(sys.argv[0])+'/../..')
                 file = open(script_root_dir+"/.git/config", "r")
                 filelist = file.read()
-                if 'url = https://github.com/EinApfelBaum/otr-verwaltung3p.git' in filelist:    # check if program is in right repo
+                # check if program is in right repo
+                if 'url = https://github.com/EinApfelBaum/otr-verwaltung3p.git' in filelist:
                     g = git.cmd.Git(script_root_dir+'/')
-                    logging.debug(g.checkout('master'))
+                    self.log.debug(g.checkout('master'))
                     git_pull_output=g.pull()
-                    logging.debug(git_pull_output)
+                    self.log.debug(git_pull_output)
                     if "Already up-to-date" in git_pull_output:
-                        self.gui.message_error_box("Es konnten keine Updates gefunden werden.\nBitte starte das Programm neu, damit ein bereits eingespieltes Update angewendet werden kann!\n")
+                        self.gui.message_error_box("Es konnten keine Updates gefunden werden.\n\
+                                    Bitte starte das Programm neu, damit ein bereits eingespieltes \
+                                    Update angewendet werden kann!\n")
                     else:
-                        if self.gui.question_box("Die Version wurde auf %s geupdated.\n\nBestätige mit 'Ja', damit das Programm neu gestartet wird und das Update direkt angewendet werden kann!\n" % (open(path.getdatapath("VERSION"), 'r').read().strip())):
+                        if self.gui.question_box("Die Version wurde auf %s geupdated.\n\nBestätige \
+                                    mit 'Ja', damit das Programm neu gestartet wird und das Update \
+                                    direkt angewendet werden kann!\n" %
+                                        (open(path.getdatapath("VERSION"), 'r').read().strip())):
                             os.execv(sys.executable, ['python'] + sys.argv)
                             sys.exit()
 
@@ -618,7 +628,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         about_dialog.set_website("http://elbersb.de/otrverwaltung")
         about_dialog.set_comments("Zum Verwalten von Dateien von onlinetvrecorder.com.")
         about_dialog.set_copyright("Copyright \xc2\xa9 2010 Benjamin Elbers and others")
-        about_dialog.set_authors(["Benjamin Elbers", "JanS", "monarc99", "EinApfelbaum", "Timo08", "gCurse"])
+        about_dialog.set_authors(["Benjamin Elbers", "JanS", "monarc99", "EinApfelbaum", "Timo08",
+                                                                                        "gCurse"])
         about_dialog.run()
         about_dialog.destroy()
 
@@ -643,12 +654,14 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
     def _on_main_window_delete_event(self, widget, data=None):
         if self.app.locked:
-            if not self.gui.question_box("Das Programm arbeitet noch. Soll wirklich abgebrochen werden?"):
+            if not self.gui.question_box("Das Programm arbeitet noch. \
+                                          Soll wirklich abgebrochen werden?"):
                 return True  # won't be destroyed
 
         for row in self.treeview_download.liststore:
             if row[0].information['status'] in [DownloadStatus.RUNNING, DownloadStatus.SEEDING]:
-                if not self.gui.question_box("Es gibt noch laufende Downloads. Soll wirklich abgebrochen werden?"):
+                if not self.gui.question_box("Es gibt noch laufende Downloads. \
+                                              Soll wirklich abgebrochen werden?"):
                     return True  # won't be destroyed
                 break
 
@@ -703,9 +716,10 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
 
 def NewMainWindow(app, gui):
+    logger = logging.getLogger(__name__)
     glade_filename = path.getdatapath('ui', 'MainWindow.glade')
     version = open(path.getdatapath("VERSION"), 'r').read().strip()
-    logging.info("Version: " + version)
+    logger.info("Version: " + version)
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)

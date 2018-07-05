@@ -141,6 +141,7 @@ class Config:
                             pass
                 except KeyError:
                     self.set(category, option, value)
+
         for key, value in newConfFields.items():
             self.set(value, key, newConfValues.get(key))
 

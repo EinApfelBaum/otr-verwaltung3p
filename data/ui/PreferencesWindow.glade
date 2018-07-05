@@ -148,6 +148,7 @@
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Dies ist der Standard-Ordner von OTR-Verwaltung.</property>
                         <property name="wrap">True</property>
+                        <property name="max_width_chars">60</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -183,6 +184,7 @@
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">In diesen Ordner werden die Dateien nach dem Schneiden verschoben. Dieser Ordner kann derselbe sein wie der für die neuen otrkey-Dateien.</property>
                         <property name="wrap">True</property>
+                        <property name="max_width_chars">60</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -219,6 +221,7 @@
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">In diesen Ordner werden die dekodierten Dateien verschoben. Dieser Ordner kann derselbe sein wie der für die neuen otrkey-Dateien.</property>
                         <property name="wrap">True</property>
+                        <property name="max_width_chars">60</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -244,6 +247,7 @@
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Hierhin werden dekodierte Dateien verschoben. Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
                         <property name="wrap">True</property>
+                        <property name="max_width_chars">60</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -269,6 +273,7 @@
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Hierhin werden ungeschittene Dateien verschoben. Dieser Ordner kann auch der Müll-Ordner des Systems sein. Beide Müll-Ordner können identisch sein.</property>
                         <property name="wrap">True</property>
+                        <property name="max_width_chars">60</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -324,6 +329,7 @@
                       <object class="GtkLabel" id="labelPathToDecoder">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="margin_right">5</property>
                         <property name="label" translatable="yes">Pfad zum Dekoder:
 (otrdecoder)</property>
                         <property name="wrap">True</property>
@@ -335,93 +341,57 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="labelEMail">
+                      <object class="GtkBox" id="box2">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">E-Mail:</property>
-                        <property name="xalign">0</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="labelPassword">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Passwort:</property>
-                        <property name="xalign">0</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkCheckButton" id="checkPasswordCheckOnProgramStart">
-                        <property name="label" translatable="yes">Passworthinweis beim Start ausblenden</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="halign">start</property>
-                        <property name="draw_indicator">True</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">5</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkCheckButton" id="checkCorrect">
-                        <property name="label" translatable="yes">Dateien auf Korrektheit prüfen</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="halign">start</property>
-                        <property name="draw_indicator">True</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">6</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkEntry" id="entryEMail">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="invisible_char">●</property>
-                        <property name="primary_icon_activatable">False</property>
-                        <property name="secondary_icon_activatable">False</property>
+                        <child>
+                          <object class="GtkComboBoxText" id="entry_decoder">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <items>
+                              <item id="intern-otrdecoder" translatable="yes">intern-otrdecoder</item>
+                              <item id="intern-easydecoder" translatable="yes">intern-easydecoder</item>
+                              <item id="otrtool" translatable="yes">otrtool</item>
+                            </items>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="button_set_file">
+                            <property name="label" translatable="yes">...</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_decoder" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkEntry" id="entryPassword">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="invisible_char">●</property>
-                        <property name="primary_icon_activatable">False</property>
-                        <property name="secondary_icon_activatable">False</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">2</property>
+                        <property name="top_attach">0</property>
                       </packing>
                     </child>
                     <child>
                       <object class="GtkBox" id="boxCheckOTRCredentials">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="margin_top">5</property>
                         <child>
                           <object class="GtkButton" id="checkOTRCredentials">
                             <property name="label" translatable="yes">Prüfe Zugangsdaten</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="halign">start</property>
                             <signal name="clicked" handler="_on_button_check_otr_credentials_clicked" swapped="no"/>
                           </object>
                           <packing>
@@ -441,10 +411,43 @@
                           </object>
                           <packing>
                             <property name="expand">False</property>
-                            <property name="fill">True</property>
+                            <property name="fill">False</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">6</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="checkPasswordCheckOnProgramStart">
+                        <property name="label" translatable="yes">Passworthinweis beim Start ausblenden</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_top">5</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="margin_top">5</property>
+                        <property name="label" translatable="yes">&lt;i&gt;Das Passwort wird verschlüsselt gespeichert (AES-256).
+Dennoch kann dieses Feld auch leer gelassen werden.
+In diesem Fall bitte "Passworthinweis beim Start ausblenden" aktivieren.&lt;/i&gt;</property>
+                        <property name="use_markup">True</property>
+                        <property name="wrap">True</property>
+                        <property name="max_width_chars">90</property>
+                        <property name="xalign">0</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
@@ -452,14 +455,12 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="label1">
+                      <object class="GtkEntry" id="entryPassword">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">&lt;i&gt;Achtung: Das Passwort wird nun verschlüsselt gespeichert(AES-256).
-                    Dennoch kann dieses Feld auch leer gelassen werden.&lt;/i&gt;</property>
-                        <property name="use_markup">True</property>
-                        <property name="wrap">True</property>
-                        <property name="xalign">0</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">●</property>
+                        <property name="primary_icon_activatable">False</property>
+                        <property name="secondary_icon_activatable">False</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
@@ -467,45 +468,55 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox" id="box2">
+                      <object class="GtkEntry" id="entryEMail">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <child>
-                          <object class="GtkComboBoxText" id="entry_decoder">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="active_id">interotrdecoder</property>
-                            <items>
-                              <item id="interotrdecoder" translatable="yes">intern-otrdecoder</item>
-                              <item id="intereasydecoder" translatable="yes">intern-easydecoder</item>
-                              <item id="otrtool" translatable="yes">otrtool</item>
-                            </items>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="button_set_file">
-                            <property name="label" translatable="yes">...</property>
-                            <property name="visible">True</property>
-                            <property name="sensitive">False</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <signal name="clicked" handler="_on_button_set_file_clicked" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">●</property>
+                        <property name="primary_icon_activatable">False</property>
+                        <property name="secondary_icon_activatable">False</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">0</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="labelPassword">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Passwort:</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="labelEMail">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">E-Mail:</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="checkCorrect">
+                        <property name="label" translatable="yes">Dateien auf Korrektheit prüfen</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_bottom">5</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">1</property>
                       </packing>
                     </child>
                     <child>
@@ -562,9 +573,12 @@
                           <object class="GtkLabel" id="labelHeader">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">&lt;i&gt;Achtung: Die vorgeschlagenen Werte sind übliche Standardwerte. Sie wurden nicht auf diesem System ermittelt. Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
+                            <property name="margin_bottom">10</property>
+                            <property name="label" translatable="yes">&lt;i&gt;Achtung: Die vorgeschlagenen Werte sind übliche Standardwerte. Sie wurden nicht auf diesem System ermittelt.
+Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                             <property name="use_markup">True</property>
                             <property name="wrap">True</property>
+                            <property name="max_width_chars">70</property>
                             <property name="xalign">0</property>
                           </object>
                           <packing>
@@ -581,6 +595,7 @@
                               <object class="GtkLabel" id="label2">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="margin_bottom">5</property>
                                 <property name="label" translatable="yes">&lt;b&gt;Format...&lt;/b&gt;</property>
                                 <property name="use_markup">True</property>
                                 <property name="xalign">0</property>
@@ -594,6 +609,7 @@
                               <object class="GtkLabel" id="label3">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="margin_bottom">5</property>
                                 <property name="label" translatable="yes">&lt;b&gt;Manuell schneiden mit...&lt;/b&gt;</property>
                                 <property name="use_markup">True</property>
                                 <property name="xalign">0</property>
@@ -607,6 +623,7 @@
                               <object class="GtkLabel" id="label4">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="margin_bottom">5</property>
                                 <property name="label" translatable="yes">&lt;b&gt;Per Cutlist schneiden mit...&lt;/b&gt;</property>
                                 <property name="use_markup">True</property>
                                 <property name="xalign">0</property>
@@ -656,6 +673,7 @@
                               <object class="GtkLabel" id="h264_codec1">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="margin_right">5</property>
                                 <property name="label" translatable="yes">H264 Codec</property>
                                 <property name="xalign">0</property>
                               </object>
@@ -1002,11 +1020,12 @@
                         </child>
                         <child>
                           <object class="GtkCheckButton" id="check_merge_ac3">
-                            <property name="label" translatable="yes">ac3-Dateien schneiden und mit Video-Datei muxen (Avidemux/Virtualdub)</property>
+                            <property name="label" translatable="yes">ac3-Dateien schneiden und mit Video-Datei muxen.</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="halign">start</property>
+                            <property name="margin_top">5</property>
                             <property name="active">True</property>
                             <property name="draw_indicator">True</property>
                           </object>
@@ -1020,6 +1039,8 @@
                           <object class="GtkLabel" id="labelSmartMKVmergeHeader">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="margin_top">10</property>
+                            <property name="margin_bottom">5</property>
                             <property name="label" translatable="yes">&lt;b&gt;SmartMKVmerge Optionen&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
                           </object>
@@ -1037,6 +1058,7 @@
                               <object class="GtkLabel" id="label5">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="margin_right">50</property>
                                 <property name="label" translatable="yes">1. Audiospur:</property>
                                 <property name="xalign">0</property>
                               </object>
@@ -1079,6 +1101,7 @@
                               <object class="GtkLabel" id="label6">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="margin_right">50</property>
                                 <property name="label" translatable="yes">2. Audiospur:</property>
                               </object>
                               <packing>
@@ -1119,6 +1142,7 @@
                               <object class="GtkLabel" id="label9">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="margin_right">5</property>
                                 <property name="label" translatable="yes">Arbeitsverzeichnis:</property>
                               </object>
                               <packing>
@@ -1152,6 +1176,7 @@
                           <object class="GtkBox" id="hbox7">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="margin_top">5</property>
                             <child>
                               <object class="GtkCheckButton" id="smkv_normalize">
                                 <property name="label" translatable="yes">Sound normalisieren</property>
@@ -1374,7 +1399,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="check_mplayer_fullscreen">
-                    <property name="label" translatable="yes">MPlayer/mpv beim Prüfen der Cutlist maximieren</property>
+                    <property name="label" translatable="yes">mplayer / mpv beim Prüfen der Cutlist maximieren</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
@@ -1389,7 +1414,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="check_prefer_mpv">
-                    <property name="label" translatable="yes">Mpv bevorzugen</property>
+                    <property name="label" translatable="yes">mpv bevorzugen</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
@@ -1542,7 +1567,7 @@
                     <property name="margin_top">16</property>
                     <property name="margin_bottom">16</property>
                     <property name="label" translatable="yes">&lt;b&gt;Die Ausdrücke in geschweiften Klammern werden mit den Information aus der Datei ersetzt:&lt;/b&gt;
-{titel}         	z.B. 		James Bond 007
+{titel}         	z.B. 	James Bond 007
 {titel_}				James_Bond_007
 {titel.}				James.Bond.007
 {lctitel}				james bond 007
@@ -1552,7 +1577,7 @@
 {SENDER}			Ard
 {tag}				06
 {monat}				01
-{MONAT}				Januar
+{MONAT}			Januar
 {jahr}				09
 {stunde}				20
 {minute}				15
@@ -1560,6 +1585,7 @@
 {format}				HQ</property>
                     <property name="use_markup">True</property>
                     <property name="wrap">True</property>
+                    <property name="max_width_chars">70</property>
                     <property name="xalign">0</property>
                     <property name="yalign">0</property>
                   </object>
@@ -1705,7 +1731,7 @@
                       <object class="GtkLabel" id="lbl_time_frame">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Alternative Zeit -&gt; Frame Umwandlung:</property>
+                        <property name="label" translatable="yes">Alternative Zeit &lt;-&gt; Frame Umwandlung:</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
