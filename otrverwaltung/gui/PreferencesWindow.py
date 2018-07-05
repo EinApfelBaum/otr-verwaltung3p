@@ -14,7 +14,7 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-import os
+import os, logging
 import hashlib
 import requests
 import urllib.request as urllib2
@@ -35,6 +35,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
 
     def __init__(self):
         Gtk.Window.__init__(self)
+        self.log = logging.getLogger(self.__class__.__name__)
         pass
 
     def do_parser_finished(self, builder):
@@ -93,6 +94,16 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                                                 'AC3 Spur entfernen']
         #self.gui.set_model_from_list(self.builder.get_object('smkv_second_audio'), smkv_second_audio)
         '''
+
+        # If stored decoder is not in the standard list (see PreferenceWindow.glade)
+        # it will be prepended and set as active entry. Is there an easier way?
+        entry_list = []
+        for row in self.builder.get_object('entry_decoder').get_model():
+            entry_list.append(row[0])
+        decoder_value = self.app.config.get('programs', 'decoder')
+        if not decoder_value in entry_list:
+            self.builder.get_object('entry_decoder').prepend(decoder_value, decoder_value)
+            self.builder.get_object('entry_decoder').set_active(0)
 
         # add bindings here.
         EntryBinding(self.builder.get_object('entry_username'), self.app.config, 'general', 'cutlist_username')
@@ -205,15 +216,24 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                                         action=Gtk.FileChooserAction.OPEN,
                                         buttons=(
                                         Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        chooser.set_transient_for(self)
 
         if chooser.run() == Gtk.ResponseType.OK:
             # ~ if type(entry) == Gtk.ComboBoxText:
                 # ~ entry.child.set_text(chooser.get_filename())
             # ~ else:
-            entry.prepend(chooser.get_filename(), chooser.get_filename())
-            entry.set_active(0)
+            if type(entry) == Gtk.ComboBoxText:
+                entry.prepend(chooser.get_filename(), chooser.get_filename())
+                entry.set_active(0)
 
         chooser.destroy()
+
+    def _on_entry_decoder_changed(self, widget, data=None):
+        self.log.debug("Function start")
+        if 'otrtool' in widget.get_active_text():
+            self.builder.get_object('checkCorrect').set_sensitive(False)
+        else:
+            self.builder.get_object('checkCorrect').set_sensitive(True)
 
     def _on_preferences_buttonClose_clicked(self, widget, data=None):
         self.hide()

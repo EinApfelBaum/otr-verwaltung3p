@@ -113,16 +113,26 @@ class DecodeOrCut(Cut):
             self.app.conclusions_manager.add_conclusions(*file_conclusions)
 
     def decode(self, file_conclusions):
+        self.log.debug("Decoder: {}".format(self.config.get('programs', 'decoder')))
         otrtool = shutil.which("otrtool")
         # no decoder
         # --> otrtool
-        if not "decode" and not "otrtool" in self.config.get('programs', 'decoder'):  # no decoder specified
-            # dialog box: no decoder
+        if not "decode" and not "otrtool" in self.config.get('programs', 'decoder'):
+            # no decoder specified
             self.gui.message_error_box("Es ist kein korrekter Dekoder angegeben!")
             return False
-        elif 'otrtool' in self.config.get('programs', 'decoder') and not otrtool:
-            self.gui.message_error_box("Der Decoder otrtool ist ausgewählt, wurde aber nicht im Pfad gefunden!")
+        elif self.config.get_program('decoder') == 'otrtool' and not otrtool:
+            # otrtool not found in path
+            self.gui.message_error_box("Der Dekoder otrtool ist ausgewählt, wurde aber nicht im \
+                                                                                Pfad gefunden!")
             return False
+        elif '/' in self.config.get_program('decoder'):  # It's an external program
+            isexe = os.path.isfile(self.config.get_program('decoder')) and os.access(
+                                                    self.config.get_program('decoder'), os.X_OK)
+            if not isexe:  # File doen't exist or is not executable
+                self.gui.message_error_box("Der externe Dekoder wurde nicht gefunden oder ist \
+                                                                                nicht ausführbar.")
+                return False
         # <-- otrtool
 
         # retrieve email and password
@@ -148,11 +158,15 @@ class DecodeOrCut(Cut):
         # decode each file
         for count, file_conclusion in enumerate(file_conclusions):
             # update progress
-            self.gui.main_window.set_tasks_text("Datei %s/%s dekodieren" % (count + 1, len(file_conclusions)))
+            self.gui.main_window.set_tasks_text("Datei %s/%s dekodieren" % (count + 1,
+                                                                            len(file_conclusions)))
 
             # --> otrtool
-            if self.config.get_program('decoder') == 'otrtool':
-                command = [otrtool, "-x", "-g", "-e", email, "-p", password, "-O", self.config.get('general', 'folder_uncut_avis') + "/" + basename(file_conclusion.otrkey[0:len(file_conclusion.otrkey)-7]), file_conclusion.otrkey]
+            if 'otrtool' in self.config.get_program('decoder'):
+                command = [self.config.get_program('decoder'), "-x", "-g", "-e", email, "-p",
+                           password, "-O", self.config.get('general', 'folder_uncut_avis') + "/" +
+                           basename(file_conclusion.otrkey[0:len(file_conclusion.otrkey)-7]),
+                           file_conclusion.otrkey]
             else:
                 verify = True
                 command = [self.config.get_program('decoder'), "-i", file_conclusion.otrkey, "-e",
@@ -170,12 +184,13 @@ class DecodeOrCut(Cut):
                 continue
 
             # --> otrtool
-            if self.config.get_program('decoder') == 'otrtool':
+            if 'otrtool' in self.config.get_program('decoder'):
                 error_message = ""
                 file_count = count + 1, len(file_conclusions)
                 # list of non error strings
                 nonerror = ["OK", "gui", "OTR-Tool, ", "Keyphrase from", "Keyphrase:",
-                            "Decrypting", "Trying to contact", "Server responded", "info:", "warning:"]
+                            "Decrypting", "Trying to contact", "Server responded", "info:",
+                            "warning:"]
                 for line in iter(process.stderr.readline,''):
                     line = line.decode("utf-8")
                     if not line:
@@ -185,7 +200,8 @@ class DecodeOrCut(Cut):
                         error_message += line.strip()
 
                     if "Decrypting" in line:
-                        self.gui.main_window.set_tasks_text("Datei %s/%s dekodieren und prüfen" % file_count)
+                        self.gui.main_window.set_tasks_text("Datei %s/%s dekodieren und prüfen" %
+                                                                                        file_count)
 
                     if ("gui" in line) and not ("Finished" in line):
                         progress = int(line[5:])
