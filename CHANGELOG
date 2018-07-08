@@ -1,4 +1,17 @@
-n.n,
+3.2.4-A, 2018-07-11
+    * Hauptfenster:
+      - Die Standard-Aktion für den Button "Schneiden" in der Sektion "Ungeschnnitten" ist
+        jetzt in Einstellungen:Hauptfenster einstellbar.
+      - Die Sektion "Ungeschnitten" wird nach dem Programmstart automatisch angezeigt und
+        aktiviert, sodass die Auswahl einer Datei mit den Pfeil-Tasten möglich ist.
+      - Neues Plugin "CutManually": Kann verwendet werden un das manuelle Schneiden durch
+        Doppelklick auf eine Datei in "Ungeschnitten" zu starten.
+      - Die Sektionen "Download" und "Geplante Sendungen" sind nicht mehr sichtbar.
+      - Neue Sektionen: Papierkorb:Avi (zeigt nur avis im Papierkorb) und Papierkorb:Otrkey
+        (zeigt nur otrkeys im Papierkorb).
+      - Es werden jetzt die Icons aus dem aktiven Icon-Theme verwendet.
+      - AboutDialog überarbeitet.
+    * Einstellungen:Cutlist: Suche nach Dateiname nun Standard und empfohlen.
     * Das Schneiden von mp4 mit SmartMKVmerge ist wieder aktiviert (Dies sollte genauso
       (un-)zuverlässig wie in otrv++ sein).
     * Easydecoder wurde auf neueste Version 0.4.1133 aktualisiert.

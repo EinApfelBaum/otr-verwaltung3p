@@ -50,6 +50,9 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">5</property>
+                <property name="margin_right">5</property>
+                <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkGrid" id="grid2">
@@ -320,6 +323,9 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">5</property>
+                <property name="margin_right">5</property>
+                <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkGrid" id="grid4">
@@ -353,6 +359,7 @@
                               <item id="intern-easydecoder" translatable="yes">intern-easydecoder</item>
                               <item id="otrtool" translatable="yes">otrtool</item>
                             </items>
+                            <signal name="changed" handler="_on_entry_decoder_changed" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -511,7 +518,8 @@ In diesem Fall bitte "Passworthinweis beim Start ausblenden" aktivieren.&lt;/i&g
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="halign">start</property>
-                        <property name="margin_bottom">5</property>
+                        <property name="margin_top">5</property>
+                        <property name="margin_bottom">10</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
@@ -559,6 +567,9 @@ In diesem Fall bitte "Passworthinweis beim Start ausblenden" aktivieren.&lt;/i&g
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">5</property>
+                <property name="margin_right">5</property>
+                <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkGrid" id="grid5">
@@ -1248,6 +1259,9 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">5</property>
+                <property name="margin_right">5</property>
+                <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
                 <property name="border_width">8</property>
                 <property name="orientation">vertical</property>
                 <child>
@@ -1285,7 +1299,6 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="halign">start</property>
-                        <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
@@ -1295,11 +1308,12 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                     </child>
                     <child>
                       <object class="GtkRadioButton" id="radio_filename">
-                        <property name="label" translatable="yes">Dateiname</property>
+                        <property name="label" translatable="yes">Dateiname (Empfohlen!)</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="halign">start</property>
+                        <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">radio_size</property>
                       </object>
@@ -1309,25 +1323,10 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="check_delete_cutlists">
-                        <property name="label" translatable="yes">Cutlisten nach dem Schneiden löschen</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="halign">start</property>
-                        <property name="active">True</property>
-                        <property name="draw_indicator">True</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">2</property>
-                        <property name="width">3</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkLabel" id="label13">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="margin_right">10</property>
                         <property name="label" translatable="yes">Benutzername für eigene Cutlists:</property>
                         <property name="xalign">0</property>
                       </object>
@@ -1354,6 +1353,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                       <object class="GtkLabel" id="label14">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="margin_bottom">10</property>
                         <property name="label" translatable="yes">&lt;span font-size='small'&gt;Achtung: Der Benutzername muss bei cutlist.at einmalig sein!&lt;/span&gt;</property>
                         <property name="use_markup">True</property>
                         <property name="xalign">0</property>
@@ -1386,6 +1386,28 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                         <property name="top_attach">0</property>
                         <property name="width">2</property>
                       </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="check_delete_cutlists">
+                        <property name="label" translatable="yes">Cutlisten nach dem Schneiden löschen</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_bottom">10</property>
+                        <property name="active">True</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>
@@ -1454,6 +1476,9 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">5</property>
+                <property name="margin_right">5</property>
+                <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
                 <property name="border_width">7</property>
                 <property name="orientation">vertical</property>
                 <child>
@@ -1612,10 +1637,148 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
               </packing>
             </child>
             <child>
+              <object class="GtkBox" id="vboxMainwindowConfiguration">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_left">5</property>
+                <property name="margin_right">5</property>
+                <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkGrid" id="gridMainwindowSectionDecode">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_left">5</property>
+                    <property name="margin_right">5</property>
+                    <property name="margin_top">5</property>
+                    <property name="margin_bottom">5</property>
+                    <child>
+                      <object class="GtkLabel" id="labelSectionDecode">
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Sektion "Dekodieren"</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkGrid" id="gridMainwindowSectionVideoUncut">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_left">5</property>
+                    <property name="margin_right">5</property>
+                    <property name="margin_top">5</property>
+                    <property name="margin_bottom">5</property>
+                    <child>
+                      <object class="GtkComboBoxText" id="entry_cut_default">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <items>
+                          <item id="0" translatable="yes">Nachfragen</item>
+                          <item id="1" translatable="yes">Beste Cutlist</item>
+                          <item id="2" translatable="yes">Cutlist auswählen</item>
+                          <item id="3" translatable="yes">Cutinterface (manuell)</item>
+                          <item id="4" translatable="yes">Lokale Cutlist</item>
+                        </items>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="labelCutAction">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="margin_left">20</property>
+                        <property name="margin_right">10</property>
+                        <property name="label" translatable="yes">Standard Aktion für Schneiden-Button:</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="labelSectionVideoUncut">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Sektion "Ungeschnitten"</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="position">5</property>
+              </packing>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="labelMainwindowConfiguration">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Hauptfenster</property>
+              </object>
+              <packing>
+                <property name="position">5</property>
+                <property name="tab_fill">False</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkBox" id="vboxCutinterfaceConfiguration">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">5</property>
+                <property name="margin_right">5</property>
+                <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkGrid" id="grid9">
@@ -1768,7 +1931,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                 </child>
               </object>
               <packing>
-                <property name="position">5</property>
+                <property name="position">6</property>
               </packing>
             </child>
             <child type="tab">
@@ -1778,9 +1941,15 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                 <property name="label" translatable="yes">Cutinterface</property>
               </object>
               <packing>
-                <property name="position">5</property>
+                <property name="position">6</property>
                 <property name="tab_fill">False</property>
               </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child type="tab">
+              <placeholder/>
             </child>
           </object>
           <packing>

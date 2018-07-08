@@ -20,14 +20,12 @@ import time
 # ~ import urllib.request
 from urllib.request import Request, urlopen
 import webbrowser
-import logging
 import git
-import sys
-import os
+import sys, os, datetime, logging
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GdkPixbuf, Gdk
+from gi.repository import Gtk, GdkPixbuf, Gdk, Gio
 
 from otrverwaltung import path
 from otrverwaltung.constants import Action, Section, Cut_action, DownloadStatus
@@ -53,7 +51,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     def pre_init(self):
         pass
 
-    # TODO: only workaround. try to remove.     
+    # TODO: only workaround. try to remove.
     def post_init(self):
         self.__setup_toolbar()
         self.__setup_treeview_planning()
@@ -76,6 +74,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                 self.set_title('OTR-Verwaltung3p' + ' ' + current_version + '  -  aktuelle Version: ' + str(svn_version))
                 self._on_menu_check_update_activate(self)
 
+        # ~ self.treeview_files = self.builder.get_object('treeview_files')
+
     def __get_cut_menu(self, action):
         # menu for cut/decodeandcut
         cut_menu = Gtk.Menu()
@@ -97,30 +97,51 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
     def __setup_toolbar(self):
 
+        # ~ toolbar_buttons = [
+            # ~ ('decodeandcut', 'decodeandcut.png', "Dekodieren und Schneiden", Action.DECODEANDCUT),
+            # ~ ('decode', 'decode.png', 'Dekodieren', Action.DECODE),
+            # ~ ('delete', 'bin.png', "In den Müll verschieben", Action.DELETE),
+            # ~ ('archive', 'archive.png', "Archivieren", Action.ARCHIVE),
+            # ~ ('cut', 'cut.png', "Schneiden", Action.CUT),
+            # ~ ('restore', 'restore.png', "Wiederherstellen", Action.RESTORE),
+            # ~ ('rename', 'rename.png', "Umbenennen", Action.RENAME),
+            # ~ ('new_folder', 'new_folder.png', "Neuer Ordner", Action.NEW_FOLDER),
+            # ~ ('real_delete', 'delete.png', "Löschen", Action.REAL_DELETE),
+            # ~ ('plan_add', 'film_add.png', "Hinzufügen", Action.PLAN_ADD),
+            # ~ ('plan_remove', 'film_delete.png', "Löschen", Action.PLAN_REMOVE),
+            # ~ ('plan_edit', 'film_edit.png', "Bearbeiten", Action.PLAN_EDIT),
+            # ~ ('plan_search', 'film_search.png', "Auf Mirror suchen", Action.PLAN_SEARCH),
+            # ~ ('download_add', 'add_download.png', "Download hinzufügen", Action.DOWNLOAD_ADD),
+            # ~ ('download_add_link', 'add_download.png', "Link hinzufügen", Action.DOWNLOAD_ADD_LINK),
+            # ~ ('download_start', 'download_start.png', "Start", Action.DOWNLOAD_START),
+            # ~ ('download_stop', 'download_stop.png', "Stop", Action.DOWNLOAD_STOP),
+            # ~ ('download_remove', 'delete.png', "Löschen", Action.DOWNLOAD_REMOVE),
+        # ~ ]
         toolbar_buttons = [
-            ('decodeandcut', 'decodeandcut.png', "Dekodieren und Schneiden", Action.DECODEANDCUT),
-            ('decode', 'decode.png', 'Dekodieren', Action.DECODE),
-            ('delete', 'bin.png', "In den Müll verschieben", Action.DELETE),
-            ('archive', 'archive.png', "Archivieren", Action.ARCHIVE),
-            ('cut', 'cut.png', "Schneiden", Action.CUT),
-            ('restore', 'restore.png', "Wiederherstellen", Action.RESTORE),
-            ('rename', 'rename.png', "Umbenennen", Action.RENAME),
-            ('new_folder', 'new_folder.png', "Neuer Ordner", Action.NEW_FOLDER),
-            ('real_delete', 'delete.png', "Löschen", Action.REAL_DELETE),
-            ('plan_add', 'film_add.png', "Hinzufügen", Action.PLAN_ADD),
-            ('plan_remove', 'film_delete.png', "Löschen", Action.PLAN_REMOVE),
-            ('plan_edit', 'film_edit.png', "Bearbeiten", Action.PLAN_EDIT),
-            ('plan_search', 'film_search.png', "Auf Mirror suchen", Action.PLAN_SEARCH),
-            ('download_add', 'add_download.png', "Download hinzufügen", Action.DOWNLOAD_ADD),
-            ('download_add_link', 'add_download.png', "Link hinzufügen", Action.DOWNLOAD_ADD_LINK),
-            ('download_start', 'download_start.png', "Start", Action.DOWNLOAD_START),
-            ('download_stop', 'download_stop.png', "Stop", Action.DOWNLOAD_STOP),
-            ('download_remove', 'delete.png', "Löschen", Action.DOWNLOAD_REMOVE),
+            ('decodeandcut', ['dialog-password-symbolic', 'edit-cut'],
+                                                "Dekodieren und Schneiden", Action.DECODEANDCUT),
+            ('decode', 'dialog-password-symbolic', 'Dekodieren', Action.DECODE),
+            ('delete', 'user-trash', "In den Müll verschieben", Action.DELETE),
+            ('archive', 'system-file-manager', "Archivieren", Action.ARCHIVE),
+            ('cut', 'edit-cut', "Schneiden", Action.CUT),
+            ('restore', 'view-refresh', "Wiederherstellen", Action.RESTORE),
+            ('rename', 'accessories-text-editor', "Umbenennen", Action.RENAME),
+            ('new_folder', 'folder-new', "Neuer Ordner", Action.NEW_FOLDER),
+            ('real_delete', 'edit-delete', "Löschen", Action.REAL_DELETE),
         ]
 
         self.__toolbar_buttons = {}
         for key, image_name, text, action in toolbar_buttons:
-            image = Gtk.Image.new_from_file(path.get_image_path(image_name))
+            # Gtk.IconSize.LARGE_TOOLBAR
+            if type(image_name) == type([]):  # It's a list
+                # Create an emblemed icon
+                image = Gtk.Image.new_from_gicon(Gio.EmblemedIcon.new(
+                                                Gio.ThemedIcon.new(image_name[0]),
+                                                Gio.Emblem.new(Gio.ThemedIcon.new(image_name[1]))),
+                                                24)
+            else:
+                image = Gtk.Image.new_from_pixbuf(Gtk.IconTheme.get_default().load_icon(
+                                                                                image_name, 24, 0))
             image.show()
 
             if key == "cut" or key == "decodeandcut":
@@ -133,13 +154,15 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             self.__toolbar_buttons[key].show()
 
         self.__sets_of_toolbars = {
-            Section.PLANNING: ['plan_add', 'plan_edit', 'plan_remove', 'plan_search'],
-            Section.DOWNLOAD: ['download_add_link', 'download_start', 'download_stop', 'download_remove'],
+            # ~ Section.PLANNING: ['plan_add', 'plan_edit', 'plan_remove', 'plan_search'],
+            # ~ Section.DOWNLOAD: ['download_add_link', 'download_start', 'download_stop', 'download_remove'],
             Section.OTRKEY: ['decodeandcut', 'decode', 'delete', 'real_delete'],
             Section.VIDEO_UNCUT: ['cut', 'delete', 'real_delete', 'archive'],
             Section.VIDEO_CUT: ['archive', 'delete', 'real_delete', 'cut', 'rename'],
             Section.ARCHIVE: ['delete', 'real_delete', 'rename', 'new_folder'],
-            Section.TRASH: ['real_delete', 'restore']
+            Section.TRASH: ['real_delete', 'restore'],
+            Section.TRASH_AVI: ['real_delete', 'restore'],
+            Section.TRASH_OTRKEY: ['real_delete', 'restore']
         }
 
         # create sets of toolbuttons
@@ -158,9 +181,9 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.search_tool_item.connect('clear', self.on_search_clear)
 
     def add_toolbutton(self, image, text, sections):
-        """ Fügt einen neuen Toolbutton hinzu. 
-              image ein gtk.Image() 
-              text Text des Toolbuttons 
+        """ Fügt einen neuen Toolbutton hinzu.
+              image ein gtk.Image()
+              text Text des Toolbuttons
               sections Liste von Sections, in denen der Toolbutton angezeigt wird.
           """
 
@@ -219,6 +242,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
     def __setup_treeview_files(self):
         treeview = self.builder.get_object('treeview_files')
+        treeview.connect('button_press_event', self._on_treeview_files_button_pressed)
         store = Gtk.TreeStore(str, float, float, bool)  # filename, size, date, locked
         treeview.set_model(store)
 
@@ -267,9 +291,12 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         tvcolumns[self.__DATE].set_sort_column_id(2)
 
         # load pixbufs for treeview
-        self.__pix_avi = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('avi.png'))
-        self.__pix_otrkey = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('decode.png'))
-        self.__pix_folder = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('folder.png'))
+        # ~ self.__pix_avi = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('avi.png'))
+        self.__pix_avi = Gtk.IconTheme.get_default().load_icon('media-video', 16, 0)
+        # ~ self.__pix_otrkey = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('decode.png'))
+        self.__pix_otrkey = Gtk.IconTheme.get_default().load_icon('dialog-password-symbolic', 16, 0)
+        # ~ self.__pix_folder = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('folder.png'))
+        self.__pix_folder = Gtk.IconTheme.get_default().load_icon('folder', 24, 0)
 
     def __setup_widgets(self):
         self.builder.get_object('menu_bottom').set_active(self.app.config.get('general', 'show_bottom'))
@@ -279,8 +306,10 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         ## sidebar ##
         self.sidebar = Sidebar()
 
-        planned = self.sidebar.add_element(Section.PLANNING, 'Geplante Sendungen', False)
-        self.sidebar.add_element(Section.DOWNLOAD, 'Downloads', False)
+        # ~ planned = self.sidebar.add_element(Section.PLANNING, '', False)  # TAG:Geplante Sendungen
+        # ~ planned.set_sensitive(False)  # TAG:Geplante Sendungen
+        # ~ download = self.sidebar.add_element(Section.DOWNLOAD, '', False)
+        # ~ download.set_sensitive(False)
         self.sidebar.add_section('OTRKEYS')
         self.sidebar.add_element(Section.OTRKEY, 'Nicht dekodiert')
 
@@ -289,13 +318,16 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.sidebar.add_element(Section.VIDEO_CUT, 'Geschnitten')
         self.sidebar.add_element(Section.ARCHIVE, 'Archiv')
 
-        self.sidebar.add_element(Section.TRASH, 'Mülleimer', False)
+        self.sidebar.add_section('PAPIERKORB')
+        self.sidebar.add_element(Section.TRASH, 'Alles')
+        self.sidebar.add_element(Section.TRASH_AVI, 'Avi', True, 10)
+        self.sidebar.add_element(Section.TRASH_OTRKEY, 'Otrkey', True, 10)
 
         self.builder.get_object('hbox_main').pack_start(self.sidebar, expand=False, fill=False, padding=0)
         self.builder.get_object('hbox_main').reorder_child(self.sidebar, 0)
 
         self.sidebar.connect('element-clicked', self._on_sidebar_toggled)
-        self.sidebar.set_active(Section.DOWNLOAD)
+        self.sidebar.set_active(Section.VIDEO_UNCUT)
 
         # add planning badge
         self.eventbox_planning = Gtk.EventBox()
@@ -310,7 +342,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         # style.bg_pixmap[Gtk.StateFlags.NORMAL] = pixmap
         # self.eventbox_planning.shape_combine_mask(mask, 0, 0)
         # self.eventbox_planning.set_style(style)
-        planned.add_widget(self.eventbox_planning)
+        # ~ planned.add_widget(self.eventbox_planning)  # TAG:Geplante Sendungen
 
         self.sidebar.show_all()
         ## sidebar end ##
@@ -328,6 +360,14 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     #
     # treeview_files
     #
+
+    def _on_treeview_files_button_pressed(self, widget, data=None):
+        pass
+
+    def treeview_files(self):
+        # ~ self.builder.get_object('treeview_files').set_cursor(Gtk.TreePath(0))
+        # ~ self.builder.get_object('treeview_files').row_activated(Gtk.TreePath(0), Gtk.TreeViewColumn(None))
+        self.builder.get_object('treeview_files').grab_focus()
 
     def clear_files(self):
         """ Entfernt alle Einträge aus den Treeviews treeview_files."""
@@ -470,7 +510,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         return iter
 
     def __tv_planning_sort(self, model, iter1, iter2, data):
-        # -1 if the iter1 row should precede the iter2 row; 0, if the rows are equal; and, 1 if the iter2 row should precede the iter1 row              
+        # -1 if the iter1 row should precede the iter2 row; 0, if the rows are equal; and, 1 if the iter2 row should precede the iter1 row
         time1 = model.get_value(iter1, 0).datetime
         time2 = model.get_value(iter2, 0).datetime
 
@@ -483,7 +523,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
     #
     # Convenience
-    #       
+    #
 
     def set_toolbar(self, section):
         """ Fügt die entsprechenden Toolbuttons in die Toolbar ein.
@@ -586,6 +626,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         else:
             if self.gui.question_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s\n\n\
                                         Automatisch updaten?\n" % (current_version, svn_version)):
+                # TODO: script_root_dir won't work when program is installed?
                 #get new version from git
                 script_root_dir = os.path.abspath(os.path.realpath(sys.argv[0])+'/../..')
                 file = open(script_root_dir+"/.git/config", "r")
@@ -613,23 +654,30 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
     def _on_menuHelpAbout_activate(self, widget, data=None):
 
-        def open_website(dialog, url, data=None):
-            webbrowser.open(url)
-
-        # Gtk.about_dialog_set_url_hook(open_website)
-        about_dialog = Gtk.AboutDialog()
-        about_dialog.set_transient_for(self.gui.main_window)
-        about_dialog.set_destroy_with_parent(True)
-        about_dialog.set_name(self.app.app_name)
-        about_dialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('icon.png')))
-
         version = open(path.getdatapath("VERSION"), 'r').read().strip()
-        about_dialog.set_version(version)
-        about_dialog.set_website("http://elbersb.de/otrverwaltung")
-        about_dialog.set_comments("Zum Verwalten von Dateien von onlinetvrecorder.com.")
-        about_dialog.set_copyright("Copyright \xc2\xa9 2010 Benjamin Elbers and others")
-        about_dialog.set_authors(["Benjamin Elbers", "JanS", "monarc99", "EinApfelbaum", "Timo08",
-                                                                                        "gCurse"])
+        # TODO: script_root_dir won't work when program is installed?
+        script_root_dir = os.path.abspath(os.path.realpath(sys.argv[0])+'/../..')
+        with open(os.path.join(script_root_dir, 'AUTHORS'), 'r') as f:
+            authors = f.readlines()
+        authors = [x.strip() for x in authors]
+
+        with open(os.path.join(script_root_dir, 'LICENSE'), 'r') as f:
+            license = f.read()
+
+        about_dialog = Gtk.AboutDialog(parent=self.gui.main_window,
+                program_name=self.app.app_name,
+                version=version,
+                copyright='\xa9 2010 - ' + str(datetime.datetime.now().year) +' B. Elbers and others',
+                license=license,
+                website='https://github.com/EinApfelBaum/otr-verwaltung3p/wiki',
+                comments='Zum Verwalten von Dateien von onlinetvrecorder.com',
+                authors=authors,
+                logo=GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('icon.png'))
+                )
+                # ~ title='About {}'.format(self.app.app_name))
+
+        about_dialog.set_destroy_with_parent(True)
+        about_dialog.set_size_request(500, 300)
         about_dialog.run()
         about_dialog.destroy()
 

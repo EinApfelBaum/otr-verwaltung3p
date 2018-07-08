@@ -25,6 +25,8 @@ class Section:
     VIDEO_CUT = 2
     ARCHIVE = 3
     TRASH = 4
+    TRASH_AVI = 5
+    TRASH_OTRKEY = 8
 
 
 class Action:

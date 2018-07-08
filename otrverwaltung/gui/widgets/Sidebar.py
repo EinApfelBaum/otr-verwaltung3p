@@ -43,15 +43,12 @@ class SidebarButton(Gtk.Button):
 
         self.box = Gtk.HBox()
 
-        # a = Gtk.Alignment(0.0, 0.5)
-        a = Gtk.Alignment()
-        a.set_property('left-padding', padding)
-
         self.label = Gtk.Label()
+        self.label.set_halign(Gtk.Align.START)
+        self.label.set_margin_left(padding)
         self.label.set_text(self.title)
-        a.add(self.label)
 
-        self.box.add(a)
+        self.box.add(self.label)
         self.add(self.box)
 
         def on_clicked(button):
@@ -110,8 +107,10 @@ class Sidebar(Gtk.EventBox):
         for element in self.elements:
             if id == element.id:
                 element.set_active(True)
+                element.set_relief(Gtk.ReliefStyle.NORMAL)
             else:
                 element.set_active(False)
+                element.set_relief(Gtk.ReliefStyle.NONE)
 
     def set_search(self, search_values):
         if search_values:
@@ -124,20 +123,18 @@ class Sidebar(Gtk.EventBox):
                 element.set_search(None)
 
     def add_section(self, title):
-        a = Gtk.Alignment()
-        a.set_property('left-padding', 10)
-        a.set_property('top-padding', 10)
-        a.set_property('bottom-padding', 5)
-
         label = Gtk.Label()
+        label.set_halign(Gtk.Align.START)
+        label.set_margin_left(10)
+        label.set_margin_top(10)
+        label.set_margin_bottom(5)
         label.set_markup('<span color="#6D6D6D"><b>%s</b></span>' % title)
-        a.add(label)
 
-        self.vbox.pack_start(a, False, False, 0)
+        self.vbox.pack_start(label, False, False, 0)
 
-    def add_element(self, id, title, intend=True):
-        if intend:
-            element = SidebarButton(title, id, 20)
+    def add_element(self, id, title, indent=True, extra=0):
+        if indent:
+            element = SidebarButton(title, id, 20 + extra)
         else:
             element = SidebarButton(title, id, 10)
 

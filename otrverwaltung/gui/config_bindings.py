@@ -18,11 +18,12 @@ import base64
 
 
 class ConfigBinding:
-    def __init__(self, widget, config, category, option):
+    def __init__(self, widget, config, category, option, data=''):
         self.widget = widget
         self.config = config
         self.category = category
         self.option = option
+        self.data = data
 
         # set intial state
         self.change_value(config.get(category, option))
@@ -122,15 +123,25 @@ class RadioButtonsBinding(ConfigBinding):
 
 
 class ComboBoxEntryBinding(ConfigBinding):
-    def __init__(self, widget, config, category, option):
-        ConfigBinding.__init__(self, widget, config, category, option)
+    def __init__(self, widget, config, category, option, data=False):
+        ConfigBinding.__init__(self, widget, config, category, option, data)
 
+        self.data = data
         self.widget.connect('changed', self.on_changed)
 
     def change_value(self, value):
-        self.widget.set_active_id(value)
+        if self.data == 'cut_default':
+            self.widget.set_active(value)
+        else: 
+            self.widget.set_active_id(value)
         #self.widget.append_text(value)
 
+    def on_changed(self, widget):
+        if self.data == 'cut_default':
+            model_dict = {}
+            for row in widget.get_model():
+                model_dict[row[0]] = int(row[1])
 
-    def on_changed(self, widget, data=None):
-        self.config.set(self.category, self.option, widget.get_active_text())
+            self.config.set(self.category, self.option, model_dict[widget.get_active_text()])
+        else:
+            self.config.set(self.category, self.option, widget.get_active_text())

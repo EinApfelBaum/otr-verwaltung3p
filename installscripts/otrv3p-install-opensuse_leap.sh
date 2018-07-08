@@ -145,7 +145,8 @@ install_otrv3p_git () {
 }
 
 usage () {
-    echo -e "\n${BLUE}"
+    echo -e "\n${RED}"
+    echo -e "ACHTUNG: Es wird vorausgesezt, dass das 'Packman' Repository aktiviert ist!!\n${BLUE}"
     echo -e "Die Installation wird in zwei Schritten durchgeführt werden:\n"
     echo -e "    1. Installation der Abhängigkeiten (Root-Rechte benötigt)."
     echo -e "    2. Installation der otr-verwaltung3p (ohne Root-Rechte).\n\n"

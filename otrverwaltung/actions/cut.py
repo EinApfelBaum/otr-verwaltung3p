@@ -47,6 +47,19 @@ class Cut(BaseAction):
     def create_cutlist(self, filename, program_config_value):
         raise Exception("Override this method!")
 
+    def get_format_new(self, filename):
+        """
+            TODO: gCurse
+            This function should use mediainfo to determine file format by examining
+            "format profile"
+            or
+            replace function self.analyse_mediafile with something using mediainfo
+            or mediainfo and ffmpeg.
+            GOAL: Determine file format independent of file extension.
+        """
+        global bframe_delay
+        
+
     def get_format(self, filename):
         global bframe_delay
         root, extension = os.path.splitext(filename)
@@ -94,6 +107,7 @@ class Cut(BaseAction):
             return format, ac3name, bframe_delay
         else:
             return format, None, bframe_delay
+
 
     def get_program(self, filename, manually=False):
         if manually:
@@ -144,7 +158,8 @@ class Cut(BaseAction):
 
         return cut_video
 
-    def mux_ac3(self, filename, cut_video, ac3_file, cutlist):  # cuts the ac3 and muxes it with the avi into an mkv
+    def mux_ac3(self, filename, cut_video, ac3_file, cutlist):
+        # cuts the ac3 and muxes it with the avi into an mkv
         mkvmerge = self.config.get_program('mkvmerge')
         root, extension = os.path.splitext(filename)
         mkv_file = os.path.splitext(cut_video)[0] + ".mkv"
@@ -211,13 +226,15 @@ class Cut(BaseAction):
         fileoperations.remove_file(cut_video)
         return mkv_file, ac3_file, None
 
-    def get_timecode(self, time):  # converts the seconds into a timecode-format that mkvmerge understands
+    def get_timecode(self, time):
+        # converts the seconds into a timecode-format that mkvmerge understands
         minute, second = divmod(int(time), 60)  # discards milliseconds
         hour, minute = divmod(minute, 60)
         second = time - minute * 60 - hour * 3600  # for the milliseconds
         return "%02i:%02i:%f" % (hour, minute, second)
 
     def analyse_mediafile(self, filename):
+        # TODO: gCurse Also get file format through mediainfos "format profile" or ffmpeg.
         """ Gets fps, dar, sar, number of frames and id of the ac3_stream of a movie using ffmpeg.
             Returns without error:
                 fps, dar, sar, max_frames, ac3_stream, None
@@ -227,8 +244,8 @@ class Cut(BaseAction):
 
         self.log.debug("function start")
         try:
-            process = subprocess.Popen([self.config.get_program('ffmpeg'), "-i", filename], stdout=subprocess.PIPE,
-                                       stderr=subprocess.STDOUT)
+            process = subprocess.Popen([self.config.get_program('ffmpeg'), "-i", filename],
+                                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except OSError:
             self.log.debug("Leave function")
             return None, None, None, None, None, "FFMPEG (static) konnte nicht ausgeführt werden!"
