@@ -172,7 +172,6 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         ComboBoxEntryBinding(self.builder.get_object('combobox_man_avi'), self.app.config, 'general', 'cut_avis_man_by')
         ComboBoxEntryBinding(self.builder.get_object('combobox_man_hq'), self.app.config, 'general', 'cut_hqs_man_by')
         ComboBoxEntryBinding(self.builder.get_object('combobox_man_mp4'), self.app.config, 'general', 'cut_mp4s_man_by')
-        #ComboBoxEntryBinding(self.builder.get_object('comboboxServer'), self.app.config, 'general', 'server')
         ComboBoxEntryBinding(self.builder.get_object('h264_codec_cbox'), self.app.config, 'general', 'h264_codec')
         ComboBoxEntryBinding(self.builder.get_object('combobox_ac3'), self.app.config, 'general', 'merge_ac3s_by')
         ComboBoxEntryBinding(self.builder.get_object('entry_decoder'), self.app.config, 'programs', 'decoder')
@@ -180,6 +179,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                              'first_audio_stream')
         ComboBoxEntryBinding(self.builder.get_object('smkv_second_audio'), self.app.config, 'smartmkvmerge',
                              'second_audio_stream')
+        ComboBoxEntryBinding(self.builder.get_object('entry_cut_default'), self.app.config, 'general', 'cut_action', data='cut_default')
 
         RadioButtonsBinding([self.builder.get_object(widget) for widget in ['radio_size', 'radio_filename']],
                             self.app.config, 'general', 'choose_cutlists_by')

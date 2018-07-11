@@ -166,7 +166,7 @@ class App:
                 'cut_action': Cut_action.ASK,
                 'delete_cutlists': True,
                 'smart': True,
-                'choose_cutlists_by': 0,  # 0 = size, 1=name
+                'choose_cutlists_by': 1,  # 0 = size, 1=name
                 'cutlist_username': '',
                 'planned_items': '',
                 'rename_cut': True,
@@ -234,7 +234,7 @@ class App:
             }
         }
 
-        self.app_name = 'OTR-Verwaltung3p'
+        self.app_name = 'otr-verwaltung3p'
 
         if local:
             self.config = Config(os.path.join(launch_dir, "..", "conf"), configuration)
@@ -248,7 +248,7 @@ class App:
        
         # regex
         self.uncut_video = re.compile(
-            '.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])*_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|mp4|HQ\.mkv|HD\.mkv|HQ\.mp4|HD\.mp4)$')
+            '.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])*_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|mp4|HQ\.mkv|HD\.mkv|mp4\.mkv|HQ\.mp4|HD\.mp4)$')
         # regex for the name schema should use cut videos just in case it has been muxed into an mkv because of an ac3-track
         self.rename_video = re.compile(
             '.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])*_TVOON_DE.mpg(-cut\.avi|\.HQ-cut\.avi|\.HD-cut\.avi|-cut\.mp4|\.HQ-cut\.mp4|\.HD-cut\.mp4|\.HD-cut\.mkv|\.HQ-cut\.mkv|-cut\.mkv)$')
@@ -296,7 +296,9 @@ class App:
         self.plugin_system = PluginSystem(self, self.__gui, plugin_paths, self.config.get('plugins', 'enabled'),
                                           self.config.get('plugins', 'config'))
 
-        self.show_section(Section.DOWNLOAD)
+        self.show_section(Section.VIDEO_UNCUT)
+        # ~ self.__gui.main_window.sidebar.set_active(1)
+        self.__gui.main_window.treeview_files()
 
         self.planned_broadcasts = Planning()
         self.planned_broadcasts.read_config(self.config.get('general', 'planned_items'))
@@ -373,7 +375,9 @@ class App:
             Section.VIDEO_UNCUT: 'scrolledwindow_files',
             Section.VIDEO_CUT: 'scrolledwindow_files',
             Section.ARCHIVE: 'scrolledwindow_files',
-            Section.TRASH: 'scrolledwindow_files'
+            Section.TRASH: 'scrolledwindow_files',
+            Section.TRASH_AVI: 'scrolledwindow_files',
+            Section.TRASH_OTRKEY: 'scrolledwindow_files'
         }
 
         self.__gui.main_window.clear_files()
@@ -393,6 +397,12 @@ class App:
 
         elif section == Section.TRASH:
             files = self.__section_trash()
+
+        elif section == Section.TRASH_AVI:
+            files = self.__section_trash_avi()
+
+        elif section == Section.TRASH_OTRKEY:
+            files = self.__section_trash_otrkey()
 
         elif section == Section.ARCHIVE:
             # returns NO files       
@@ -442,6 +452,20 @@ class App:
 
         files = [join(path_otrkeys, f) for f in os.listdir(path_otrkeys) if f.endswith('.otrkey') and self.search(f)]
         files += [join(path_avis, f) for f in os.listdir(path_avis) if self.cut_video.match(f) and self.search(f)]
+
+        return files
+
+    def __section_trash_avi(self):
+        path_avis = self.config.get('general', 'folder_trash_avis')
+
+        files = [join(path_avis, f) for f in os.listdir(path_avis) if self.cut_video.match(f) and self.search(f)]
+
+        return files
+
+    def __section_trash_otrkey(self):
+        path_otrkeys = self.config.get('general', 'folder_trash_otrkeys')
+
+        files = [join(path_otrkeys, f) for f in os.listdir(path_otrkeys) if f.endswith('.otrkey') and self.search(f)]
 
         return files
 
@@ -563,7 +587,9 @@ class App:
         for method, section in [(self.__section_otrkey, Section.OTRKEY),
                                 (self.__section_video_uncut, Section.VIDEO_UNCUT),
                                 (self.__section_video_cut, Section.VIDEO_CUT),
-                                (self.__section_trash, Section.TRASH)]:
+                                (self.__section_trash, Section.TRASH),
+                                (self.__section_trash, Section.TRASH_AVI),
+                                (self.__section_trash_otrkey, Section.TRASH_OTRKEY)]:
             items = method()
             count = len(items)
             counts[section] = count
