@@ -118,16 +118,16 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             # ~ ('download_remove', 'delete.png', "Löschen", Action.DOWNLOAD_REMOVE),
         # ~ ]
         toolbar_buttons = [
-            ('decodeandcut', ['dialog-password-symbolic', 'edit-cut'],
+            ('decodeandcut', ['dialog-password', 'edit-cut'],
                                                 "Dekodieren und Schneiden", Action.DECODEANDCUT),
-            ('decode', 'dialog-password-symbolic', 'Dekodieren', Action.DECODE),
+            ('decode', 'dialog-password', 'Dekodieren', Action.DECODE),
             ('delete', 'user-trash', "In den Müll verschieben", Action.DELETE),
             ('archive', 'system-file-manager', "Archivieren", Action.ARCHIVE),
             ('cut', 'edit-cut', "Schneiden", Action.CUT),
             ('restore', 'view-refresh', "Wiederherstellen", Action.RESTORE),
-            ('rename', 'accessories-text-editor', "Umbenennen", Action.RENAME),
+            ('rename', 'accessories-text-editor_', "Umbenennen", Action.RENAME),
             ('new_folder', 'folder-new', "Neuer Ordner", Action.NEW_FOLDER),
-            ('real_delete', 'edit-delete', "Löschen", Action.REAL_DELETE),
+            ('real_delete', 'edit-del', "Löschen", Action.REAL_DELETE),
         ]
 
         self.__toolbar_buttons = {}
@@ -135,13 +135,17 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             # Gtk.IconSize.LARGE_TOOLBAR
             if type(image_name) == type([]):  # It's a list
                 # Create an emblemed icon
-                image = Gtk.Image.new_from_gicon(Gio.EmblemedIcon.new(
+                try:
+                    image = Gtk.Image.new_from_gicon(Gio.EmblemedIcon.new(
                                                 Gio.ThemedIcon.new(image_name[0]),
                                                 Gio.Emblem.new(Gio.ThemedIcon.new(image_name[1]))),
                                                 24)
+                except: pass
             else:
-                image = Gtk.Image.new_from_pixbuf(Gtk.IconTheme.get_default().load_icon(
+                try:
+                    image = Gtk.Image.new_from_pixbuf(Gtk.IconTheme.get_default().load_icon(
                                                                                 image_name, 24, 0))
+                except: pass
             image.show()
 
             if key == "cut" or key == "decodeandcut":
@@ -292,11 +296,13 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
         # load pixbufs for treeview
         # ~ self.__pix_avi = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('avi.png'))
-        self.__pix_avi = Gtk.IconTheme.get_default().load_icon('media-video', 16, 0)
         # ~ self.__pix_otrkey = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('decode.png'))
-        self.__pix_otrkey = Gtk.IconTheme.get_default().load_icon('dialog-password-symbolic', 16, 0)
         # ~ self.__pix_folder = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('folder.png'))
-        self.__pix_folder = Gtk.IconTheme.get_default().load_icon('folder', 24, 0)
+        try:
+            self.__pix_avi = Gtk.IconTheme.get_default().load_icon('video-x-generic', 16, 0)
+            self.__pix_otrkey = Gtk.IconTheme.get_default().load_icon('dialog-password', 16, 0)
+            self.__pix_folder = Gtk.IconTheme.get_default().load_icon('folder', 24, 0)
+        except: pass
 
     def __setup_widgets(self):
         self.builder.get_object('menu_bottom').set_active(self.app.config.get('general', 'show_bottom'))

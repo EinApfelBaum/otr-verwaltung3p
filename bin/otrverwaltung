@@ -264,8 +264,8 @@ class App:
         if self.config.get('general', 'window_settings'):
             maximize, width, height = self.config.get('general', 'window_settings').split(',')
             if int(maximize):
-                self.__gui.main_window.maximize()
-            self.__gui.main_window.resize(int(width), int(height))
+                self.gui.main_window.maximize()
+            self.gui.main_window.resize(int(width), int(height))
 
         # load downloads
         downloads = []
@@ -293,63 +293,65 @@ class App:
         else:
             plugin_paths = path.get_plugin_paths()
 
-        self.plugin_system = PluginSystem(self, self.__gui, plugin_paths, self.config.get('plugins', 'enabled'),
+        self.plugin_system = PluginSystem(self, self.gui, plugin_paths, self.config.get('plugins', 'enabled'),
                                           self.config.get('plugins', 'config'))
 
-        self.show_section(Section.VIDEO_UNCUT)
-        # ~ self.__gui.main_window.sidebar.set_active(1)
-        self.__gui.main_window.treeview_files()
+        # Show Section VIDEO_UNCUT by default if path exists
+        if os.path.exists(os.path.join(script_root_dir, 'conf')):
+            if os.path.exists(self.config.get('general', 'folder_uncut_avis')):
+                self.show_section(Section.VIDEO_UNCUT)
+                self.gui.main_window.treeview_files()
 
         self.planned_broadcasts = Planning()
         self.planned_broadcasts.read_config(self.config.get('general', 'planned_items'))
         for broadcast in self.planned_broadcasts:
-            self.__gui.main_window.append_row_planning(broadcast)
+            self.gui.main_window.append_row_planning(broadcast)
 
-        self.__gui.main_window.broadcasts_badge()
+        self.gui.main_window.broadcasts_badge()
 
-    # ~ def import_old_config(self, configuration):
-        # ~ # TODO: Remove after one release          
+    """def import_old_config(self, configuration):
+        # TODO: Remove after one release          
 
-        # ~ # try to move plugins
-        # ~ import shutil
-        # ~ src = join(os.environ.get('HOME'), '.otr-verwaltung', 'plugins')
-        # ~ dst = path.get_storage_dir("plugins")
-        # ~ try:
-            # ~ shutil.copytree(src, dst)
-        # ~ except:
-            # ~ pass
+        # try to move plugins
+        import shutil
+        src = join(os.environ.get('HOME'), '.otr-verwaltung', 'plugins')
+        dst = path.get_storage_dir("plugins")
+        try:
+            shutil.copytree(src, dst)
+        except:
+            pass
 
-        # ~ try:
-            # ~ config = join(os.environ.get('HOME'), '.otr-verwaltung', 'conf')
-            # ~ config = open(config, 'r')
-        # ~ except:
-            # ~ return configuration
+        try:
+            config = join(os.environ.get('HOME'), '.otr-verwaltung', 'conf')
+            config = open(config, 'r')
+        except:
+            return configuration
 
-        # ~ # read file
-        # ~ for line in config:
-            # ~ if not '=' in line:
-                # ~ continue
-            # ~ key, value = line.split('=', 1)
-            # ~ key, value = key.strip(), value.strip()
+        # read file
+        for line in config:
+            if not '=' in line:
+                continue
+            key, value = line.split('=', 1)
+            key, value = key.strip(), value.strip()
 
-            # ~ if key in configuration['general'].keys():
-                # ~ datatype = type(configuration['general'][key])
+            if key in configuration['general'].keys():
+                datatype = type(configuration['general'][key])
 
-                # ~ # print "%5s: %15s=%15s" % (datatype, key.strip(), value)
-                # ~ if datatype == bool:
-                    # ~ value = bool(int(value))
-                # ~ else:
-                    # ~ value = datatype(value)
+                # print "%5s: %15s=%15s" % (datatype, key.strip(), value)
+                if datatype == bool:
+                    value = bool(int(value))
+                else:
+                    value = datatype(value)
 
-                # ~ self.info("IMPORT: %s of %s" % (key, datatype))
-                # ~ configuration['general'][key] = value
+                self.info("IMPORT: %s of %s" % (key, datatype))
+                configuration['general'][key] = value
 
-            # ~ elif key == "enabled_plugins":
-                # ~ configuration['plugins']['enabled'] = value
+            elif key == "enabled_plugins":
+                configuration['plugins']['enabled'] = value
 
-        # ~ os.rename(join(os.environ.get('HOME'), '.otr-verwaltung'), join(os.environ.get('HOME'), '.otr-verwaltung_ALT'))
+        os.rename(join(os.environ.get('HOME'), '.otr-verwaltung'), join(os.environ.get('HOME'), '.otr-verwaltung_ALT'))
 
-        # ~ return configuration
+        return configuration"""
 
 
     ### Show sections
@@ -366,7 +368,7 @@ class App:
         self.section = section
 
         # set toolbar
-        self.__gui.main_window.set_toolbar(section)
+        self.gui.main_window.set_toolbar(section)
 
         self.section_info = {
             Section.PLANNING: 'scrolledwindow_planning',
@@ -380,11 +382,11 @@ class App:
             Section.TRASH_OTRKEY: 'scrolledwindow_files'
         }
 
-        self.__gui.main_window.clear_files()
+        self.gui.main_window.clear_files()
         files = []
 
         treeview = self.section_info[section]
-        self.__gui.main_window.show_treeview(treeview)
+        self.gui.main_window.show_treeview(treeview)
 
         if section == Section.OTRKEY:
             files = self.__section_otrkey()
@@ -429,7 +431,6 @@ class App:
 
     def __section_video_uncut(self):
         path = self.config.get('general', 'folder_uncut_avis')
-
         files = [join(path, f) for f in os.listdir(path) if self.uncut_video.match(f) and self.search(f)]
 
         return files
@@ -477,7 +478,7 @@ class App:
     # recursive function for archive to add folders and files with a tree structure
     def __tree(self, parent=None, path=None):
         if parent != None:
-            dir = self.__gui.main_window.builder.get_object('treeview_files').get_model().get_value(parent, 0)
+            dir = self.gui.main_window.builder.get_object('treeview_files').get_model().get_value(parent, 0)
         else:  # base path (archive directory)
             dir = path
 
@@ -568,7 +569,7 @@ class App:
             return filename
 
     def __append_row_treeview_files(self, parent, filename):
-        iter = self.__gui.main_window.append_row_files(parent, filename, fileoperations.get_size(filename),
+        iter = self.gui.main_window.append_row_files(parent, filename, fileoperations.get_size(filename),
                                                        fileoperations.get_date(filename), isdir(filename))
         return iter
 
@@ -631,16 +632,16 @@ class App:
 
     def perform_action(self, chosen_action, cut_action=None):
 
-        action = actions.get_action(chosen_action, self, self.__gui)
+        action = actions.get_action(chosen_action, self, self.gui)
 
         if chosen_action in [Action.PLAN_EDIT, Action.PLAN_SEARCH, Action.PLAN_REMOVE]:
-            model, selected_rows = self.__gui.main_window.builder.get_object(
+            model, selected_rows = self.gui.main_window.builder.get_object(
                 'treeview_planning').get_selection().get_selected_rows()
 
             if len(model) == 0: return
 
             if len(selected_rows) == 0:
-                if chosen_action != Action.PLAN_EDIT and self.__gui.question_box(
+                if chosen_action != Action.PLAN_EDIT and self.gui.question_box(
                         "Es ist keine Sendung markiert! Sollen alle Sendungen verarbeitet werden?"):
                     selected_rows = [row.path for row in selected_rows]
                     for row in model:
@@ -654,12 +655,12 @@ class App:
 
         elif chosen_action in [Action.DECODE, Action.CUT, Action.DECODEANDCUT, Action.RENAME, Action.REAL_DELETE,
                                Action.RESTORE, Action.DELETE, Action.ARCHIVE]:
-            filenames = self.__gui.main_window.get_selected_filenames()
+            filenames = self.gui.main_window.get_selected_filenames()
 
             if len(filenames) == 0:
-                model = self.__gui.main_window.builder.get_object('treeview_files').get_model()
+                model = self.gui.main_window.builder.get_object('treeview_files').get_model()
 
-                if len(model) != 0 and self.__gui.question_box(
+                if len(model) != 0 and self.gui.question_box(
                         "Es ist keine Datei markiert! Sollen alle Dateien verarbeitet werden?"):
                     filenames = [row[0] for row in model]
                 else:
@@ -672,7 +673,7 @@ class App:
                 action.do(filenames)
 
         elif chosen_action in [Action.DOWNLOAD_START, Action.DOWNLOAD_STOP, Action.DOWNLOAD_REMOVE]:
-            model, selected_rows = self.__gui.main_window.treeview_download.get_selection().get_selected_rows()
+            model, selected_rows = self.gui.main_window.treeview_download.get_selection().get_selected_rows()
 
             if len(selected_rows) == 0:
                 return
@@ -681,7 +682,7 @@ class App:
             action.do(downloads)
 
         elif chosen_action == Action.NEW_FOLDER:
-            filenames = self.__gui.main_window.get_selected_filenames()
+            filenames = self.gui.main_window.get_selected_filenames()
             self.locked = True
             if len(filenames) == 0:
                 action.do(self.config.get('general', 'folder_archive'))
@@ -696,7 +697,7 @@ class App:
 
         # update view?
         if action.update_list:
-            self.__gui.main_window.do_search(self.__search_text)
+            self.gui.main_window.do_search(self.__search_text)
             self.show_section(self.section)
 
     def play_file(self, filename):
@@ -775,7 +776,7 @@ class App:
         elif check_prog(self.playprog[1]):
             play_with(self.playprog[1])
         else:
-            self.__gui.message_error_box("Zum Anzeigen der Schnitte sind weder mpv noch mplayer installiert bzw. funktionieren nicht.")
+            self.gui.message_error_box("Zum Anzeigen der Schnitte sind weder mpv noch mplayer installiert bzw. funktionieren nicht.")
             return
 
         # wait
@@ -855,7 +856,7 @@ class App:
         error = cutlist.read_cuts()
 
         if error:
-            self.__gui.message_error_box(error)
+            self.gui.message_error_box(error)
             return
 
         self.__show(cutlist.cuts_seconds, video_filename, edl_subtitles_cb)
@@ -900,7 +901,7 @@ class App:
         error = cutlist.read_cuts()
 
         if error:
-            self.__gui.message_error_box(error)
+            self.gui.message_error_box(error)
             return
 
         self.__show(cutlist.cuts_seconds, video_filename, edl_subtitles_cb)
@@ -919,40 +920,41 @@ class App:
     def run(self, link=None):
         """ #FIXME """
 
-        self.__gui.main_window.show()
+        self.gui.main_window.show()
         if not os.path.exists(script_root_dir+'/conf'):
-            self.__gui.message_info_box(
+            self.gui.message_info_box(
                 "Dies ist offenbar das erste Mal, dass OTR-Verwaltung gestartet wird.\n\nEs müssen zunächst einige wichtige Einstellungen vorgenommen werden. Klicken Sie dazu auf OK.")
-            self.__gui.preferences_window.show()
+            self.gui.preferences_window.show()
         else:
             errstr = ''
             
             if self.config.get('general', 'email') == "":
                 errstr = errstr + '- setze eine E-Mail-Adresse für den OTR-Account\n'
-            if self.config.get('general', 'password') == "" and not self.config.get('general', 'no_password_hint'):
+            if self.config.get('general', 'password') == "" and not self.config.get('general',
+                                                                            'no_password_hint'):
                 errstr = errstr + '- setze ein Passwort für den OTR-Account (optional)\n'
-            if self.config.get('general', 'folder_new_otrkeys') == "":
+            if not os.path.exists(self.config.get('general', 'folder_new_otrkeys')):
                 errstr = errstr + '- definiere einen Ordner für .otrkey Dateien\n'
-            if self.config.get('general', 'folder_archive') == "":
+            if not os.path.exists(self.config.get('general', 'folder_archive')):
                 errstr = errstr + '- definiere einen Ordner für archivierte Dateien\n'
-            if self.config.get('general', 'folder_cut_avis') == "":
+            if not os.path.exists(self.config.get('general', 'folder_cut_avis')):
                 errstr = errstr + '- definiere einen Ordner für geschnitte .avi Dateien\n'
-            if self.config.get('general', 'folder_uncut_avis') == "":
+            if not os.path.exists(self.config.get('general', 'folder_uncut_avis')):
                 errstr = errstr + '- definiere einen Ordner für ungeschnittene .avi Dateien\n'
-            if self.config.get('general', 'folder_trash_avis') == "":
+            if not os.path.exists(self.config.get('general', 'folder_trash_avis')):
                 errstr = errstr + '- definiere einen "Müll"-Ordner für .avi Dateien\n'
-            if self.config.get('general', 'folder_trash_otrkeys') == "":
+            if not os.path.exists(self.config.get('general', 'folder_trash_otrkeys')):
                 errstr = errstr + '- definiere einen "Müll"-Ordner für .otrkey Dateien\n'
                 
             if errstr != '':
-                self.__gui.message_info_box('Es müssen noch ein paar wichtige Einstellungen vorgenommen werden.\n\n'+errstr+"\nKlicken Sie dazu auf OK.")
-                self.__gui.preferences_window.show()
+                self.gui.message_info_box('Es müssen noch ein paar wichtige Einstellungen vorgenommen werden.\n\n'+errstr+"\nKlicken Sie dazu auf OK.")
+                self.gui.preferences_window.show()
 
 
         if link:
             self.add_download_link(link)
 
-        self.__gui.run()
+        self.gui.run()
 
         # save downloads
         downloads = []
@@ -976,15 +978,15 @@ class App:
         self.config.set('plugins', 'enabled', enabled)
         self.config.set('plugins', 'config', config)
 
-        maximized = str(int(self.__gui.main_window.maximized))
-        width = str(self.__gui.main_window.size[0])
-        height = str(self.__gui.main_window.size[1])
+        maximized = str(int(self.gui.main_window.maximized))
+        width = str(self.gui.main_window.size[0])
+        height = str(self.gui.main_window.size[1])
 
         settings = ','.join([maximized, width, height])
         self.config.set('general', 'window_settings', settings)
 
     def add_download_link(self, link):
-        action = actions.get_action(Action.DOWNLOAD_ADD_LINK, self, self.__gui)
+        action = actions.get_action(Action.DOWNLOAD_ADD_LINK, self, self.gui)
         action.do(link)
 
 
