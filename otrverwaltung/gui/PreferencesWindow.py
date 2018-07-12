@@ -46,7 +46,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         self.example_filename = 'James_Bond_007_09.01.06_20-15_ard_120_TVOON_DE.mpg.HQ.avi'
         self.example_cut_filename = 'James_Bond_007_09.01.06_20-15_ard_120_TVOON_DE.mpg.HQ-cut.avi'
 
-        # preferences fonts (little explanations)
+        # preferences fonts (small font for explanations)
         labels = ['labelDescNewOtrkeys',
                   'labelDescUncutAvis',
                   'labelDescCutAvis',
@@ -96,7 +96,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         '''
 
         # If stored decoder is not in the standard list (see PreferenceWindow.glade)
-        # it will be prepended and set as active entry. Is there an easier way?
+        # it will be prepended and set as active entry.
         entry_list = []
         for row in self.builder.get_object('entry_decoder').get_model():
             entry_list.append(row[0])
