@@ -492,9 +492,9 @@ class CutSmartMkvmerge(Cut):
                         continue
                     except IndexError as e:
                         continue
-                elif 'Color primaries' in line and '709' in line:
+                elif 'Matrix coefficients' in line and '709' in line:
                     ffmpeg_codec_options.extend(bt709)
-                elif 'Color primaries' in line and '470' in line:
+                elif 'Matrix coefficients' in line and '470' in line:
                     ffmpeg_codec_options.extend(bt470bg)
                 elif 'Format profile' in line and '@L' in line:
                     try:
