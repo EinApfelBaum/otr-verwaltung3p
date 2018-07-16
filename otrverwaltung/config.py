@@ -129,10 +129,15 @@ class Config:
                         except ValueError:
                             self.set(category, option, json_config[category][option])
                     elif category is 'general' and option is 'server':
+                        # Check for trailing slash in url
                         if not json_config[category][option].endswith("/"):
                             json_config[category][option] += "/"
                         self.set(category, option, json_config[category][option])
-                    else:
+                    elif category is 'smartmkvmerge' and option is 'x264_mp4_string':
+                        # Old default for mp4
+                        if json_config[category][option] == '--force-cfr --profile baseline --preset medium --trellis 0':
+                            json_config[category][option] = '--force-cfr --trellis 0 --preset veryfast'
+                    else:                        
                         self.set(category, option, json_config[category][option])
                     if option in newConfFields:
                         try:

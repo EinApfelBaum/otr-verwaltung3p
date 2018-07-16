@@ -458,7 +458,6 @@ class DecodeOrCut(Cut):
         if program == Program.CUT_INTERFACE:
             # looking for latest cutlist, if any
             p, video_file = os.path.split(filename)
-            # cutregex = re.compile("^" + video_file + "\.?(.*).cutlist$")
             cutregex = re.compile("^" + video_file + "\.?(.*).cutlist$")
             files = os.listdir(p)
             number = -1
@@ -466,12 +465,17 @@ class DecodeOrCut(Cut):
             for f in files:
                 match = cutregex.match(f)
                 if match:
-                    # self.log.debug "Found local cutlist %s" % match.group()
-                    if match.group(1) == '':
+                    self.log.error("Found local cutlist {}".format(match.group()))
+                    if match.group(1) == '' or match.group(1) == 'mkv':
                         res_num = 0
-                    else:
+                    elif "." in match.group(1):
+                        res_num = int(match.group(1).split('.')[1])
+                    elif type(eval(match.group(1))) == type(1):  # It's a number
                         res_num = int(match.group(1))
+                    else:
+                        res_num = 0
 
+                    self.log.error("local cutlist res_num: {}".format(match.group(1)))
                     if res_num > number:
                         res_num = number
                         local_cutlist = p + "/" + match.group()

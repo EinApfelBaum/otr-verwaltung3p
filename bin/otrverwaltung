@@ -218,7 +218,7 @@ class App:
             'smartmkvmerge': {
                 'x264_hd_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --weightp 0',
                 'x264_hq_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --aq-mode 2 --weightp 0',
-                'x264_mp4_string': '--force-cfr --profile baseline --preset medium --trellis 0',
+                'x264_mp4_string': '--force-cfr --trellis 0 --preset veryfast',
                 'ffmpeg_hd_x264_options': 'crf=23:deblock=-1/-1:psy-rd=1/0.15:direct=auto:force-cfr=1:b-adapt=2:rc-lookahead=60:weightp=0:aq-mode=2',
                 'ffmpeg_hq_x264_options': 'crf=23:deblock=-1/-1:psy-rd=1/0.15:direct=auto:force-cfr=1:b-adapt=2:rc-lookahead=60:weightp=0',
                 'ffmpeg_mp4_x264_options': 'crf=23:force-cfr=1:trellis=0',
@@ -233,25 +233,29 @@ class App:
                 'single_threaded_automatic': True
             }
         }
+        # ~ 'x264_mp4_string': '--force-cfr --profile baseline --preset medium --trellis 0',
 
         self.app_name = 'otr-verwaltung3p'
 
         if local:
             self.config = Config(os.path.join(launch_dir, "..", "conf"), configuration)
         else:
-            # TODO: Remove this line after one release
-            # ~ configuration = self.import_old_config(configuration)
             self.config = Config(path.get_config_dir("conf"), configuration)
 
         self.__search_text = ""
         self.locked = False
        
         # regex
-        self.uncut_video = re.compile(
-            '.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])*_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|mp4|HQ\.mkv|HD\.mkv|mp4\.mkv|HQ\.mp4|HD\.mp4)$')
-        # regex for the name schema should use cut videos just in case it has been muxed into an mkv because of an ac3-track
-        self.rename_video = re.compile(
-            '.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])*_TVOON_DE.mpg(-cut\.avi|\.HQ-cut\.avi|\.HD-cut\.avi|-cut\.mp4|\.HQ-cut\.mp4|\.HD-cut\.mp4|\.HD-cut\.mkv|\.HQ-cut\.mkv|-cut\.mkv)$')
+        regex_uncut_video = '.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])' + \
+                            '*_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|mp4|HQ\.mkv|HD\.mkv|' + \
+                            'mp4\.mkv|HQ\.mp4|HD\.mp4)$'
+        self.uncut_video = re.compile(regex_uncut_video)
+        # regex for the name schema should use cut videos just in case it has been muxed
+        # into an mkv because of an ac3-track
+        regex_rename_video = '.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])*' + \
+                             '_TVOON_DE.mpg(-cut\.avi|\.HQ-cut\.avi|\.HD-cut\.avi|-cut\.mp4|' + \
+                             '\.HQ-cut\.mp4|\.HD-cut\.mp4|\.HD-cut\.mkv|\.HQ-cut\.mkv|-cut\.mkv)$'
+        self.rename_video = re.compile(regex_rename_video)
         self.cut_video = re.compile('.*(avi|mp4|mkv|wmv|ac3)$')
 
         self.config.load()

@@ -40,25 +40,15 @@ class Cut(BaseAction):
         self.app = app
         self.config = app.config
         self.gui = gui
+        self.format_dict = {"High@L3.2": Format.HD, "High@L4": Format.HD,
+                            "High@L3": Format.HQ, "High@L3.0": Format.HQ,
+                            "Simple@L1": Format.AVI, "Baseline@L1.3": Format.MP4}
 
     def cut_file_by_cutlist(self, filename, cutlist, program_config_value):
         raise Exception("Override this method!")
 
     def create_cutlist(self, filename, program_config_value):
         raise Exception("Override this method!")
-
-    def get_format_new(self, filename):
-        """
-            TODO: gCurse
-            This function should use mediainfo to determine file format by examining
-            "format profile"
-            or
-            replace function self.analyse_mediafile with something using mediainfo
-            or mediainfo and ffmpeg.
-            GOAL: Determine file format independent of file extension.
-        """
-        global bframe_delay
-        
 
     def get_format(self, filename):
         global bframe_delay
@@ -172,7 +162,8 @@ class Cut(BaseAction):
             [self.get_timecode(start) + ',' + self.get_timecode(start + duration) for start, duration in
              cutlist.cuts_seconds]))
         # splitting .ac3. Every second fragment will be used.
-        #        return_value = subprocess.call([mkvmerge, "--split", "timecodes:" + timecodes, "-o", root + "-%03d.mka", ac3_file])
+        # return_value = subprocess.call([mkvmerge, "--split", "timecodes:" + timecodes, "-o",
+        #                                                           root + "-%03d.mka", ac3_file])
         try:
             blocking_process = subprocess.Popen(
                 [mkvmerge, '--ui-language', 'en_US', "--split", "timecodes:" + timecodes, "-o", root + "-%03d.mka",
@@ -180,7 +171,8 @@ class Cut(BaseAction):
         except OSError as e:
             return None, e.strerror + ": " + mkvmerge
         return_value = blocking_process.wait()
-        # return_value=0 is OK, return_value=1 means a warning. Most probably non-ac3-data that has been omitted.
+        # return_value=0 is OK, return_value=1 means a warning. Most probably non-ac3-data that
+        # has been omitted.
         # TODO: Is there some way to pass this warning to the conclusion dialog?
         if return_value != 0 and return_value != 1:
             return None, None, str(return_value)
@@ -252,8 +244,10 @@ class Cut(BaseAction):
 
         log = process.communicate()[0]
 
-        video_infos_match = re.compile(
-            r".*(Duration).*(\d{1,}):(\d{1,}):(\d{1,}.\d{1,}).*|.*(SAR) (\d{1,}:\d{1,}) DAR (\d{1,}:\d{1,}).*\, (\d{2,}\.{0,}\d{0,}) tbr.*|.*(Stream).*(\d{1,}:\d{1,}).*Audio.*ac3.*")
+        regex_video_infos = r".*(Duration).*(\d{1,}):(\d{1,}):(\d{1,}.\d{1,}).*|.*(SAR) " + \
+                            "(\d{1,}:\d{1,}) DAR (\d{1,}:\d{1,}).*\, (\d{2,}\.{0,}\d{0,}) " + \
+                            "tbr.*|.*(Stream).*(\d{1,}:\d{1,}).*Audio.*ac3.*"
+        video_infos_match = re.compile(regex_video_infos)
         seconds = 0
         ac3_stream = fps = dar = sar = None
 
@@ -273,7 +267,8 @@ class Cut(BaseAction):
                         seconds = float(m.group(2)) * 3600 + float(m.group(3)) * 60 + float(m.group(4))
                     except ValueError:
                         self.log.debug("Leave function")
-                        return None, None, None, None, "Dauer des Film konnte nicht ausgelesen werden."
+                        error = "Dauer des Film konnte nicht ausgelesen werden."
+                        return None, None, None, None, error
                 elif "SAR" == m.group(5):
                     try:
                         sar = m.group(6)
@@ -282,7 +277,8 @@ class Cut(BaseAction):
                         self.log.debug("FPS: {}".format(fps))
                     except ValueError:
                         self.log.debug("Leave function")
-                        return None, None, None, None, "Video Stream Informationen konnte nicht ausgelesen werden."
+                        error = "Video Stream Informationen konnte nicht ausgelesen werden."
+                        return None, None, None, None, error
                 elif "Stream" == m.group(9):
                     ac3_stream = m.group(10)
             else:
@@ -294,15 +290,14 @@ class Cut(BaseAction):
             return fps, dar, sar, max_frames, ac3_stream, None
 
         self.log.debug("Leave function")
-        return None, None, None, None, None, "Es konnten keine Video Infos der zu bearbeitenden Datei ausgelesen werden."
+        error = "Es konnten keine Video Infos der zu bearbeitenden Datei ausgelesen werden."
+        return None, None, None, None, None, error
 
     def get_keyframes_from_file(self, filename):
         """ returns keyframe list - in frame numbers"""
 
         if not os.path.isfile(filename + '.ffindex_track00.kf.txt'):
             try:
-                # ~ command = [self.config.get_program('ffmsindex'), '-p', '-f', '-k', filename]
-                # ~ ffmsindex = subprocess.call(command)
                 command = [self.config.get_program('ffmsindex'), '-f', '-k', filename]
                 process = subprocess.Popen(command, stdout=subprocess.PIPE,
                                                     stderr=subprocess.PIPE)
@@ -341,8 +336,6 @@ class Cut(BaseAction):
 
         if not os.path.isfile(filename + '.ffindex_track00.tc.txt'):
             try:
-                # ~ command = [self.config.get_program('ffmsindex'), '-p', '-f', '-c', '-k', filename]
-                # ~ ffmsindex = subprocess.call(command)
                 command = [self.config.get_program('ffmsindex'), '-f', '-c', '-k', filename]
                 process = subprocess.Popen(command, stdout=subprocess.PIPE,
                                                     stderr=subprocess.PIPE)
@@ -373,7 +366,7 @@ class Cut(BaseAction):
             return None, "Timecodes konnten nicht ermittelt werden."
 
         index.close()
-        # Generate reversed dict
+        # Generate reverse dict
         timecode_frame = {v: k for k, v in frame_timecode.items()}
         if os.path.isfile(filename + '.ffindex'):
             fileoperations.remove_file(filename + '.ffindex')

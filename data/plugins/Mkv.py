@@ -152,7 +152,8 @@ class Mkv(Plugin):
                     # ffmpeg pass               
                     yield 1, count
                     self.progress = 0
-                    ffmpegpass_file = fileoperations.make_unique_filename(os.path.splitext(filename)[0] + "_remux.mkv")
+                    ffmpegpass_file = fileoperations.make_unique_filename(os.path.splitext(
+                                                                    filename)[0] + "_remux.mkv")
 
                     # convert first audio stream to aac
                     if self.Config['EncodeOnlyFirstAudioToAAC']:

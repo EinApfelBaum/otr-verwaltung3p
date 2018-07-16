@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.22.1 -->
 <interface>
-  <requires lib="gtk+" version="3.18"/>
+  <requires lib="gtk+" version="3.16"/>
   <requires lib="CutinterfaceDialog" version="1.0"/>
   <object class="GtkListStore" id="cutslist">
     <columns>
@@ -68,13 +68,20 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkLabel" id="label_filename">
+              <object class="GtkEventBox" id="eventBoxLabelFilename">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">10</property>
-                <property name="label" translatable="yes">Datei: </property>
-                <property name="selectable">True</property>
-                <property name="xalign">0</property>
+                <signal name="button-press-event" handler="on_label_filename_button_press_event" swapped="no"/>
+                <child>
+                  <object class="GtkLabel" id="label_filename">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="margin_left">10</property>
+                    <property name="label" translatable="yes">label_filename</property>
+                    <property name="xalign">0</property>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="expand">True</property>

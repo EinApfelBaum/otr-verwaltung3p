@@ -54,6 +54,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.last_direction = "none"
         self.seek_distance_default = 0
         self.seek_distance = 0
+        self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
         # self.gst_version = Gst.version()[0] * 100 + Gst.version()[1]
 
         self.state = Gst.State.NULL
@@ -255,9 +256,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def ready_callback(self):
         self.log.debug("Function start")
-        self.builder.get_object('label_filename').\
-            set_markup("Aktuelle Datei: <b>%s</b>" %
-            os.path.basename(self.filename))
+        self.builder.get_object('label_filename').set_markup(
+                                                    "{}".format(os.path.basename(self.filename)))
 
         self.update_timeline()
         self.update_listview()
@@ -588,6 +588,25 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         return time_str
 
+    def contextmenu_label_filename(self, *args):
+        menu = Gtk.Menu()
+        menuItem1 = Gtk.MenuItem("Dateinamen kopieren")
+        menu.append(menuItem1)
+        menuItem1.connect("activate", self.contextmenu_label_filename_copy)
+        menuItem2 = Gtk.MenuItem("Dateinamen mit Pfad kopieren")
+        menu.append(menuItem2)
+        menuItem2.connect("activate", self.contextmenu_label_filename_copypath)
+        menu.show_all()
+        menu.popup(None, None, None, None, 0, Gtk.get_current_event_time())
+
+    def contextmenu_label_filename_copy(self, *args):
+        self.clipboard.set_text(os.path.basename(self.filename), -1)
+
+    def contextmenu_label_filename_copypath(self, *args):
+        self.clipboard.set_text(self.filename, -1)
+
+    # gstreamer bus signals #
+
     def on_error(self, bus, msg):
         err, debug = msg.parse_error()
         self.log.error("Error: {0}, {1}".format(err, debug))
@@ -750,6 +769,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         keyname = Gdk.keyval_name(event.keyval).upper()
         if keyname == 'HOME' or keyname=='END':
             return True
+
+    def on_label_filename_button_press_event(self, widget, event):
+        if event.type == Gdk.EventType.BUTTON_PRESS:
+            self.contextmenu_label_filename()  # Gdk.BUTTON_SECONDARY 
 
     def on_slider_value_changed(self, slider):
         frames = slider.get_value()
