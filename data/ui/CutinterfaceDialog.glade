@@ -36,10 +36,12 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="halign">end</property>
               </object>
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
+                <property name="pack_type">end</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -49,17 +51,20 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="halign">end</property>
               </object>
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="pack_type">end</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -79,6 +84,8 @@
                     <property name="halign">start</property>
                     <property name="margin_left">10</property>
                     <property name="label" translatable="yes">label_filename</property>
+                    <property name="ellipsize">end</property>
+                    <property name="max_width_chars">100</property>
                     <property name="xalign">0</property>
                   </object>
                 </child>
@@ -221,14 +228,30 @@
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="margin_left">10</property>
+                        <property name="margin_left">20</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="on_checkbutton_hide_cuts_toggled" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">True</property>
                         <property name="fill">True</property>
+                        <property name="position">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="button_reparent">
+                        <property name="label" translatable="yes">RP</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="margin_left">20</property>
+                        <signal name="clicked" handler="on_button_reparent_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="pack_type">end</property>
                         <property name="position">6</property>
+                        <property name="non_homogeneous">True</property>
                       </packing>
                     </child>
                   </object>

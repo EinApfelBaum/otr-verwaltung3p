@@ -55,10 +55,12 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.seek_distance_default = 0
         self.seek_distance = 0
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+        self.player_videosink = None
         # self.gst_version = Gst.version()[0] * 100 + Gst.version()[1]
 
         self.state = Gst.State.NULL
         self.player = Gst.ElementFactory.make("playbin", "playbin")
+
         if not self.player:
             self.log.error("Could not create player.")
             pass
@@ -86,8 +88,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.slider.set_draw_value(False)
 
         self.movie_window = self.builder.get_object('movie_window')
-        self.movie_window.connect('realize', self.on_realize)
-        self.movie_window.connect('unrealize', self.on_unrealize)
+        # ~ self.movie_window.connect('realize', self.on_realize)
+        # ~ self.movie_window.connect('unrealize', self.on_unrealize)
 
         self.hide_cuts = self.builder.get_object('checkbutton_hide_cuts').get_active()
 
@@ -208,14 +210,18 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         if self.keyframes is None:
             self.log.warning("Error: Keyframes konnten nicht ausgelesen werden.")
 
-        
-
         self.movie_window.set_size_request(self.config.get('general', 'cutinterface_resolution_x'),
                                              self.config.get('general', 'cutinterface_resolution_y'))
         # Make window a bit bigger than natural size to avoid size changes
         ci_window = self.builder.get_object('cutinterface_dialog')
         ci_window_size_request_width = ci_window.size_request().width
         ci_window.set_size_request(int(ci_window.size_request().width * 1.05), int(ci_window.size_request().height * 1.05))
+
+        button_reparent = self.builder.get_object('button_reparent')
+        if self.app.config.get('general', 'show_reparent_btn'):
+            button_reparent.show()
+        else:
+            button_reparent.hide()
 
         self.hide_cuts = self.config.get('general', 'cutinterface_hide_cuts')
 
@@ -236,6 +242,12 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.frames = round(self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND)  # ROUND
         self.timelines = [self.get_cuts_in_frames(self.initial_cutlist,
                                                   self.initial_cutlist_in_frames)]
+
+        videosink = self.app.config.get('general', 'videosink')
+        if videosink != 'Standard':
+            self.player_videosink = Gst.ElementFactory.make(videosink, "videosink")
+            self.player.set_property('video-sink', self.player_videosink)
+
 
         # Set player uri only after discoverer is done
         self.player.set_property('uri', "file://" + self.filename)
@@ -650,6 +662,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     # signals #
 
+    def on_button_reparent_clicked(self, widget):
+        self.xid = self.movie_window.get_window().get_xid()
+        self.player.set_window_handle(self.xid)
+
     def on_draw_movie_window(self, widget, cr):
         """
         This function is called every time the video window needs to be
@@ -745,7 +761,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                     self.select_cut('prev')
                     return True
                 else:
-                    self.log.warn("keyname: {}".format(keyname))
+                    self.log.debug("keyname: {}".format(keyname))
 
         return False
 
