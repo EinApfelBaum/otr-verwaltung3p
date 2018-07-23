@@ -42,6 +42,9 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         self.builder = builder
         self.builder.connect_signals(self)
 
+    def obj(self, objectname):
+        return self.builder.get_object(objectname)
+
     def bind_config(self, config):
         self.example_filename = 'James_Bond_007_09.01.06_20-15_ard_120_TVOON_DE.mpg.HQ.avi'
         self.example_cut_filename = 'James_Bond_007_09.01.06_20-15_ard_120_TVOON_DE.mpg.HQ-cut.avi'
@@ -53,7 +56,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                   'labelDescTrashOtrkeys',
                   'labelDescTrashAvis']
         for label in labels:
-            self.builder.get_object(label).modify_font(Pango.FontDescription("9"))
+            self.obj(label).modify_font(Pango.FontDescription("9"))
 
         ''' verschoben in die glade Datei
 
@@ -62,134 +65,144 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         avidemux = ["avidemux", "avidemux2_cli"]
         virtualdub = [r"intern-vdub", r"/pfad/zu/vdub.exe"]
         smartmkvmerge = [r"SmartMKVmerge"]
-        #self.gui.set_model_from_list(self.builder.get_object('combobox_avi'), avidemux + virtualdub + smartmkvmerge)
-        #self.gui.set_model_from_list(self.builder.get_object(''), virtualdub + smartmkvmerge)
-        #self.gui.set_model_from_list(self.builder.get_object('combobox_mp4'), virtualdub)
+        #self.gui.set_model_from_list(self.obj('combobox_avi'), avidemux + virtualdub + smartmkvmerge)
+        #self.gui.set_model_from_list(self.obj(''), virtualdub + smartmkvmerge)
+        #self.gui.set_model_from_list(self.obj('combobox_mp4'), virtualdub)
         
         # manually
         avidemux_man = [r"avidemux3_qt4",r"avidemux2_qt4",r"avidemux2_gtk"]
         virtualdub_man = [r"intern-VirtualDub", r"/pfad/zu/VirtualDub.exe"]
         cut_interface = [r"CutInterface"]
-        #self.gui.set_model_from_list(self.builder.get_object('combobox_man_avi'), cut_interface + avidemux_man + virtualdub_man)
-        #self.gui.set_model_from_list(self.builder.get_object('combobox_man_hq'), cut_interface + avidemux_man + virtualdub_man)
-        #self.gui.set_model_from_list(self.builder.get_object('combobox_man_mp4'), cut_interface + avidemux_man + virtualdub_man)
+        #self.gui.set_model_from_list(self.obj('combobox_man_avi'), cut_interface + avidemux_man + virtualdub_man)
+        #self.gui.set_model_from_list(self.obj('combobox_man_hq'), cut_interface + avidemux_man + virtualdub_man)
+        #self.gui.set_model_from_list(self.obj('combobox_man_mp4'), cut_interface + avidemux_man + virtualdub_man)
        
-        #self.gui.set_model_from_list(self.builder.get_object('comboboxServer'), ["http://cutlist.at/"])
-        #self.gui.set_model_from_list(self.builder.get_object('entry_decoder'), ['intern-otrdecoder','intern-easydecoder'])
+        #self.gui.set_model_from_list(self.obj('comboboxServer'), ["http://cutlist.at/"])
+        #self.gui.set_model_from_list(self.obj('entry_decoder'), ['intern-otrdecoder','intern-easydecoder'])
 
-        #self.gui.set_model_from_list(self.builder.get_object(''), ["ffdshow", "x264vfw", "komisar"])
+        #self.gui.set_model_from_list(self.obj(''), ["ffdshow", "x264vfw", "komisar"])
         
         # mkvmerge for ac3
         mkvmerge = ["mkvmerge", "/pfad/zu/mkvmerge"]
-        #self.gui.set_model_from_list(self.builder.get_object('combobox_ac3'), mkvmerge)
+        #self.gui.set_model_from_list(self.obj('combobox_ac3'), mkvmerge)
         
         # smartmkvmerge
         smkv_first_audio = [ 'MP3 Spur kopieren', 
                                         'MP3 nach AAC konvertieren',  
                                         'nach 2-Kanal AAC konvertieren - von AC3 wenn vorhanden',  
                                         'nach Mehr-Kanal AAC konvertieren - von AC3 wenn vorhanden']
-        #self.gui.set_model_from_list(self.builder.get_object('smkv_first_audio'), smkv_first_audio)
+        #self.gui.set_model_from_list(self.obj('smkv_first_audio'), smkv_first_audio)
         smkv_second_audio = [   'AC3 Spur kopieren', 
                                                 'AC3 Spur nach AAC konvertieren',  
                                                 'AC3 Spur entfernen']
-        #self.gui.set_model_from_list(self.builder.get_object('smkv_second_audio'), smkv_second_audio)
+        #self.gui.set_model_from_list(self.obj('smkv_second_audio'), smkv_second_audio)
         '''
 
         # If stored decoder is not in the standard list (see PreferenceWindow.glade)
         # it will be prepended and set as active entry.
         entry_list = []
-        for row in self.builder.get_object('entry_decoder').get_model():
+        for row in self.obj('entry_decoder').get_model():
             entry_list.append(row[0])
         decoder_value = self.app.config.get('programs', 'decoder')
         if not decoder_value in entry_list:
-            self.builder.get_object('entry_decoder').prepend(decoder_value, decoder_value)
-            self.builder.get_object('entry_decoder').set_active(0)
+            self.obj('entry_decoder').prepend(decoder_value, decoder_value)
+            self.obj('entry_decoder').set_active(0)
 
         # add bindings here.
-        EntryBinding(self.builder.get_object('entry_username'), self.app.config, 'general', 'cutlist_username')
-        EntryBinding(self.builder.get_object('entryEMail'), self.app.config, 'general', 'email')
-        EntryBinding(self.builder.get_object('entryPassword'), self.app.config, 'general', 'password')
-        EntryBinding(self.builder.get_object('entry_schema'), self.app.config, 'general', 'rename_schema')
-        EntryBinding(self.builder.get_object('smkv_workingdir'), self.app.config, 'smartmkvmerge', 'workingdir')
-        EntryBinding(self.builder.get_object('entry_server'), self.app.config, 'general', 'server')
+        EntryBinding(self.obj('entry_username'), self.app.config, 'general', 'cutlist_username')
+        EntryBinding(self.obj('entryEMail'), self.app.config, 'general', 'email')
+        EntryBinding(self.obj('entryPassword'), self.app.config, 'general', 'password')
+        EntryBinding(self.obj('entry_schema'), self.app.config, 'general', 'rename_schema')
+        EntryBinding(self.obj('smkv_workingdir'), self.app.config, 'smartmkvmerge', 'workingdir')
+        EntryBinding(self.obj('entry_server'), self.app.config, 'general', 'server')
        
-        SpinbuttonBinding(self.builder.get_object('spinbuttonSeeker'), self.app.config, 'general', 'seek_distance_default')
-        SpinbuttonBinding(self.builder.get_object('spinbuttonX'), self.app.config, 'general', 'cutinterface_resolution_x')
-        SpinbuttonBinding(self.builder.get_object('spinbuttonY'), self.app.config, 'general', 'cutinterface_resolution_y')
+        SpinbuttonBinding(self.obj('spinbuttonSeeker'), self.app.config, 'general', 'seek_distance_default')
+        SpinbuttonBinding(self.obj('spinbuttonX'), self.app.config, 'general', 'cutinterface_resolution_x')
+        SpinbuttonBinding(self.obj('spinbuttonY'), self.app.config, 'general', 'cutinterface_resolution_y')
 
         def rename_schema_changed(value):
             new = self.app.rename_by_schema(self.example_cut_filename, value)
-            self.builder.get_object('label_schema').set_label(
+            self.obj('label_schema').set_label(
                 "<i>%s</i> wird zu <i>%s</i>" % (self.example_filename, new))
 
         self.app.config.connect('general', 'rename_schema', rename_schema_changed)
         # "initial rename"
         # TODO: remove?
-        # rename_schema_changed(self.builder.get_object('entry_schema').get_text())
+        # rename_schema_changed(self.obj('entry_schema').get_text())
 
-        FileChooserFolderBinding(self.builder.get_object('folderNewOtrkeys'), self.app.config, 'general',
+        FileChooserFolderBinding(self.obj('folderNewOtrkeys'), self.app.config, 'general',
                                  'folder_new_otrkeys')
-        FileChooserFolderBinding(self.builder.get_object('folderTrashOtrkeys'), self.app.config, 'general',
+        FileChooserFolderBinding(self.obj('folderTrashOtrkeys'), self.app.config, 'general',
                                  'folder_trash_otrkeys')
-        FileChooserFolderBinding(self.builder.get_object('folderTrashAvis'), self.app.config, 'general',
+        FileChooserFolderBinding(self.obj('folderTrashAvis'), self.app.config, 'general',
                                  'folder_trash_avis')
-        FileChooserFolderBinding(self.builder.get_object('folderUncutAvis'), self.app.config, 'general',
+        FileChooserFolderBinding(self.obj('folderUncutAvis'), self.app.config, 'general',
                                  'folder_uncut_avis')
-        FileChooserFolderBinding(self.builder.get_object('folderCutAvis'), self.app.config, 'general',
+        FileChooserFolderBinding(self.obj('folderCutAvis'), self.app.config, 'general',
                                  'folder_cut_avis')
-        FileChooserFolderBinding(self.builder.get_object('folderArchive'), self.app.config, 'general', 'folder_archive')
+        FileChooserFolderBinding(self.obj('folderArchive'), self.app.config, 'general', 'folder_archive')
 
         for option in ['folder_new_otrkeys', 'folder_trash_otrkeys', 'folder_trash_avis', 'folder_uncut_avis',
                        'folder_cut_avis', 'folder_archive']:
             self.app.config.connect('general', option, lambda value: self.app.show_section(self.app.section))
 
-        CheckButtonBinding(self.builder.get_object('checkCorrect'), self.app.config, 'general', 'verify_decoded')
-        CheckButtonBinding(self.builder.get_object('checkPasswordCheckOnProgramStart'), self.app.config, 'general', 'no_password_hint')
-        CheckButtonBinding(self.builder.get_object('check_delete_cutlists'), self.app.config, 'general',
+        CheckButtonBinding(self.obj('checkCorrect'), self.app.config, 'general', 'verify_decoded')
+        CheckButtonBinding(self.obj('checkPasswordCheckOnProgramStart'), self.app.config, 'general', 'no_password_hint')
+        CheckButtonBinding(self.obj('check_delete_cutlists'), self.app.config, 'general',
                            'delete_cutlists')
-        CheckButtonBinding(self.builder.get_object('check_rename_cut'), self.app.config, 'general', 'rename_cut')
-        CheckButtonBinding(self.builder.get_object('check_merge_ac3'), self.app.config, 'general', 'merge_ac3s')
-        CheckButtonBinding(self.builder.get_object('check_mplayer_fullscreen'), self.app.config, 'general',
+        CheckButtonBinding(self.obj('check_rename_cut'), self.app.config, 'general', 'rename_cut')
+        CheckButtonBinding(self.obj('check_merge_ac3'), self.app.config, 'general', 'merge_ac3s')
+        CheckButtonBinding(self.obj('check_mplayer_fullscreen'), self.app.config, 'general',
                            'mplayer_fullscreen')
-        CheckButtonBinding(self.builder.get_object('check_prefer_mpv'), self.app.config, 'general', 'prefer_mpv')
-        CheckButtonBinding(self.builder.get_object('smkv_normalize'), self.app.config, 'smartmkvmerge',
+        CheckButtonBinding(self.obj('check_prefer_mpv'), self.app.config, 'general', 'prefer_mpv')
+        CheckButtonBinding(self.obj('smkv_normalize'), self.app.config, 'smartmkvmerge',
                            'normalize_audio')
-        CheckButtonBinding(self.builder.get_object('smkv_mp4'), self.app.config, 'smartmkvmerge', 'remux_to_mp4')
-        CheckButtonBinding(self.builder.get_object('check_alt_time_frame_conv'), self.app.config, 'general', 'alt_time_frame_conv')
+        CheckButtonBinding(self.obj('smkv_mp4'), self.app.config, 'smartmkvmerge', 'remux_to_mp4')
+        CheckButtonBinding(self.obj('check_alt_time_frame_conv'), self.app.config, 'general', 'alt_time_frame_conv')
+        CheckButtonBinding(self.obj('check_reparent_button'), self.app.config, 'general', 'show_reparent_btn')
 
         self.app.config.connect('general', 'rename_cut',
-                                lambda value: self.builder.get_object('entry_schema').set_sensitive(value))
+                                lambda value: self.obj('entry_schema').set_sensitive(value))
         self.app.config.connect('general', 'merge_ac3s',
-                                lambda value: self.builder.get_object('combobox_ac3').set_sensitive(value))
+                                lambda value: self.obj('combobox_ac3').set_sensitive(value))
         self.app.config.connect('general', 'merge_ac3s',
-                                lambda value: self.builder.get_object('button_set_file_ac3').set_sensitive(value))
+                                lambda value: self.obj('button_set_file_ac3').set_sensitive(value))
         self.app.config.connect('general', 'merge_ac3s',
-                                lambda value: self.builder.get_object('label_ac3').set_sensitive(value))
+                                lambda value: self.obj('label_ac3').set_sensitive(value))
 
-        ComboBoxEntryBinding(self.builder.get_object('combobox_avi'), self.app.config, 'general', 'cut_avis_by')
-        ComboBoxEntryBinding(self.builder.get_object('combobox_hq'), self.app.config, 'general', 'cut_hqs_by')
-        ComboBoxEntryBinding(self.builder.get_object('combobox_mp4'), self.app.config, 'general', 'cut_mp4s_by')
-        ComboBoxEntryBinding(self.builder.get_object('combobox_man_avi'), self.app.config, 'general', 'cut_avis_man_by')
-        ComboBoxEntryBinding(self.builder.get_object('combobox_man_hq'), self.app.config, 'general', 'cut_hqs_man_by')
-        ComboBoxEntryBinding(self.builder.get_object('combobox_man_mp4'), self.app.config, 'general', 'cut_mp4s_man_by')
-        ComboBoxEntryBinding(self.builder.get_object('h264_codec_cbox'), self.app.config, 'general', 'h264_codec')
-        ComboBoxEntryBinding(self.builder.get_object('combobox_ac3'), self.app.config, 'general', 'merge_ac3s_by')
-        ComboBoxEntryBinding(self.builder.get_object('entry_decoder'), self.app.config, 'programs', 'decoder')
-        ComboBoxEntryBinding(self.builder.get_object('smkv_first_audio'), self.app.config, 'smartmkvmerge',
-                             'first_audio_stream')
-        ComboBoxEntryBinding(self.builder.get_object('smkv_second_audio'), self.app.config, 'smartmkvmerge',
-                             'second_audio_stream')
-        ComboBoxEntryBinding(self.builder.get_object('entry_cut_default'), self.app.config, 'general', 'cut_action', data='cut_default')
+        ComboBoxEntryBinding(self.obj('combobox_avi'), self.app.config, 'general', 'cut_avis_by')
+        ComboBoxEntryBinding(self.obj('combobox_hq'), self.app.config, 'general', 'cut_hqs_by')
+        ComboBoxEntryBinding(self.obj('combobox_mp4'), self.app.config, 'general', 'cut_mp4s_by')
+        ComboBoxEntryBinding(self.obj('combobox_man_avi'), self.app.config, 'general', 'cut_avis_man_by')
+        ComboBoxEntryBinding(self.obj('combobox_man_hq'), self.app.config, 'general', 'cut_hqs_man_by')
+        ComboBoxEntryBinding(self.obj('combobox_man_mp4'), self.app.config, 'general', 'cut_mp4s_man_by')
+        ComboBoxEntryBinding(self.obj('h264_codec_cbox'), self.app.config, 'general', 'h264_codec')
+        ComboBoxEntryBinding(self.obj('combobox_ac3'), self.app.config, 'general', 'merge_ac3s_by')
+        ComboBoxEntryBinding(self.obj('entry_decoder'), self.app.config, 'programs', 'decoder')
+        ComboBoxEntryBinding(self.obj('smkv_first_audio'), self.app.config, 'smartmkvmerge',
+                                                                            'first_audio_stream')
+        ComboBoxEntryBinding(self.obj('smkv_second_audio'), self.app.config, 'smartmkvmerge',
+                                                                            'second_audio_stream')
+        ComboBoxEntryBinding(self.obj('entry_cut_default'), self.app.config, 'general',
+                                                                'cut_action', data='cut_default')
+        ComboBoxEntryBinding(self.obj('combo_videosink'), self.app.config, 'general', 'videosink')
 
-        RadioButtonsBinding([self.builder.get_object(widget) for widget in ['radio_size', 'radio_filename']],
+        RadioButtonsBinding([self.obj(widget) for widget in ['radio_size', 'radio_filename']],
                             self.app.config, 'general', 'choose_cutlists_by')
 
-        self.builder.get_object('entryPassword').set_visibility(False)
-        self.builder.get_object('entry_schema').set_sensitive(self.app.config.get('general', 'rename_cut'))
-        self.builder.get_object('combobox_ac3').set_sensitive(self.app.config.get('general', 'merge_ac3s'))
+        self.obj('entryPassword').set_visibility(False)
+        self.obj('entry_schema').set_sensitive(self.app.config.get('general', 'rename_cut'))
+        self.obj('combobox_ac3').set_sensitive(self.app.config.get('general', 'merge_ac3s'))
 
     #  Signal handlers
-    
+
+    def on_button_reset_size_moviewindow_clicked(self, widget):
+        # ~ self.app.config.set('general', 'cutinterface_resolution_x', 800)
+        # ~ self.app.config.set('general', 'cutinterface_resolution_y', 450)
+        self.obj('spinbuttonX').set_value(800.0)
+        self.obj('spinbuttonY').set_value(450.0)
+        
+
     def _on_button_check_otr_credentials_clicked(self, entry):
         request_answer=""
         if self.app.config.get('general', 'password') != "" and internet_on():
@@ -202,20 +215,20 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             request_answer = r.text;
         if internet_on():
             if 'yes' in request_answer:
-                self.builder.get_object('checkOTRCredentials').modify_fg(Gtk.StateType.NORMAL, Gdk.color_parse('#008000'))
-                self.builder.get_object('OTRCredentialCheckResponse').set_markup("<span color='green'>✓</span>")
+                self.obj('checkOTRCredentials').modify_fg(Gtk.StateType.NORMAL, Gdk.color_parse('#008000'))
+                self.obj('OTRCredentialCheckResponse').set_markup("<span color='green'>✓</span>")
             else:
-                self.builder.get_object('checkOTRCredentials').modify_fg(Gtk.StateType.NORMAL, Gdk.color_parse('#c70002'))
-                self.builder.get_object('OTRCredentialCheckResponse').set_markup("<span color='red'>✘</span>")
+                self.obj('checkOTRCredentials').modify_fg(Gtk.StateType.NORMAL, Gdk.color_parse('#c70002'))
+                self.obj('OTRCredentialCheckResponse').set_markup("<span color='red'>✘</span>")
         else:
-            self.builder.get_object('checkOTRCredentials').modify_fg(Gtk.StateType.NORMAL, Gdk.color_parse('#d87107'))
-            self.builder.get_object('OTRCredentialCheckResponse').set_markup("<span color='red'>🖧 Keine Internetverbindung!</span>")
+            self.obj('checkOTRCredentials').modify_fg(Gtk.StateType.NORMAL, Gdk.color_parse('#d87107'))
+            self.obj('OTRCredentialCheckResponse').set_markup("<span color='red'>🖧 Keine Internetverbindung!</span>")
 
     def _on_button_set_file_clicked(self, entry, data=None):
         chooser = Gtk.FileChooserDialog(title="Datei auswählen",
                                         action=Gtk.FileChooserAction.OPEN,
-                                        buttons=(
-                                        Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+                                        buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                        Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
         chooser.set_transient_for(self)
 
         if chooser.run() == Gtk.ResponseType.OK:
@@ -231,9 +244,9 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
     def _on_entry_decoder_changed(self, widget, data=None):
         self.log.debug("Function start")
         if 'otrtool' in widget.get_active_text():
-            self.builder.get_object('checkCorrect').set_sensitive(False)
+            self.obj('checkCorrect').set_sensitive(False)
         else:
-            self.builder.get_object('checkCorrect').set_sensitive(True)
+            self.obj('checkCorrect').set_sensitive(True)
 
     def _on_preferences_buttonClose_clicked(self, widget, data=None):
         self.hide()

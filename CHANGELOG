@@ -1,3 +1,11 @@
+3.2.5-A, 2018-07-23
+    * Add option to set the video-sink of CutinterfaceDialog.player
+    * Cutting mp4 with smartMkvMerge should now work reliable. Changed the encoding parameters.
+    * CutinterfaceDialog: New context menu for label_filename (copy filename).
+    * New version.
+
+------------------------------------------------------------------------------------------------
+
 3.2.4-A, 2018-07-11
     * Hauptfenster:
       - Die Standard-Aktion für den Button "Schneiden" in der Sektion "Ungeschnnitten" ist

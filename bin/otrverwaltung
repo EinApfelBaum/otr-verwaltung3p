@@ -156,6 +156,8 @@ class App:
                 'cutinterface_resolution_x': 800,
                 'cutinterface_resolution_y': 450,
                 'seek_distance_default': 2000,
+                'videosink': 'Standard',
+                'show_reparent_btn': 'false',
                 'cutinterface_hide_cuts': False,
                 'mplayer_fullscreen': True,
                 'prefer_mpv': False,
