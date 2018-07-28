@@ -465,7 +465,7 @@ class DecodeOrCut(Cut):
             for f in files:
                 match = cutregex.match(f)
                 if match:
-                    self.log.error("Found local cutlist {}".format(match.group()))
+                    self.log.debug("Found local cutlist {}".format(match.group()))
                     if match.group(1) == '' or match.group(1) == 'mkv':
                         res_num = 0
                     elif "." in match.group(1):
@@ -475,7 +475,7 @@ class DecodeOrCut(Cut):
                     else:
                         res_num = 0
 
-                    self.log.error("local cutlist res_num: {}".format(match.group(1)))
+                    self.log.debug("local cutlist res_num: {}".format(match.group(1)))
                     if res_num > number:
                         res_num = number
                         local_cutlist = p + "/" + match.group()
