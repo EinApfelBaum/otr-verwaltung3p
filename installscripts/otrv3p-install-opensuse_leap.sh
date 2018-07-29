@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # otrv3p-install-opensuse.sh
-version="0.0.1"
+version="0.0.2"
 # 2018-06-19
 # https://raw.githubusercontent.com/einapfelbaum/otr-verwaltung3p/master/installscripts/otrv3p-install-arch.sh
 
@@ -145,14 +145,30 @@ install_otrv3p_git () {
 }
 
 usage () {
-    echo -e "\n${RED}"
-    echo -e "ACHTUNG: Es wird vorausgesezt, dass das 'Packman' Repository aktiviert ist!!\n${BLUE}"
+    echo -e "${BLUE}"
     echo -e "Die Installation wird in zwei Schritten durchgeführt werden:\n"
     echo -e "    1. Installation der Abhängigkeiten (Root-Rechte benötigt)."
     echo -e "    2. Installation der otr-verwaltung3p (ohne Root-Rechte).\n\n"
     echo -e "Das läuft automatisch ab. Bereit? Dann weiter mit der Eingabetaste, abbrechen mit Strg-C${NOC}"
     read dummy
 }
+
+check_for_packman () {
+    check_pack = $(zypper repos | grep packman | grep Yes)
+    if [ -z $check_pack ]; then
+        # packman repo not active
+        echo -e "\n${RED}"
+        echo -e "ACHTUNG: Das Packman Repository wurde nicht gefunden oder ist nicht aktiv!"
+        echo -e "Ohne aktiviertes Packman Repository kann das Programm nicht installiert werden.\n${BLUE}"
+        echo -e "Starte das YaST-Modul Repositories"
+        echo -e "Klick auf 'Hinzufügen' dann 'Community/Gemeinschaftsrepositories' wählen. Auf 'Weiter' klicken."
+        echo -e "Dann Packman auswählen und 'Ok' klicken. Im folgenden Fenster dann wieder Packman markieren"
+        echo -e "und die Priorität von 99 auf 90 ändern. 'Ok' klicken. Fertig (hoffentlich)."
+        echo -e "Danach dieses Skript nochmals starten.${NOC}"
+        exit 1
+    fi
+}
+
 
 if [ -z "$1" ]; then
     check_root
@@ -163,6 +179,7 @@ if [ -z "$1" ]; then
 
     #export myhome=$HOME
     echo -e "\n"$(date +"%Y-%m-%d_%H:%M:%S")" LOG BEGINS\n" >> /tmp/otrv3p-install.log
+    check_for_packman
     usage
 elif [ "$1" = "deps" ]; then
     #myhome="$2"

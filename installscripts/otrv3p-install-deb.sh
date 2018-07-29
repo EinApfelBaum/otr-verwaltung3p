@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # otrv3p-install-deb.sh
-version="0.0.6"
+version="0.0.7"
 # 2018-04-27
 # https://raw.githubusercontent.com/einapfelbaum/otr-verwaltung3p/master/installscripts/otrv3p-install-deb.sh
 
@@ -70,26 +70,27 @@ install_deps () {
     check_root
     if [ $root = 1 ]; then
         echo "otrv3p:install_deps: Installiere Abhängigkeiten" | tee -a /tmp/otrv3p-install.log
-        for package in  python3-xdg \
-                        python3-gst-1.0 \
-                        gir1.2-gstreamer-1.0 \
-                        python3-simplejson \
-                        python3-libtorrent \
-                        python3-gi-cairo \
-                        python3-cairo \
-                        python3-crypto \
-                        python3-requests \
-                        python3-pip \
-                        gstreamer1.0-x \
-                        gstreamer1.0-tools \
-                        gstreamer1.0-plugins-base \
-                        gstreamer1.0-plugins-base-apps \
-                        gstreamer1.0-plugins-good \
-                        gstreamer1.0-plugins-bad \
-                        gstreamer1.0-plugins-ugly \
-                        gstreamer1.0-libav \
-                        mediainfo-gui \
-                        mpv \
+        for package in  python3-xdg                     \
+                        python3-gst-1.0                 \
+                        gir1.2-gstreamer-1.0            \
+                        python3-simplejson              \
+                        python3-libtorrent              \
+                        python3-gi-cairo                \
+                        python3-cairo                   \
+                        python3-crypto                  \
+                        python3-requests                \
+                        python3-pip                     \
+                        gstreamer1.0-x                  \
+                        gstreamer1.0-tools              \
+                        gstreamer1.0-plugins-base       \
+                        gstreamer1.0-plugins-base-apps  \
+                        gstreamer1.0-plugins-good       \
+                        gstreamer1.0-plugins-bad        \
+                        gstreamer1.0-plugins-ugly       \
+                        gstreamer1.0-gtk3               \
+                        gstreamer1.0-libav              \
+                        mediainfo-gui                   \
+                        mpv                             \
                         git; do
             ## Only install packages if they are not alredy installed
             ## dkpg -s <packagename> returns 0 if package is installed else 1
