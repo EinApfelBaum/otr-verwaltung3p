@@ -159,7 +159,6 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                            'normalize_audio')
         CheckButtonBinding(self.obj('smkv_mp4'), self.app.config, 'smartmkvmerge', 'remux_to_mp4')
         CheckButtonBinding(self.obj('check_alt_time_frame_conv'), self.app.config, 'general', 'alt_time_frame_conv')
-        CheckButtonBinding(self.obj('check_reparent_button'), self.app.config, 'general', 'show_reparent_btn')
 
         self.app.config.connect('general', 'rename_cut',
                                 lambda value: self.obj('entry_schema').set_sensitive(value))
@@ -185,7 +184,6 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                                                                             'second_audio_stream')
         ComboBoxEntryBinding(self.obj('entry_cut_default'), self.app.config, 'general',
                                                                 'cut_action', data='cut_default')
-        ComboBoxEntryBinding(self.obj('combo_videosink'), self.app.config, 'general', 'videosink')
 
         RadioButtonsBinding([self.obj(widget) for widget in ['radio_size', 'radio_filename']],
                             self.app.config, 'general', 'choose_cutlists_by')

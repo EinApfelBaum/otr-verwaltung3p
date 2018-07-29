@@ -29,6 +29,7 @@ from otrverwaltung import path as otrpath
 from otrverwaltung import cutlists
 from otrverwaltung.gui import LoadCutDialog
 from otrverwaltung.actions.cut import Cut
+from otrverwaltung.gui.widgets.gstBox import GstBox
 
 
 class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
@@ -56,28 +57,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.seek_distance = 0
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
         self.player_videosink = None
-        # self.gst_version = Gst.version()[0] * 100 + Gst.version()[1]
-
         self.state = Gst.State.NULL
-        self.player = Gst.ElementFactory.make("playbin", "playbin")
-
-        if not self.player:
-            self.log.error("Could not create player.")
-            pass
-
-        # Create bus and connect several handlers
-        # Create bus to get events from GStreamer player
-        bus = self.player.get_bus()
-        bus.add_signal_watch()
-
-        bus.connect('message::error', self.on_error)
-        bus.connect('message::eos', self.on_eos)
-        bus.connect("message::state-changed", self.on_state_changed)
-
-        # This is needed to make the video output in our DrawingArea:
-        bus.enable_sync_message_emission()
-        bus.connect("sync-message::element", self.on_sync_message)
-        bus.connect("message", self.on_message)
 
     def do_parser_finished(self, builder):
         self.log.debug("funtion start")
@@ -87,14 +67,19 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.slider.set_digits(0)
         self.slider.set_draw_value(False)
 
-        self.movie_window = self.builder.get_object('movie_window')
-        # ~ self.movie_window.connect('realize', self.on_realize)
-        # ~ self.movie_window.connect('unrealize', self.on_unrealize)
+        self.movie_window = self.builder.get_object('gst_box').swidget
+        self.player = self.builder.get_object('gst_box').player
+        # Create bus to get events from GStreamer player
+        bus = self.player.get_bus()
+        bus.add_signal_watch()
+        bus.connect('message::error', self.on_error)
+        bus.connect('message::eos', self.on_eos)
+        bus.connect("message::state-changed", self.on_state_changed)
+        bus.connect("message", self.on_message)
 
         self.hide_cuts = self.builder.get_object('checkbutton_hide_cuts').get_active()
 
         self.cutslistmodel = self.builder.get_object('cutslist')
-        #cutslistmodel.set_default_sort_func(None) # Throws error 1st argument cannot be None
         cutslistselection = self.builder.get_object('cutsview').get_selection()
         cutslistselection.connect('changed', self.on_cuts_selection_changed)
 
@@ -105,30 +90,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         #player state
         self.is_playing = False
-
-    def on_realize(self, widget, data=None):
-        self.log.debug ("function start")
-
-        window = widget.get_window()
-        # xid must be retrieved first in GUI-thread and before creating player to
-        # prevent racing conditions. You need to get the XID after window.show_all().
-        # You shouldn't get it in the on_sync_message() handler because threading
-        # issues will cause segfaults there.
-        self.xid = window.get_xid()
-        # pass it to playbin, which implements XOverlay and will forward
-        # it to the video sink
-        self.player.set_window_handle(self.xid)
-
-        # movie_window_width = self.movie_window.get_allocated_width()
-        # movie_window_height = int(movie_window_width / (16/9))
-        # self.log.error("movie_window size: {0} x {1}".format(movie_window_width, movie_window_height))
-        # self.movie_window.set_size_request(movie_window_width, movie_window_height)
-
-        self.ready_callback()
-
-    def on_unrealize(self,widget,data=None):
-        # to prevent racing conditions when closing the window while playing
-        self.player.set_state(Gst.State.NULL)
 
     def get_cuts_in_frames(self, cuts, in_frames):
         if cuts == []:
@@ -217,12 +178,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         ci_window_size_request_width = ci_window.size_request().width
         ci_window.set_size_request(int(ci_window.size_request().width * 1.05), int(ci_window.size_request().height * 1.05))
 
-        button_reparent = self.builder.get_object('button_reparent')
-        if self.app.config.get('general', 'show_reparent_btn'):
-            button_reparent.show()
-        else:
-            button_reparent.hide()
-
         self.hide_cuts = self.config.get('general', 'cutinterface_hide_cuts')
 
         # get video info
@@ -243,16 +198,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.timelines = [self.get_cuts_in_frames(self.initial_cutlist,
                                                   self.initial_cutlist_in_frames)]
 
-        videosink = self.app.config.get('general', 'videosink')
-        if videosink != 'Standard':
-            self.player_videosink = Gst.ElementFactory.make(videosink, "videosink")
-            self.player.set_property('video-sink', self.player_videosink)
-
-
         # Set player uri only after discoverer is done
         self.player.set_property('uri', "file://" + self.filename)
-
         self.ready_callback()
+
         self.timer2 = GObject.timeout_add(600, self.update_listview)
 
         if Gtk.ResponseType.OK == self.run():
@@ -277,14 +226,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.timer = GObject.timeout_add(200, self.tick)
 
     def tick(self):
-        # self.log.debug("Function start")
-
-        # if inspect not in dir():  # this may result in false positives
-            # import inspect
-        # current_frame = inspect.currentframe()
-        # caller_frame = inspect.getouterframes(curframe, 2)
-        # self.log.debug("Caller: {}".format(caller_frame[1][3]))
-
         self.update_frames_and_time()
         self.update_slider()
         self.builder.get_object('checkbutton_hide_cuts').set_active(self.hide_cuts)
@@ -458,11 +399,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             return
         else:
             try:
-                # current_position = self.player.query_position(Gst.Format.TIME)[1]
                 success, current_position = self.query_position(Gst.Format.TIME)
                 duration = self.player.query_duration(Gst.Format.TIME)[1]
                 if not success:
-                    # self.log.warning('query_position() was not successful')
                     return
             except Exception as e:  # manchmal geht es nicht, bspw. wenn gerade erst geseekt wurde
                 self.log.warning("Exception: {}".format(e))
@@ -637,11 +576,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             return
         self.state = new
 
-    def on_sync_message(self, bus, message):
-        if message.get_structure().get_name() == "prepare-window-handle":
-            imagesink = message.src
-            imagesink.set_property("force-aspect-ratio", True)
-
     def on_message(self, bus, message):
         t = message.type
         if t == Gst.MessageType.ASYNC_DONE:
@@ -665,21 +599,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
     def on_button_reparent_clicked(self, widget):
         self.xid = self.movie_window.get_window().get_xid()
         self.player.set_window_handle(self.xid)
-
-    def on_draw_movie_window(self, widget, cr):
-        """
-        This function is called every time the video window needs to be
-        redrawn. GStreamer takes care of this in the PAUSED and PLAYING states.
-        in the other states we simply draw a black rectangle to avoid
-        any garbage showing up.
-        """
-        if self.state < Gst.State.PAUSED:
-            allocation = widget.get_allocation()
-            cr.set_source_rgb(0, 0, 0)
-            cr.rectangle(0, 0, allocation.width, allocation.height)
-            cr.fill()
-
-        return False
 
     def on_window_key_press_event(self, widget, event, *args):
         """handle keyboard events"""
@@ -1107,8 +1026,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                         # ROUND
                         # ~ if (round(start + duration) in self.keyframes) or (round(start + duration) == self.frames):
                         if round(start) in self.keyframes and (round(start + duration) in self.keyframes or round(start + duration) == self.frames):
-                            # self.log.debug("Number of frames: {}".format(self.frames))
-                            # self.log.debug("start+duration: {}".format(round(start + duration)))
+                            # ~ self.log.debug("Number of frames: {}".format(self.frames))
+                            # ~ self.log.debug("start+duration: {}".format(round(start + duration)))
                             cr.set_source_rgb(0.0, 0.6, 0.0)  # green
                         else:
                             cr.set_source_rgb(1.0, 0.6, 0.0)  # orange

@@ -1,3 +1,8 @@
+3.3.0-A, 2018-07-29
+    * CutinterfaceDialog now uses gstreamer's gtksink for video output. Fixes "CutInterface
+      with black Screen" (#68).
+    * Removed option to set the video-sink of CutinterfaceDialog.player
+
 3.2.5-A, 2018-07-23
     * Add option to set the video-sink of CutinterfaceDialog.player
     * Cutting mp4 with smartMkvMerge should now work reliable. Changed the encoding parameters.
