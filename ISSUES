@@ -1,9 +1,0 @@
-1. Öffnen der Dialoge wirft die Meldung
-
-Gtk-Message: GtkDialog mapped without a transient parent. This is discouraged.
-
-2. CutInterface:
-    - Drawing Area wird nicht im Dialog angezeigt. Video ist entweder im neuen Fenster oder gar nicht zu sehen.
-      Audio ist zu hören
-      Linux Mint 18.1 oder Ubtunut 16.04 in der Vm, dafunktioniert dies
-

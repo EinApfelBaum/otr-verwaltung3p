@@ -182,6 +182,9 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="hscrollbar_policy">always</property>
+                    <property name="overlay_scrolling">False</property>
                     <child>
                       <placeholder/>
                     </child>
