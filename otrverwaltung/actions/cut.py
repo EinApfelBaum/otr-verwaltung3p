@@ -24,6 +24,8 @@ import subprocess
 import bisect
 import logging
 
+from lib.pymediainfo import MediaInfo
+
 from otrverwaltung.actions.baseaction import BaseAction
 from otrverwaltung.constants import Format, Program
 from otrverwaltung import fileoperations
@@ -40,6 +42,14 @@ class Cut(BaseAction):
         self.app = app
         self.config = app.config
         self.gui = gui
+        self.media_info = None
+        if not os.path.isdir(self.config.get('smartmkvmerge', 'workingdir')):
+            self.gui.message_info_box('Das in Einstellungen:Schneiden:SmartMKVmerge ' + \
+                                      'angegebene Arbeitsverzeichnis ist nicht gültig.\n' + \
+                                      'Es wird "/tmp" benutzt.')
+            self.config.set('smartmkvmerge', 'workingdir', '/tmp')
+        self.workingdir = self.config.get('smartmkvmerge', 'workingdir')
+
         self.format_dict = {"High@L3.2": Format.HD, "High@L4": Format.HD,
                             "High@L3": Format.HQ, "High@L3.0": Format.HQ,
                             "Simple@L1": Format.AVI, "Baseline@L1.3": Format.MP4}
@@ -51,8 +61,25 @@ class Cut(BaseAction):
         raise Exception("Override this method!")
 
     def get_format(self, filename):
+        self.log.debug("function start")
         global bframe_delay
         root, extension = os.path.splitext(filename)
+
+        outfile = self.workingdir + '/mediainfo.xml'
+        mi_version = subprocess.getoutput(self.app.config.get_program('mediainfo') + ' --version'
+                                           ).split(' ')[-1].replace('v', '').split('.')
+        if int(mi_version[0] + mi_version[1]) >= 1710:
+            subprocess.call([self.app.config.get_program('mediainfo'),
+                                            '--Output=OLDXML', '--LogFile=' + outfile, filename],
+                                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        else:
+            subprocess.call([self.app.config.get_program('mediainfo'),
+                                            '--Output=XML', '--LogFile=' + outfile, filename],
+                                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        with open(outfile) as f:
+            self.media_info = MediaInfo(f.read())
+        if os.path.isfile(outfile):
+            os.remove(outfile)
 
         if extension == '.avi':
             bframe_delay = 2
@@ -85,7 +112,8 @@ class Cut(BaseAction):
                 format = Format.HD
                 ac3name = root + ".ac3"
             else:
-                format = Format.AVI
+                format = self.format_dict[self.media_info.tracks[1].format_profile]
+                self.log.debug("Format: {}".format(format))
                 ac3name = root + ".HD.ac3"
         elif extension == '.ac3':
             format = Format.AC3
@@ -97,7 +125,6 @@ class Cut(BaseAction):
             return format, ac3name, bframe_delay
         else:
             return format, None, bframe_delay
-
 
     def get_program(self, filename, manually=False):
         if manually:
@@ -234,7 +261,6 @@ class Cut(BaseAction):
                 None, None, None, None, None, error_message
         """
 
-        self.log.debug("function start")
         try:
             process = subprocess.Popen([self.config.get_program('ffmpeg'), "-i", filename],
                                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -484,7 +510,26 @@ class Cut(BaseAction):
         bt470bg = ['--videoformat', 'pal', '--colorprim', 'bt470bg', '--transfer', 'bt470bg', '--colormatrix',
                    'bt470bg']
 
-        try:
+        # NEW_X264_OPTS ->
+        x264_core = int(self.media_info.tracks[1].writing_library.split(' ')[2])
+        self.log.debug("x264_core: {}".format(x264_core))
+
+        if '709' in self.media_info.tracks[1].color_primaries:
+            x264_opts.extend(bt709)
+        elif '470' in self.media_info.tracks[1].color_primaries:
+            x264_opts.extend(bt470bg)
+
+        level = ['--level', self.media_info.tracks[1].format_profile.split('@L')[1]]
+        x264_opts.extend(level)
+
+        profile = ['--profile', self.media_info.tracks[1].format_profile.split('@L')[0].lower()]
+        x264_opts.extend(profile)
+
+        fps = ['--fps', self.media_info.tracks[1].frame_rate.split(' ')[0]]
+        x264_opts.extend(fps)
+        # <- NEW_X264_OPTS
+
+        """try:
             blocking_process = subprocess.Popen([self.config.get_program('mediainfo'), filename],
                                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         except OSError as e:
@@ -528,8 +573,81 @@ class Cut(BaseAction):
                         continue
                     x264_opts.extend(fps)
             else:
-                break
+                break"""
         return x264_opts, x264_core
+
+    def ffmpeg_codec_options(self, ffmpeg_codec_options, filename, quality=None):
+        fps, dar, sar, max_frames, ac3_stream, error = self.analyse_mediafile(filename)
+        codec = None
+        codec_core = None
+        ffmpeg_commandline = []
+        bt709 = ['videoformat=pal:colorprim=bt709:transfer=bt709:colormatrix=bt709']
+        bt470bg = ['videoformat=pal:colorprim=bt470bg:transfer=bt470bg:colormatrix=bt470bg']
+
+        # NEW_FFMPEG_OPTS ->
+        codec_core = int(self.media_info.tracks[1].writing_library.split(' ')[2])
+        if 'x264' in self.media_info.tracks[1].writing_library:
+            codec = 'libx264'
+        
+        if '709' in self.media_info.tracks[1].color_primaries:
+            ffmpeg_codec_options.extend(bt709)
+        elif '470' in self.media_info.tracks[1].color_primaries:
+            ffmpeg_codec_options.extend(bt470bg)
+
+        profile = ['-profile:v', self.media_info.tracks[1].format_profile.split('@L')[0].lower()]
+        ffmpeg_commandline.extend(profile)
+
+        level = ['-level', self.media_info.tracks[1].format_profile.split('@L')[1]]
+        ffmpeg_commandline.extend(level)
+        # <- NEW_FFMPEG_OPTS
+
+        """try:
+            blocking_process = subprocess.Popen([self.config.get_program('mediainfo'), filename],
+                                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        except OSError as e:
+            return None, "Fehler: %s Filename: %s Error: %s" % str(e.errno), str(e.filename), str(e.strerror)
+        except ValueError as e:
+            return None, "Falscher Wert: %s" % str(e)
+
+        while True:
+            line = blocking_process.stdout.readline()
+
+            if line != '':
+                if 'x264 core' in line:
+                    codec = 'libx264'
+                    try:
+                        codec_core = int(line.strip().split(' ')[30])
+                    except ValueError as e:
+                        continue
+                    except IndexError as e:
+                        continue
+                elif 'Matrix coefficients' in line and '709' in line:
+                    ffmpeg_codec_options.extend(bt709)
+                elif 'Matrix coefficients' in line and '470' in line:
+                    ffmpeg_codec_options.extend(bt470bg)
+                elif 'Format profile' in line and '@L' in line:
+                    try:
+                        level = ['-level', str(float(line.strip().split('L')[1]))]  # test for float
+                        profile = ['-profile:v', line.strip().split('@L')[0].split(':')[1].lower().lstrip()]
+                    except ValueError as e:
+                        continue
+                    except IndexError as e:
+                        continue
+                    ffmpeg_commandline.extend(profile)
+                    ffmpeg_commandline.extend(level)
+            else:
+                break"""
+
+        if codec == 'libx264':
+            x264opts = (':'.join([option for option in ffmpeg_codec_options])) + ':force_cfr'
+            x264opts = x264opts.lstrip(':')
+            if quality and quality == 'MP4':
+                ffmpeg_commandline.extend(['-aspect', dar, '-vcodec', 'libx264', '-preset', 'veryfast', '-x264opts', x264opts])
+            ## --fade-compensate is no longer available in newer x264 encoders
+            else:
+                ffmpeg_commandline.extend(['-aspect', dar, '-vcodec', 'libx264', '-preset', 'medium', '-tune', 'film', '-x264opts', x264opts])
+
+        return ffmpeg_commandline, codec_core
 
     def show_progress(self, blocking_process):
         # progress_match = re.compile(r".*(?<=\[|\ )(\d{1,}).*%.*")
@@ -595,7 +713,6 @@ class Cut(BaseAction):
             while Gtk.events_pending():
                 Gtk.main_iteration()
             
-
     def get_norm_volume(self, filename, stream):
         """ Gets the volume correction of a movie using ffprobe. 
             Returns without error:              

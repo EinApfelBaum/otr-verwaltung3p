@@ -22,13 +22,14 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 import os
-import shutil
+import shutil, logging
 from os.path import join, basename, exists, dirname, splitext
 
 
 # TODO: Achten auf :/\* etc. in Dateiname!
 # TODO: Fehler abfangen, fehlerwert zurückgeben, damit das Programm weitermachen kann
 
+log = logging.getLogger(__name__)
 
 def __error(message_text):
     dialog = Gtk.MessageDialog(
@@ -46,13 +47,13 @@ def handle_error(error_cb, message):
     if error_cb:
         error_cb(message)
     else:
-        print(message)
+        log.debug(message)
 
 
 def remove_file(filename, error_cb=__error):
     """ Entfernt die angegebene Datei. """
 
-    print("[Fileoperations] Remove ", filename)
+    log.debug("Remove {}".format(filename))
     try:
         if os.path.isfile(filename):
             os.remove(filename)
@@ -71,7 +72,7 @@ def rename_file(old_filename, new_filename, error_cb=__error):
 
     new_filename = make_unique_filename(new_filename)
 
-    print("[Fileoperations] Rename %s to %s" % (old_filename, new_filename))
+    log.debug("Rename {} to {}".format(old_filename, new_filename))
 
     try:
         os.rename(old_filename, new_filename)
@@ -92,7 +93,7 @@ def move_file(filename, target, error_cb=__error):
         handle_error(error_cb, "Umbenennen: Die Datei existiert bereits! (%s)" % new_filename)
         return filename
 
-    print("[Fileoperations] Move %s to %s" % (filename, target))
+    log.debug("Move {} to {}".format(filename, target))
     try:
         os.rename(filename, new_filename)
     except OSError as e:

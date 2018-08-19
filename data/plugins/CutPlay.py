@@ -19,7 +19,8 @@ import os.path
 import gi
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, Gio
+import shutil
 
 from otrverwaltung.pluginsystem import Plugin
 
@@ -30,27 +31,38 @@ from otrverwaltung.constants import Section
 
 class CutPlay(Plugin):
     Name = "Geschnittenes Abspielen"
-    Desc = "Spielt Video-Dateien mit Hilfe von Cutlisten geschnitten ab, ohne jedoch die Datei zu schneiden. Es werden die Server-Einstellungen von OTR-Verwaltung benutzt."
-    Author = "Benjamin Elbers"
+    Desc = "Spielt Video-Dateien mit Hilfe von Cutlisten geschnitten ab, ohne jedoch die " + \
+           "Datei zu schneiden. Es werden die Server-Einstellungen von OTR-Verwaltung benutzt."
+    Author = "Benjamin Elbers, Dirk Lorenzen (gCurse)"
     Configurable = False
 
     def enable(self):
-        self.toolbutton = self.gui.main_window.add_toolbutton(Gtk.Image.new_from_file(self.get_path('play.png')),
-                                                              'Geschnitten Abspielen', [Section.VIDEO_UNCUT])
+        if not shutil.which('mplayer'):
+            self.disable()
+        if self.app.config.get('general', 'use_internal_icons'):
+            image = Gtk.Image.new_from_file(self.get_path('play.png'))
+        else:
+            image = Gtk.Image.new_from_gicon(Gio.EmblemedIcon.new(
+                                        Gio.ThemedIcon.new('media-playback-start'),
+                                        Gio.Emblem.new(Gio.ThemedIcon.new('edit-cut-symbolic'))),
+                                        self.app.config.get('general', 'icon_size'))
+
+        self.toolbutton = self.gui.main_window.add_toolbutton(image, 'Geschnitten abspielen',
+                                                                        [Section.VIDEO_UNCUT])
         self.toolbutton.connect('clicked', self.on_cut_play_clicked)
 
     def disable(self):
         self.gui.main_window.remove_toolbutton(self.toolbutton)
 
-        # plugin methods
+### signal methods ###
 
-    # signal methods
     def on_cut_play_clicked(self, widget, data=None):
         filename = self.gui.main_window.get_selected_filenames()[0]
 
-        error, cutlists = cutlists_management.download_cutlists(filename, self.app.config.get('general', 'server'),
-                                                                self.app.config.get('general', 'choose_cutlists_by'),
-                                                                self.app.config.get('general', 'cutlist_mp4_as_hq'))
+        error, cutlists = cutlists_management.download_cutlists(
+                                            filename, self.app.config.get('general', 'server'),
+                                            self.app.config.get('general', 'choose_cutlists_by'),
+                                            self.app.config.get('general', 'cutlist_mp4_as_hq'))
         if error:
             return
 
@@ -62,7 +74,7 @@ class CutPlay(Plugin):
         if self.app.config.get('general', 'delete_cutlists'):
             fileoperations.remove_file(cutlist.local_filename)
 
-            # make edl
+        # make mplayer edl
         # http://www.mplayerhq.hu/DOCS/HTML/en/edl.html
         # [Begin Second] [End Second] [0=Skip/1=Mute]
         edl_filename = os.path.join(self.app.config.get('general', 'folder_uncut_avis'), ".tmp.edl")
@@ -78,7 +90,51 @@ class CutPlay(Plugin):
                 f.write("%s %s 0\n" % (end, (cutlist.cuts_seconds[count + 1][0] - 1)))
         f.close()
 
-        p = subprocess.Popen([self.app.config.get_program('mplayer'), "-edl", edl_filename, filename])
+        # make mpv edl
+        # https://github.com/mpv-player/mpv-player.github.io/blob/master/guides/edl-playlists.rst
+        edlurl="edl://"
+
+        for count, (start, duration) in enumerate(cutlist.cuts_seconds):
+            edlurl = edlurl + filename + "," + str(start) + "," + str(duration) + ";"
+
+
+        def check_prog(prog):
+            cmdfound = False
+            plays = False
+            
+            if shutil.which(prog):
+                cmdfound = True
+                if not subprocess.call(prog, stdin=subprocess.PIPE,
+                                             stdout=subprocess.DEVNULL,
+                                             stderr=subprocess.STDOUT):
+                    plays = True
+                else:
+                    self.log.error("{} failed to start.".format(prog))
+            else:
+                exist = False
+                self.log.error("{} is not installed.".format(prog))
+            return cmdfound and plays
+
+        def play_with(prog):
+            if prog == 'mplayer':
+                p = subprocess.Popen([self.app.config.get_program('mplayer'), "-edl",
+                                                                  edl_filename, filename])
+            elif prog == 'mpv':
+                p = subprocess.Popen([self.app.config.get_program('mpv'), edlurl])
+
+        if self.app.config.get('general', 'prefer_mpv'):
+            self.playprog = ['mpv', 'mplayer']
+        else:
+            self.playprog = ['mplayer', 'mpv']
+ 
+        if check_prog(self.playprog[0]):
+            play_with(self.playprog[0])
+        elif check_prog(self.playprog[1]):
+            play_with(self.playprog[1])
+        else:
+            self.gui.message_error_box("Zum Anzeigen der Schnitte sind weder mpv noch mplayer " + \
+                                       "installiert bzw. funktionieren nicht.")
+            return
 
         while p.poll() == None:
             time.sleep(1)

@@ -161,17 +161,17 @@ echo "otrv3p: Start $0 prog" | tee -a /tmp/otrv3p-install.log
 clone=$(cat /tmp/otrv3pCloneYesNo)
 rm /tmp/otrv3pCloneYesNo
 # check for wine and hint
-echo "otrv3p: checking for wine" | tee -a /tmp/otrv3p-install.log
-which wine > /dev/null 2>&1
-if [ "$?" = 0 ]; then
-    echo -e "otrv3p: wine ist installiert." | tee -a /tmp/otrv3p-install.log
-else
-    echo -e "otrv3p: wine ist nicht installiert.\nFalls mp4 geschnitten werden sollen, muss wine installiert werden.\n" | tee -a /tmp/otrv3p-install.log
-    echo -n "Soll wine installiert werden? (j/N)? "
-    read answer
-    if [ "$answer" != "${answer#[Jj]}" ]; then
-        echo "Installiere wine"; sudo apt-get install wine
-    else
-        echo "wine wird nicht installiert."
-    fi
-fi
+#~ echo "otrv3p: checking for wine" | tee -a /tmp/otrv3p-install.log
+#~ which wine > /dev/null 2>&1
+#~ if [ "$?" = 0 ]; then
+    #~ echo -e "otrv3p: wine ist installiert." | tee -a /tmp/otrv3p-install.log
+#~ else
+    #~ echo -e "otrv3p: wine ist nicht installiert.\nFalls mp4 geschnitten werden sollen, muss wine installiert werden.\n" | tee -a /tmp/otrv3p-install.log
+    #~ echo -n "Soll wine installiert werden? (j/N)? "
+    #~ read answer
+    #~ if [ "$answer" != "${answer#[Jj]}" ]; then
+        #~ echo "Installiere wine"; sudo apt-get install wine
+    #~ else
+        #~ echo "wine wird nicht installiert."
+    #~ fi
+#~ fi

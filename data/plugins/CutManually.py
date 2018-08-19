@@ -31,9 +31,15 @@ class CutManually(Plugin):
     def enable(self):
         self.relevant_sections = [Section.VIDEO_UNCUT]
 
-        icon = Gtk.IconTheme.get_default().load_icon('edit-cut', 24, 0)
-        self.toolbutton = self.gui.main_window.add_toolbutton(Gtk.Image.new_from_pixbuf(icon),
-                                                    'Manuell schneiden', self.relevant_sections)
+        if self.app.config.get('general', 'use_internal_icons'):
+            image = Gtk.Image.new_from_file(self.get_path('cut.png'))
+        else:
+            image = Gtk.Image.new_from_pixbuf(Gtk.IconTheme.get_default().
+                                              load_icon('edit-cut',
+                                              self.app.config.get('general', 'icon_size'), 0))
+
+        self.toolbutton = self.gui.main_window.add_toolbutton(image, 'Manuell schneiden',
+                                                                        self.relevant_sections)
         self.toolbutton.connect('clicked', self.on_cut_clicked)
 
         self.row_activate_id = self.gui.main_window.builder.get_object(
