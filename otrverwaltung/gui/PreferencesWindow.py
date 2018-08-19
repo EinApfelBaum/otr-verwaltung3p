@@ -116,9 +116,10 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         EntryBinding(self.obj('smkv_workingdir'), self.app.config, 'smartmkvmerge', 'workingdir')
         EntryBinding(self.obj('entry_server'), self.app.config, 'general', 'server')
        
-        SpinbuttonBinding(self.obj('spinbuttonSeeker'), self.app.config, 'general', 'seek_distance_default')
-        SpinbuttonBinding(self.obj('spinbuttonX'), self.app.config, 'general', 'cutinterface_resolution_x')
-        SpinbuttonBinding(self.obj('spinbuttonY'), self.app.config, 'general', 'cutinterface_resolution_y')
+        SpinbuttonBinding(self.obj('spinbutton_seeker'), self.app.config, 'general', 'seek_distance_default')
+        SpinbuttonBinding(self.obj('spinbutton_x'), self.app.config, 'general', 'cutinterface_resolution_x')
+        SpinbuttonBinding(self.obj('spinbutton_y'), self.app.config, 'general', 'cutinterface_resolution_y')
+        SpinbuttonBinding(self.obj('spinbutton_iconsize'), self.app.config, 'general', 'icon_size')
 
         def rename_schema_changed(value):
             new = self.app.rename_by_schema(self.example_cut_filename, value)
@@ -130,35 +131,31 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         # TODO: remove?
         # rename_schema_changed(self.obj('entry_schema').get_text())
 
-        FileChooserFolderBinding(self.obj('folderNewOtrkeys'), self.app.config, 'general',
-                                 'folder_new_otrkeys')
-        FileChooserFolderBinding(self.obj('folderTrashOtrkeys'), self.app.config, 'general',
-                                 'folder_trash_otrkeys')
-        FileChooserFolderBinding(self.obj('folderTrashAvis'), self.app.config, 'general',
-                                 'folder_trash_avis')
-        FileChooserFolderBinding(self.obj('folderUncutAvis'), self.app.config, 'general',
-                                 'folder_uncut_avis')
-        FileChooserFolderBinding(self.obj('folderCutAvis'), self.app.config, 'general',
-                                 'folder_cut_avis')
-        FileChooserFolderBinding(self.obj('folderArchive'), self.app.config, 'general', 'folder_archive')
+        FileChooserFolderBinding(self.obj('folderNewOtrkeys'), self.app.config, 'general', 'folder_new_otrkeys')
+        FileChooserFolderBinding(self.obj('folderTrashOtrkeys'), self.app.config, 'general', 'folder_trash_otrkeys')
+        FileChooserFolderBinding(self.obj('folderTrashAvis'), self.app.config, 'general', 'folder_trash_avis')
+        FileChooserFolderBinding(self.obj('folderUncutAvis'), self.app.config, 'general', 'folder_uncut_avis')
+        FileChooserFolderBinding(self.obj('folderCutAvis'), self.app.config, 'general', 'folder_cut_avis')
+        FileChooserFolderBinding(self.obj('folderArchive'), self.app.config, 'general','folder_archive')
 
-        for option in ['folder_new_otrkeys', 'folder_trash_otrkeys', 'folder_trash_avis', 'folder_uncut_avis',
-                       'folder_cut_avis', 'folder_archive']:
-            self.app.config.connect('general', option, lambda value: self.app.show_section(self.app.section))
+        for option in ['folder_new_otrkeys', 'folder_trash_otrkeys', 'folder_trash_avis',
+                                        'folder_uncut_avis', 'folder_cut_avis', 'folder_archive']:
+            self.app.config.connect('general', option,
+                                            lambda value: self.app.show_section(self.app.section))
 
         CheckButtonBinding(self.obj('checkCorrect'), self.app.config, 'general', 'verify_decoded')
         CheckButtonBinding(self.obj('checkPasswordCheckOnProgramStart'), self.app.config, 'general', 'no_password_hint')
-        CheckButtonBinding(self.obj('check_delete_cutlists'), self.app.config, 'general',
-                           'delete_cutlists')
+        CheckButtonBinding(self.obj('check_delete_cutlists'), self.app.config, 'general', 'delete_cutlists')
         CheckButtonBinding(self.obj('check_rename_cut'), self.app.config, 'general', 'rename_cut')
         CheckButtonBinding(self.obj('check_merge_ac3'), self.app.config, 'general', 'merge_ac3s')
-        CheckButtonBinding(self.obj('check_mplayer_fullscreen'), self.app.config, 'general',
-                           'mplayer_fullscreen')
+        CheckButtonBinding(self.obj('check_mplayer_fullscreen'), self.app.config, 'general', 'mplayer_fullscreen')
         CheckButtonBinding(self.obj('check_prefer_mpv'), self.app.config, 'general', 'prefer_mpv')
-        CheckButtonBinding(self.obj('smkv_normalize'), self.app.config, 'smartmkvmerge',
-                           'normalize_audio')
+        CheckButtonBinding(self.obj('check_ignore_suggested'), self.app.config, 'general', 'ignore_suggested_filename')
+        CheckButtonBinding(self.obj('smkv_normalize'), self.app.config, 'smartmkvmerge', 'normalize_audio')
         CheckButtonBinding(self.obj('smkv_mp4'), self.app.config, 'smartmkvmerge', 'remux_to_mp4')
         CheckButtonBinding(self.obj('check_alt_time_frame_conv'), self.app.config, 'general', 'alt_time_frame_conv')
+        CheckButtonBinding(self.obj('check_use_internal_icons'), self.app.config, 'general', 'use_internal_icons')
+        CheckButtonBinding(self.obj('cb_hide_archive_buttons'), self.app.config, 'general', 'hide_archive_buttons')
 
         self.app.config.connect('general', 'rename_cut',
                                 lambda value: self.obj('entry_schema').set_sensitive(value))
@@ -168,6 +165,10 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                                 lambda value: self.obj('button_set_file_ac3').set_sensitive(value))
         self.app.config.connect('general', 'merge_ac3s',
                                 lambda value: self.obj('label_ac3').set_sensitive(value))
+        self.app.config.connect('general', 'use_internal_icons',
+                                lambda value: self.obj('label_iconsize').set_sensitive(not value))
+        self.app.config.connect('general', 'use_internal_icons',
+                                lambda value: self.obj('spinbutton_iconsize').set_sensitive(not value))
 
         ComboBoxEntryBinding(self.obj('combobox_avi'), self.app.config, 'general', 'cut_avis_by')
         ComboBoxEntryBinding(self.obj('combobox_hq'), self.app.config, 'general', 'cut_hqs_by')
@@ -178,12 +179,9 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         ComboBoxEntryBinding(self.obj('h264_codec_cbox'), self.app.config, 'general', 'h264_codec')
         ComboBoxEntryBinding(self.obj('combobox_ac3'), self.app.config, 'general', 'merge_ac3s_by')
         ComboBoxEntryBinding(self.obj('entry_decoder'), self.app.config, 'programs', 'decoder')
-        ComboBoxEntryBinding(self.obj('smkv_first_audio'), self.app.config, 'smartmkvmerge',
-                                                                            'first_audio_stream')
-        ComboBoxEntryBinding(self.obj('smkv_second_audio'), self.app.config, 'smartmkvmerge',
-                                                                            'second_audio_stream')
-        ComboBoxEntryBinding(self.obj('entry_cut_default'), self.app.config, 'general',
-                                                                'cut_action', data='cut_default')
+        ComboBoxEntryBinding(self.obj('smkv_first_audio'), self.app.config, 'smartmkvmerge', 'first_audio_stream')
+        ComboBoxEntryBinding(self.obj('smkv_second_audio'), self.app.config, 'smartmkvmerge', 'second_audio_stream')
+        ComboBoxEntryBinding(self.obj('entry_cut_default'), self.app.config, 'general', 'cut_action', data='cut_default')
 
         RadioButtonsBinding([self.obj(widget) for widget in ['radio_size', 'radio_filename']],
                             self.app.config, 'general', 'choose_cutlists_by')
@@ -191,8 +189,13 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         self.obj('entryPassword').set_visibility(False)
         self.obj('entry_schema').set_sensitive(self.app.config.get('general', 'rename_cut'))
         self.obj('combobox_ac3').set_sensitive(self.app.config.get('general', 'merge_ac3s'))
+        self.obj('label_iconsize').set_sensitive(not self.obj('check_use_internal_icons').get_active())
+        self.obj('spinbutton_iconsize').set_sensitive(not self.obj('check_use_internal_icons').get_active())
 
-    #  Signal handlers
+### Signal handlers ###
+
+    def on_check_use_internal_icons_toggled(self, widget):
+        pass
 
     def on_button_reset_size_moviewindow_clicked(self, widget):
         # ~ self.app.config.set('general', 'cutinterface_resolution_x', 800)
@@ -200,7 +203,6 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         self.obj('spinbuttonX').set_value(800.0)
         self.obj('spinbuttonY').set_value(450.0)
         
-
     def _on_button_check_otr_credentials_clicked(self, entry):
         request_answer=""
         if self.app.config.get('general', 'password') != "" and internet_on():

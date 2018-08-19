@@ -38,7 +38,12 @@ class CutSmartMkvmerge(Cut):
         self.gui = gui
         self.encode_nr = 0  # index for encoded video parts - for the smart rendering simulation
         self.copy_nr = 0  # index for copied video parts - for the smart rendering simulation
-        self.workingdir = '/tmp'
+        if not os.path.isdir(self.config.get('smartmkvmerge', 'workingdir')):
+            self.gui.message_info_box('Das in Einstellungen:Schneiden:SmartMKVmerge angegebene ' +\
+                                      'Arbeitsverzeichnis ist nicht gültig.\n' + \
+                                      'Es wird "/tmp" benutzt.')
+            self.config.set('smartmkvmerge', 'workingdir', '/tmp')
+        self.workingdir = self.config.get('smartmkvmerge', 'workingdir')
         self.video_files = []  # temporary video files
         self.audio_files = []  # temporary audio files
         self.rawstreams = {}  # temporary eac3to files
@@ -52,6 +57,8 @@ class CutSmartMkvmerge(Cut):
                 os.remove(self.workingdir + '/x264.index')
             if os.path.isfile(self.workingdir + '/video_copy.mkv'):
                 os.rename(self.workingdir + '/video_copy.mkv', self.workingdir + '/video_copy-001.mkv')
+            if os.path.isfile(self.workingdir + '/mediainfo.xml'):
+                os.remove(self.workingdir + '/mediainfo.xml')
             for n in self.video_files + self.audio_files:
                 if os.path.isfile(n.lstrip('+')):
                     os.remove(n.lstrip('+'))
@@ -99,22 +106,22 @@ class CutSmartMkvmerge(Cut):
                 codec, codec_core = self.complete_x264_opts(
                     self.config.get('smartmkvmerge', 'x264_hq_string').split(' '), filename)
             elif encoder_engine == 'ffmpeg':
-                codec, codec_core = self.__ffmpeg_codec_options(
+                codec, codec_core = self.ffmpeg_codec_options(
                     self.config.get('smartmkvmerge', 'ffmpeg_hq_x264_options').split(' '), filename)
         elif format == Format.HD:
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(
                     self.config.get('smartmkvmerge', 'x264_hd_string').split(' '), filename)
             elif encoder_engine == 'ffmpeg':
-                codec, codec_core = self.__ffmpeg_codec_options(
+                codec, codec_core = self.ffmpeg_codec_options(
                     self.config.get('smartmkvmerge', 'ffmpeg_hd_x264_options').split(' '), filename)
         elif format == Format.MP4:
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(
                     self.config.get('smartmkvmerge', 'x264_mp4_string').split(' '), filename)
             elif encoder_engine == 'ffmpeg':
-                codec, codec_core = self.__ffmpeg_codec_options(
-                    self.config.get('smartmkvmerge', 'ffmpeg_mp4_x264_options').split(' '), filename)
+                codec, codec_core = self.ffmpeg_codec_options(
+                    self.config.get('smartmkvmerge', 'ffmpeg_mp4_x264_options').split(' '), filename, quality='MP4')
         elif format == Format.AVI:
             encoder_engine = 'ffmpeg'
             codec = self.config.get('smartmkvmerge', 'ffmpeg_avi_mpeg4_options').split(' ')
@@ -123,14 +130,17 @@ class CutSmartMkvmerge(Cut):
             return None, "Format nicht unterstützt (Nur MP4 H264, HQ H264 und HD H264 sind möglich)."
 
         self.log.debug("Codec: {}".format(codec))
+        self.log.debug("Codec core: {}".format(codec_core))
 
         if codec_core != 125:
-            warning_msg = "Unbekannte Kodierung entdeckt. Diese Datei genau prüfen und notfalls mit intern-Virtualdub und Codec ffdshow schneiden."
+            warning_msg = "Unbekannte Kodierung entdeckt. Diese Datei genau prüfen und " + \
+                          "notfalls mit intern-Virtualdub und Codec ffdshow schneiden."
             return None, warning_msg
 
         # test workingdir
         if os.access(self.config.get('smartmkvmerge', 'workingdir').rstrip('/'), os.W_OK):
-            self.workingdir = os.path.abspath(self.config.get('smartmkvmerge', 'workingdir')).rstrip('/')
+            self.workingdir = os.path.abspath(self.config.get('smartmkvmerge',
+                                                                    'workingdir')).rstrip('/')
         else:
             return None, "Ungültiges Temp Verzeichnis. Schreiben nicht möglich."
 
@@ -174,7 +184,6 @@ class CutSmartMkvmerge(Cut):
         keyframes, error = self.get_keyframes_from_file(filename)
         if keyframes == None:
             return None, "Keyframes konnten nicht ausgelesen werden."
-        # self.log.debug(keyframes)
 
         # video part 2 - simulate smart rendering process
         for frame_start, frames_duration in cutlist.cuts_frames:
@@ -189,20 +198,24 @@ class CutSmartMkvmerge(Cut):
         for encode, start, duration, video_part_filename in videolist:
             self.video_files.append('+' + self.workingdir + '/' + video_part_filename)
             if encoder_engine == 'x264':
-                command = [x264] + codec + ['--demuxer', 'ffms', '--index', self.workingdir + '/x264.index', '--seek',
-                                            str(start), '--frames', str(duration), '--output',
-                                            self.workingdir + '/' + video_part_filename, filename]
+                command = [x264] + codec + ['--demuxer', 'ffms', '--index', self.workingdir +
+                                            '/x264.index', '--seek', str(start), '--frames',
+                                            str(duration), '--output', self.workingdir + '/' +
+                                            video_part_filename, filename]
             elif encoder_engine == 'ffmpeg':
-                command = [ffmpeg, '-ss', str(self.get_timecode((start + bframe_delay) / fps)), '-i', filename,
-                           '-vframes', str(duration), '-vf', 'setsar=' + str(sar), '-threads', '0', '-an', '-sn', '-dn',
-                           '-y', self.workingdir + '/' + video_part_filename]
+                command = [ffmpeg, '-ss', str(self.get_timecode((start + bframe_delay) / fps)),
+                            '-i', filename, '-vframes', str(duration), '-vf', 'setsar=' + str(sar),
+                            '-threads', '0', '-an', '-sn', '-dn', '-y',
+                            self.workingdir + '/' + video_part_filename]
                 command[5:5] = codec
             else:
                 return None, "Keine unterstützte Render-Engine zum Kodieren eingestellt"
             self.log.debug("Command: {}".format(command))
             if encode:
                 try:
-                    non_blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                    non_blocking_process = subprocess.Popen(command, 
+                                                            stdout=subprocess.PIPE,
+                                                            stderr=subprocess.STDOUT,
                                                             universal_newlines=True)
                 except OSError as e:
                     return None, e.strerror + ": " + 'Render Engine nicht vorhanden'
@@ -215,13 +228,14 @@ class CutSmartMkvmerge(Cut):
         self.video_files[0] = self.video_files[0].lstrip('+')
         video_splitframes = video_splitframes.lstrip(',')
 
-        # video part 4 - cut the big parts out the file (keyframe accurate) - smart rendering part (2/2)
-        command = [mkvmerge, '--ui-language', 'en_US', '-A', '--split', 'parts-frames:' + video_splitframes, '-o',
-                   self.workingdir + '/video_copy.mkv', filename]
+        # video part 4 - cut the big parts out the file (keyframe accurate)
+        # smart rendering part (2/2)
+        command = [mkvmerge, '--ui-language', 'en_US', '-A', '--split', 'parts-frames:' +
+                        video_splitframes, '-o', self.workingdir + '/video_copy.mkv', filename]
         self.log.debug("Command: {}".format(command))
         try:
-            non_blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                                    universal_newlines=True, env=my_env)
+            non_blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT, universal_newlines=True, env=my_env)
         except OSError as e:
             return None, e.strerror + ": " + mkvmerge
         mkvmerge_list.append(non_blocking_process)
@@ -229,9 +243,10 @@ class CutSmartMkvmerge(Cut):
             self.show_progress(non_blocking_process)
 
         # audio part 2 - encode audio to AAC
-        if 'MP3 Spur kopieren' in self.config.get('smartmkvmerge',
-                                                  'first_audio_stream') and 'AC3 Spur kopieren' in self.config.get(
-                'smartmkvmerge', 'second_audio_stream'):
+        if 'MP3 Spur kopieren' in self.config.get('smartmkvmerge', 'first_audio_stream') \
+                                                        and 'AC3 Spur kopieren' \
+                                                        in self.config.get('smartmkvmerge',
+                                                                            'second_audio_stream'):
             self.audio_files.append(self.workingdir + '/audio_copy.mkv')
         else:
             self.show_progress(blocking_process)
@@ -465,56 +480,71 @@ class CutSmartMkvmerge(Cut):
                 else:
                     return encode
 
-    def __ffmpeg_codec_options(self, ffmpeg_codec_options, filename):
+    """def ffmpeg_codec_options(self, ffmpeg_codec_options, filename):
         codec = None
         codec_core = None
         ffmpeg_commandline = []
         bt709 = ['videoformat=pal:colorprim=bt709:transfer=bt709:colormatrix=bt709']
         bt470bg = ['videoformat=pal:colorprim=bt470bg:transfer=bt470bg:colormatrix=bt470bg']
 
-        try:
-            blocking_process = subprocess.Popen([self.config.get_program('mediainfo'), filename],
-                                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        except OSError as e:
-            return None, "Fehler: %s Filename: %s Error: %s" % str(e.errno), str(e.filename), str(e.strerror)
-        except ValueError as e:
-            return None, "Falscher Wert: %s" % str(e)
+        # NEW_FFMPEG_OPTS ->
+        x264_core = self.media_info.tracks[1].writing_library.split(' ')[2]
+        
+        if '709' in self.media_info.tracks[1].color_primaries:
+            ffmpeg_codec_options.extend(bt709)
+        elif '470' in self.media_info.tracks[1].color_primaries:
+            ffmpeg_codec_options.extend(bt470bg)
 
-        while True:
-            line = blocking_process.stdout.readline()
+        level = ['--level', float(self.media_info.tracks[1].format_profile.split('@L')[1])]
+        ffmpeg_commandline.extend(level)
 
-            if line != '':
-                if 'x264 core' in line:
-                    codec = 'libx264'
-                    try:
-                        codec_core = int(line.strip().split(' ')[30])
-                    except ValueError as e:
-                        continue
-                    except IndexError as e:
-                        continue
-                elif 'Matrix coefficients' in line and '709' in line:
-                    ffmpeg_codec_options.extend(bt709)
-                elif 'Matrix coefficients' in line and '470' in line:
-                    ffmpeg_codec_options.extend(bt470bg)
-                elif 'Format profile' in line and '@L' in line:
-                    try:
-                        level = ['-level', str(float(line.strip().split('L')[1]))]  # test for float
-                        profile = ['-profile:v', line.strip().split('@L')[0].split(':')[1].lower().lstrip()]
-                    except ValueError as e:
-                        continue
-                    except IndexError as e:
-                        continue
-                    ffmpeg_commandline.extend(profile)
-                    ffmpeg_commandline.extend(level)
-            else:
-                break
+        profile = ['--profile', self.media_info.tracks[1].format_profile.split('@L')[0].lower()]
+        ffmpeg_commandline.extend(profile)
+        # <- NEW_FFMPEG_OPTS
+
+        # ~ try:
+            # ~ blocking_process = subprocess.Popen([self.config.get_program('mediainfo'), filename],
+                                                # ~ stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        # ~ except OSError as e:
+            # ~ return None, "Fehler: %s Filename: %s Error: %s" % str(e.errno), str(e.filename), str(e.strerror)
+        # ~ except ValueError as e:
+            # ~ return None, "Falscher Wert: %s" % str(e)
+
+        # ~ while True:
+            # ~ line = blocking_process.stdout.readline()
+
+            # ~ if line != '':
+                # ~ if 'x264 core' in line:
+                    # ~ codec = 'libx264'
+                    # ~ try:
+                        # ~ codec_core = int(line.strip().split(' ')[30])
+                    # ~ except ValueError as e:
+                        # ~ continue
+                    # ~ except IndexError as e:
+                        # ~ continue
+                # ~ elif 'Matrix coefficients' in line and '709' in line:
+                    # ~ ffmpeg_codec_options.extend(bt709)
+                # ~ elif 'Matrix coefficients' in line and '470' in line:
+                    # ~ ffmpeg_codec_options.extend(bt470bg)
+                # ~ elif 'Format profile' in line and '@L' in line:
+                    # ~ try:
+                        # ~ level = ['-level', str(float(line.strip().split('L')[1]))]  # test for float
+                        # ~ profile = ['-profile:v', line.strip().split('@L')[0].split(':')[1].lower().lstrip()]
+                    # ~ except ValueError as e:
+                        # ~ continue
+                    # ~ except IndexError as e:
+                        # ~ continue
+                    # ~ ffmpeg_commandline.extend(profile)
+                    # ~ ffmpeg_commandline.extend(level)
+            # ~ else:
+                # ~ break
 
         if codec == 'libx264':
             x264opts = (':'.join([option for option in ffmpeg_codec_options])) + ':force_cfr'
             x264opts = x264opts.lstrip(':')
             ffmpeg_commandline.extend(['-vcodec', 'libx264', '-preset', 'medium', '-x264opts', x264opts])
 
-        return ffmpeg_commandline, codec_core
+        return ffmpeg_commandline, codec_core"""
 
 
 class ChangeDir:

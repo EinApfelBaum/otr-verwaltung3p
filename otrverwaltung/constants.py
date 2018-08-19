@@ -70,9 +70,9 @@ class Status:
 
 class Format:
     AVI = 0
-    HQ = 1
+    HQ  = 1
     MP4 = 2
-    HD = 3
+    HD  = 3
     AC3 = 4
 
 

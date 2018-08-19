@@ -1,3 +1,12 @@
+3.3.1-A, 2018-08-04
+    * PreferencesWindow:Cutlist: New option "Vorgeschlagenen Dateinamen der Cutlist ignorieren",
+      including an explanation. Closes #48 Feature request: Add options for renaming
+    * ConclusionDialog.py: File extension now stripped from suggested and other filenames.
+      Closes #60 File extension should be stripped from suggested_filename
+    * Updated encoding parameters for ffmpeg.
+    * New options: Set icon size, use internal icons.
+    * Plugin CutPlay (Geschnittenes Abspielen) now works with mpv.
+
 3.3.0-A, 2018-07-29
     * CutinterfaceDialog now uses gstreamer's gtksink for video output. Fixes "CutInterface
       with black Screen" (#68).
@@ -13,7 +22,7 @@
 
 3.2.4-A, 2018-07-11
     * Hauptfenster:
-      - Die Standard-Aktion für den Button "Schneiden" in der Sektion "Ungeschnnitten" ist
+      - Die Standard-Aktion für den Button "Schneiden" in der Sektion "Ungeschnitten" ist
         jetzt in Einstellungen:Hauptfenster einstellbar.
       - Die Sektion "Ungeschnitten" wird nach dem Programmstart automatisch angezeigt und
         aktiviert, sodass die Auswahl einer Datei mit den Pfeil-Tasten möglich ist.

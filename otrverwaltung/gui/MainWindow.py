@@ -96,56 +96,52 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         return cut_menu
 
     def __setup_toolbar(self):
-
-        # ~ toolbar_buttons = [
-            # ~ ('decodeandcut', 'decodeandcut.png', "Dekodieren und Schneiden", Action.DECODEANDCUT),
-            # ~ ('decode', 'decode.png', 'Dekodieren', Action.DECODE),
-            # ~ ('delete', 'bin.png', "In den Müll verschieben", Action.DELETE),
-            # ~ ('archive', 'archive.png', "Archivieren", Action.ARCHIVE),
-            # ~ ('cut', 'cut.png', "Schneiden", Action.CUT),
-            # ~ ('restore', 'restore.png', "Wiederherstellen", Action.RESTORE),
-            # ~ ('rename', 'rename.png', "Umbenennen", Action.RENAME),
-            # ~ ('new_folder', 'new_folder.png', "Neuer Ordner", Action.NEW_FOLDER),
-            # ~ ('real_delete', 'delete.png', "Löschen", Action.REAL_DELETE),
-            # ~ ('plan_add', 'film_add.png', "Hinzufügen", Action.PLAN_ADD),
-            # ~ ('plan_remove', 'film_delete.png', "Löschen", Action.PLAN_REMOVE),
-            # ~ ('plan_edit', 'film_edit.png', "Bearbeiten", Action.PLAN_EDIT),
-            # ~ ('plan_search', 'film_search.png', "Auf Mirror suchen", Action.PLAN_SEARCH),
-            # ~ ('download_add', 'add_download.png', "Download hinzufügen", Action.DOWNLOAD_ADD),
-            # ~ ('download_add_link', 'add_download.png', "Link hinzufügen", Action.DOWNLOAD_ADD_LINK),
-            # ~ ('download_start', 'download_start.png', "Start", Action.DOWNLOAD_START),
-            # ~ ('download_stop', 'download_stop.png', "Stop", Action.DOWNLOAD_STOP),
-            # ~ ('download_remove', 'delete.png', "Löschen", Action.DOWNLOAD_REMOVE),
-        # ~ ]
-        toolbar_buttons = [
-            ('decodeandcut', ['dialog-password', 'edit-cut'],
+        if self.app.config.get('general', 'use_internal_icons'):
+            toolbar_buttons = [
+                ('decodeandcut', 'decodeandcut.png', "Dekodieren und Schneiden", Action.DECODEANDCUT),
+                ('decode', 'decode.png', 'Dekodieren', Action.DECODE),
+                ('delete', 'bin.png', "In den Müll verschieben", Action.DELETE),
+                ('archive', 'archive.png', "Archivieren", Action.ARCHIVE),
+                ('cut', 'cut.png', "Schneiden", Action.CUT),
+                ('restore', 'restore.png', "Wiederherstellen", Action.RESTORE),
+                ('rename', 'rename.png', "Umbenennen", Action.RENAME),
+                ('new_folder', 'new_folder.png', "Neuer Ordner", Action.NEW_FOLDER),
+                ('real_delete', 'delete.png', "Löschen", Action.REAL_DELETE)
+                ]
+        else:
+            toolbar_buttons = [
+                ('decodeandcut', ['dialog-password', 'edit-cut-symbolic'],
                                                 "Dekodieren und Schneiden", Action.DECODEANDCUT),
-            ('decode', 'dialog-password', 'Dekodieren', Action.DECODE),
-            ('delete', 'user-trash', "In den Müll verschieben", Action.DELETE),
-            ('archive', 'system-file-manager', "Archivieren", Action.ARCHIVE),
-            ('cut', 'edit-cut', "Schneiden", Action.CUT),
-            ('restore', 'view-refresh', "Wiederherstellen", Action.RESTORE),
-            ('rename', 'accessories-text-editor_', "Umbenennen", Action.RENAME),
-            ('new_folder', 'folder-new', "Neuer Ordner", Action.NEW_FOLDER),
-            ('real_delete', 'edit-del', "Löschen", Action.REAL_DELETE),
-        ]
+                ('decode', 'dialog-password', 'Dekodieren', Action.DECODE),
+                ('delete', 'user-trash', "In den Müll verschieben", Action.DELETE),
+                ('archive', 'system-file-manager', "Archivieren", Action.ARCHIVE),
+                ('cut', 'edit-cut', "Schneiden", Action.CUT),
+                ('restore', 'view-refresh', "Wiederherstellen", Action.RESTORE),
+                ('rename', 'edit-rename', "Umbenennen", Action.RENAME),
+                ('new_folder', 'folder-new', "Neuer Ordner", Action.NEW_FOLDER),
+                ('real_delete', 'edit-delete', "Löschen", Action.REAL_DELETE),
+            ]
 
         self.__toolbar_buttons = {}
         for key, image_name, text, action in toolbar_buttons:
-            # Gtk.IconSize.LARGE_TOOLBAR
-            if type(image_name) == type([]):  # It's a list
-                # Create an emblemed icon
-                try:
-                    image = Gtk.Image.new_from_gicon(Gio.EmblemedIcon.new(
+            if self.app.config.get('general', 'use_internal_icons'):
+                image = Gtk.Image.new_from_file(path.get_image_path(image_name))
+            else:
+                # Gtk.IconSize.LARGE_TOOLBAR
+                if type(image_name) == type([]):  # It's a list so we create an emblemed icon
+                    try:
+                        image = Gtk.Image.new_from_gicon(Gio.EmblemedIcon.new(
                                                 Gio.ThemedIcon.new(image_name[0]),
                                                 Gio.Emblem.new(Gio.ThemedIcon.new(image_name[1]))),
-                                                24)
-                except: pass
-            else:
-                try:
-                    image = Gtk.Image.new_from_pixbuf(Gtk.IconTheme.get_default().load_icon(
-                                                                                image_name, 24, 0))
-                except: pass
+                                                self.app.config.get('general', 'icon_size'))
+                    except: pass
+                else:
+                    try:
+                        image = Gtk.Image.new_from_pixbuf(
+                                                Gtk.IconTheme.get_default().load_icon(image_name,
+                                                self.app.config.get('general', 'icon_size'), 0))
+                    except: pass
+
             image.show()
 
             if key == "cut" or key == "decodeandcut":
@@ -159,7 +155,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
         self.__sets_of_toolbars = {
             # ~ Section.PLANNING: ['plan_add', 'plan_edit', 'plan_remove', 'plan_search'],
-            # ~ Section.DOWNLOAD: ['download_add_link', 'download_start', 'download_stop', 'download_remove'],
+            # ~ Section.DOWNLOAD: ['download_add_link', 'download_start', 'download_stop','download_remove'],
             Section.OTRKEY: ['decodeandcut', 'decode', 'delete', 'real_delete'],
             Section.VIDEO_UNCUT: ['cut', 'delete', 'real_delete', 'archive'],
             Section.VIDEO_CUT: ['archive', 'delete', 'real_delete', 'cut', 'rename'],
@@ -168,6 +164,11 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             Section.TRASH_AVI: ['real_delete', 'restore'],
             Section.TRASH_OTRKEY: ['real_delete', 'restore']
         }
+        if self.app.config.get('general', 'hide_archive_buttons'):
+            for section, buttons in self.__sets_of_toolbars.items():
+                if 'archive' in buttons:
+                    buttons.remove('archive')
+                    self.__sets_of_toolbars[section] = buttons
 
         # create sets of toolbuttons
         for section, button_names in self.__sets_of_toolbars.items():
@@ -190,7 +191,6 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
               text Text des Toolbuttons
               sections Liste von Sections, in denen der Toolbutton angezeigt wird.
           """
-
         image.show()
         toolbutton = Gtk.ToolButton.new(image, text)
         toolbutton.show()
@@ -204,7 +204,6 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     def remove_toolbutton(self, toolbutton):
         """ Entfernt den angegebenen toolbutton.
               toolbutton"""
-
         for section in self.__sets_of_toolbars.keys():
             if toolbutton in self.__sets_of_toolbars[section]:
                 self.__sets_of_toolbars[section].remove(toolbutton)
@@ -295,14 +294,19 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         tvcolumns[self.__DATE].set_sort_column_id(2)
 
         # load pixbufs for treeview
-        # ~ self.__pix_avi = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('avi.png'))
-        # ~ self.__pix_otrkey = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('decode.png'))
-        # ~ self.__pix_folder = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('folder.png'))
-        try:
-            self.__pix_avi = Gtk.IconTheme.get_default().load_icon('video-x-generic', 16, 0)
-            self.__pix_otrkey = Gtk.IconTheme.get_default().load_icon('dialog-password', 16, 0)
-            self.__pix_folder = Gtk.IconTheme.get_default().load_icon('folder', 24, 0)
-        except: pass
+        if self.app.config.get('general', 'use_internal_icons'):
+            self.__pix_avi = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('avi.png'))
+            self.__pix_otrkey = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('decode.png'))
+            self.__pix_folder = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('folder.png'))
+        else:
+            try:
+                self.__pix_avi = Gtk.IconTheme.get_default().load_icon(
+                                'video-x-generic', self.app.config.get('general', 'icon_size'), 0)
+                self.__pix_otrkey = Gtk.IconTheme.get_default().load_icon(
+                                'dialog-password', self.app.config.get('general', 'icon_size'), 0)
+                self.__pix_folder = Gtk.IconTheme.get_default().load_icon(
+                                         'folder', self.app.config.get('general', 'icon_size'), 0)
+            except: pass
 
     def __setup_widgets(self):
         self.builder.get_object('menu_bottom').set_active(self.app.config.get('general', 'show_bottom'))

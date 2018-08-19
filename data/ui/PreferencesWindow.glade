@@ -3,6 +3,13 @@
 <interface>
   <requires lib="gtk+" version="3.12"/>
   <requires lib="PreferencesWindow" version="1.0"/>
+  <object class="GtkAdjustment" id="iconSizeAdjustment">
+    <property name="lower">16</property>
+    <property name="upper">128</property>
+    <property name="value">22</property>
+    <property name="step_increment">2</property>
+    <property name="page_increment">10</property>
+  </object>
   <object class="GtkAdjustment" id="moviewindowAdjustmentX">
     <property name="lower">384</property>
     <property name="upper">1280</property>
@@ -150,6 +157,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Dies ist der Standard-Ordner von OTR-Verwaltung.</property>
+                        <property name="use_markup">True</property>
                         <property name="wrap">True</property>
                         <property name="max_width_chars">60</property>
                         <property name="xalign">0</property>
@@ -429,39 +437,6 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="checkPasswordCheckOnProgramStart">
-                        <property name="label" translatable="yes">Passworthinweis beim Start ausblenden</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="halign">start</property>
-                        <property name="margin_top">5</property>
-                        <property name="draw_indicator">True</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">5</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="label1">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="margin_top">5</property>
-                        <property name="label" translatable="yes">&lt;i&gt;Das Passwort wird verschlüsselt gespeichert (AES-256).
-Dennoch kann dieses Feld auch leer gelassen werden.
-In diesem Fall bitte "Passworthinweis beim Start ausblenden" aktivieren.&lt;/i&gt;</property>
-                        <property name="use_markup">True</property>
-                        <property name="wrap">True</property>
-                        <property name="max_width_chars">90</property>
-                        <property name="xalign">0</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">4</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkEntry" id="entryPassword">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -525,6 +500,39 @@ In diesem Fall bitte "Passworthinweis beim Start ausblenden" aktivieren.&lt;/i&g
                       <packing>
                         <property name="left_attach">1</property>
                         <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="checkPasswordCheckOnProgramStart">
+                        <property name="label" translatable="yes">Passworthinweis beim Start ausblenden</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_top">5</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="margin_top">5</property>
+                        <property name="label" translatable="yes">&lt;span font-size='small'&gt;&lt;i&gt;Das Passwort wird verschlüsselt gespeichert (AES-256).
+Dennoch kann dieses Feld auch leer gelassen werden.
+In diesem Fall bitte "Passworthinweis beim Start ausblenden" aktivieren.&lt;/i&gt;&lt;/span&gt;</property>
+                        <property name="use_markup">True</property>
+                        <property name="wrap">True</property>
+                        <property name="max_width_chars">90</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">5</property>
                       </packing>
                     </child>
                     <child>
@@ -620,6 +628,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                               <object class="GtkLabel" id="label3">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="margin_left">10</property>
                                 <property name="margin_bottom">5</property>
                                 <property name="label" translatable="yes">&lt;b&gt;Manuell schneiden mit...&lt;/b&gt;</property>
                                 <property name="use_markup">True</property>
@@ -727,9 +736,8 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                 <child>
                                   <object class="GtkButton" id="button_set_file_avi">
                                     <property name="label" translatable="yes">...</property>
-                                    <property name="visible">True</property>
                                     <property name="sensitive">False</property>
-                                    <property name="can_focus">True</property>
+                                    <property name="can_focus">False</property>
                                     <property name="receives_default">True</property>
                                     <signal name="clicked" handler="_on_button_set_file_clicked" object="combobox_avi" swapped="no"/>
                                   </object>
@@ -768,9 +776,8 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                 <child>
                                   <object class="GtkButton" id="button_set_file_HDHQ">
                                     <property name="label" translatable="yes">...</property>
-                                    <property name="visible">True</property>
                                     <property name="sensitive">False</property>
-                                    <property name="can_focus">True</property>
+                                    <property name="can_focus">False</property>
                                     <property name="receives_default">True</property>
                                     <signal name="clicked" handler="_on_button_set_file_clicked" object="combobox_hq" swapped="no"/>
                                   </object>
@@ -809,9 +816,8 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                 <child>
                                   <object class="GtkButton" id="button_set_file_mp4">
                                     <property name="label" translatable="yes">...</property>
-                                    <property name="visible">True</property>
                                     <property name="sensitive">False</property>
-                                    <property name="can_focus">True</property>
+                                    <property name="can_focus">False</property>
                                     <property name="receives_default">True</property>
                                     <signal name="clicked" handler="_on_button_set_file_clicked" object="hboxmp4Cutlist" swapped="no"/>
                                   </object>
@@ -875,9 +881,8 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                 <child>
                                   <object class="GtkButton" id="button_set_file_ac3">
                                     <property name="label" translatable="yes">...</property>
-                                    <property name="visible">True</property>
                                     <property name="sensitive">False</property>
-                                    <property name="can_focus">True</property>
+                                    <property name="can_focus">False</property>
                                     <property name="receives_default">True</property>
                                     <signal name="clicked" handler="_on_button_set_file_clicked" object="combobox_ac3" swapped="no"/>
                                   </object>
@@ -901,6 +906,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                   <object class="GtkComboBoxText" id="combobox_man_avi">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
+                                    <property name="margin_left">10</property>
                                     <property name="active_id">CutInterface</property>
                                     <items>
                                       <item id="CutInterface" translatable="yes">CutInterface</item>
@@ -916,9 +922,8 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                 <child>
                                   <object class="GtkButton" id="button_set_file_avi1">
                                     <property name="label" translatable="yes">...</property>
-                                    <property name="visible">True</property>
                                     <property name="sensitive">False</property>
-                                    <property name="can_focus">True</property>
+                                    <property name="can_focus">False</property>
                                     <property name="receives_default">True</property>
                                     <signal name="clicked" handler="_on_button_set_file_clicked" object="combobox_man_avi" swapped="no"/>
                                   </object>
@@ -942,6 +947,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                   <object class="GtkComboBoxText" id="combobox_man_hq">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
+                                    <property name="margin_left">10</property>
                                     <property name="active_id">CutInterface</property>
                                     <items>
                                       <item id="CutInterface" translatable="yes">CutInterface</item>
@@ -957,9 +963,8 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                 <child>
                                   <object class="GtkButton" id="button_set_file_hq">
                                     <property name="label" translatable="yes">...</property>
-                                    <property name="visible">True</property>
                                     <property name="sensitive">False</property>
-                                    <property name="can_focus">True</property>
+                                    <property name="can_focus">False</property>
                                     <property name="receives_default">True</property>
                                     <signal name="clicked" handler="_on_button_set_file_clicked" object="combobox_man_hq" swapped="no"/>
                                   </object>
@@ -983,6 +988,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                   <object class="GtkComboBoxText" id="combobox_man_mp4">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
+                                    <property name="margin_left">10</property>
                                     <property name="active_id">CutInterface</property>
                                     <items>
                                       <item id="CutInterface" translatable="yes">CutInterface</item>
@@ -998,9 +1004,8 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                 <child>
                                   <object class="GtkButton" id="button_set_file_mp1">
                                     <property name="label" translatable="yes">...</property>
-                                    <property name="visible">True</property>
                                     <property name="sensitive">False</property>
-                                    <property name="can_focus">True</property>
+                                    <property name="can_focus">False</property>
                                     <property name="receives_default">True</property>
                                     <signal name="clicked" handler="_on_button_set_file_clicked" object="combobox_man_mp4" swapped="no"/>
                                   </object>
@@ -1293,36 +1298,6 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkRadioButton" id="radio_size">
-                        <property name="label" translatable="yes">Größe der Datei</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="halign">start</property>
-                        <property name="draw_indicator">True</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkRadioButton" id="radio_filename">
-                        <property name="label" translatable="yes">Dateiname (Empfohlen!)</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="halign">start</property>
-                        <property name="active">True</property>
-                        <property name="draw_indicator">True</property>
-                        <property name="group">radio_size</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">2</property>
-                        <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkLabel" id="label13">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -1404,6 +1379,36 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                       </packing>
                     </child>
                     <child>
+                      <object class="GtkRadioButton" id="radio_size">
+                        <property name="label" translatable="yes">Größe der Datei</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="draw_indicator">True</property>
+                        <property name="group">radio_filename</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkRadioButton" id="radio_filename">
+                        <property name="label" translatable="yes">Dateiname (Empfohlen!)</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="active">True</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
                       <placeholder/>
                     </child>
                     <child>
@@ -1420,13 +1425,13 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="check_mplayer_fullscreen">
-                    <property name="label" translatable="yes">mplayer / mpv beim Prüfen der Cutlist maximieren</property>
+                  <object class="GtkLabel" id="label15">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="halign">start</property>
-                    <property name="draw_indicator">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_top">20</property>
+                    <property name="margin_bottom">5</property>
+                    <property name="label" translatable="yes">Prüfen der Cutlist (Schnitte anspielen):</property>
+                    <property name="xalign">0</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -1435,8 +1440,8 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="check_prefer_mpv">
-                    <property name="label" translatable="yes">mpv bevorzugen</property>
+                  <object class="GtkCheckButton" id="check_mplayer_fullscreen">
+                    <property name="label" translatable="yes">MPlayer bzw. mpv im Vollbildmodus starten</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
@@ -1450,7 +1455,55 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                   </packing>
                 </child>
                 <child>
-                  <placeholder/>
+                  <object class="GtkCheckButton" id="check_prefer_mpv">
+                    <property name="label" translatable="yes">mpv bevorzugen (Falls MPlayer und mpv installiert sind, wird normalerweise MPlayer benutzt).</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="halign">start</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check_ignore_suggested">
+                    <property name="label" translatable="yes">Vorgeschlagenen Dateinamen der Cutlist ignorieren.</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="margin_top">10</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label16">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_left">25</property>
+                    <property name="label" translatable="yes">&lt;span font-size='small'&gt;Normalerweise wird im Zusammenfassungsdialog der vorgeschlagene Dateiname aus der Schnittliste (sofern vorhanden) als aktiver Eintrag angezeigt.
+Wer dies nicht möchte kann dieses Verhalten hier ausschalten. In diesem Falle wird der aktive Eintrag wie folgt bestimmt:
+- Falls das automatische Umbenennen aktiviert ist , wird der umbenannte Dateiname gezeigt.
+- Ansonsten wir der um die Dateiendung gekürzte Dateiname angezeigt.
+
+In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.&lt;/span&gt;</property>
+                    <property name="use_markup">True</property>
+                    <property name="wrap">True</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">5</property>
+                  </packing>
                 </child>
                 <child>
                   <placeholder/>
@@ -1646,21 +1699,35 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                 <property name="margin_bottom">5</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkGrid" id="gridMainwindowSectionDecode">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="margin_left">5</property>
-                    <property name="margin_right">5</property>
-                    <property name="margin_top">5</property>
-                    <property name="margin_bottom">5</property>
+                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkLabel" id="labelSectionDecode">
+                      <object class="GtkLabel" id="label_section_general">
+                        <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Sektion "Dekodieren"</property>
+                        <property name="label" translatable="yes">Allgemein</property>
+                        <property name="xalign">0</property>
                       </object>
                       <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">0</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label_section_general_hint">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">&lt;span font-size='small'&gt;(Die Einstellungen werden erst nach einem Neustart des Programmes aktiv)&lt;/span&gt;</property>
+                        <property name="use_markup">True</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                   </object>
@@ -1671,7 +1738,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkGrid" id="gridMainwindowSectionVideoUncut">
+                  <object class="GtkGrid" id="grid_mainwindow_section_general">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="margin_left">5</property>
@@ -1679,22 +1746,107 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                     <property name="margin_top">5</property>
                     <property name="margin_bottom">5</property>
                     <child>
-                      <object class="GtkComboBoxText" id="entry_cut_default">
+                      <object class="GtkLabel" id="label_iconsize">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <items>
-                          <item id="0" translatable="yes">Nachfragen</item>
-                          <item id="1" translatable="yes">Beste Cutlist</item>
-                          <item id="2" translatable="yes">Cutlist auswählen</item>
-                          <item id="3" translatable="yes">Cutinterface (manuell)</item>
-                          <item id="4" translatable="yes">Lokale Cutlist</item>
-                        </items>
+                        <property name="margin_left">24</property>
+                        <property name="label" translatable="yes">Icongröße:</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="spinbutton_iconsize">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="halign">start</property>
+                        <property name="margin_left">5</property>
+                        <property name="margin_top">5</property>
+                        <property name="max_width_chars">2</property>
+                        <property name="input_purpose">number</property>
+                        <property name="adjustment">iconSizeAdjustment</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="check_use_internal_icons">
+                        <property name="label" translatable="yes">Interne Icons benutzen</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="margin_left">20</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
                         <property name="top_attach">1</property>
                       </packing>
                     </child>
+                    <child>
+                      <object class="GtkCheckButton" id="cb_hide_archive_buttons">
+                        <property name="label" translatable="yes">Archivieren-Buttons ausblenden</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="margin_left">20</property>
+                        <property name="margin_top">20</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkLabel" id="labelSectionVideoUncut">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="margin_top">25</property>
+                        <property name="margin_bottom">15</property>
+                        <property name="label" translatable="yes">Sektion "Ungeschnitten"</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkGrid" id="gridMainwindowSectionVideoUncut">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
                     <child>
                       <object class="GtkLabel" id="labelCutAction">
                         <property name="visible">True</property>
@@ -1706,29 +1858,32 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
-                        <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="labelSectionVideoUncut">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Sektion "Ungeschnitten"</property>
-                        <property name="xalign">0</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
                         <property name="top_attach">0</property>
                       </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <object class="GtkComboBoxText" id="entry_cut_default">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="margin_left">5</property>
+                        <items>
+                          <item id="0" translatable="yes">Nachfragen</item>
+                          <item id="1" translatable="yes">Beste Cutlist</item>
+                          <item id="2" translatable="yes">Cutlist auswählen</item>
+                          <item id="3" translatable="yes">Cutinterface (manuell)</item>
+                          <item id="4" translatable="yes">Lokale Cutlist</item>
+                        </items>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">0</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
               </object>
@@ -1774,7 +1929,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSpinButton" id="spinbuttonSeeker">
+                      <object class="GtkSpinButton" id="spinbutton_seeker">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="halign">end</property>
@@ -1806,7 +1961,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSpinButton" id="spinbuttonX">
+                      <object class="GtkSpinButton" id="spinbutton_x">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="margin_top">30</property>
@@ -1834,7 +1989,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSpinButton" id="spinbuttonY">
+                      <object class="GtkSpinButton" id="spinbutton_y">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="xalign">1</property>

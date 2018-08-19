@@ -1,0 +1,10 @@
+<glade-catalog name="MovieBox" domain="glade" depends="gtk+" version="3.16">
+  <init-function>glade_python_init</init-function>
+  <glade-widget-classes>
+    <glade-widget-class title="MovieBox" name="MovieBox" generic-name="MovieBox"
+                        parent="GtkBox" icon-name="widget-gtk-dialog"/>
+  </glade-widget-classes>
+  <glade-widget-group name="python" title="Python">
+    <glade-widget-class-ref name="MovieBox"/>
+  </glade-widget-group>
+</glade-catalog>

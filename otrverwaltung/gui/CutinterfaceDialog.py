@@ -11,25 +11,18 @@ gi.require_version('GdkX11', '3.0')
 gi.require_version('GstVideo', '1.0')
 from gi.repository import Gtk, Gdk, GObject, Gst, GstPbutils
 
-#import pathlib
-import logging
-
-# Needed for window.get_xid(), xvimagesink.set_window_handle(), respectively:
-# from gi.repository import GdkX11, GstVideo
+import os, time, logging
 
 GObject.threads_init()
 Gst.init(None)
 
-import os
-import time
-#import inspect
 #from otrverwaltung.elements import KeySeekElement
 #from otrverwaltung.elements import DecoderWrapper
 from otrverwaltung import path as otrpath
 from otrverwaltung import cutlists
 from otrverwaltung.gui import LoadCutDialog
 from otrverwaltung.actions.cut import Cut
-from otrverwaltung.gui.widgets.gstBox import GstBox
+from otrverwaltung.gui.widgets.movieBox import MovieBox
 
 
 class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
@@ -67,8 +60,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.slider.set_digits(0)
         self.slider.set_draw_value(False)
 
-        self.movie_window = self.builder.get_object('gst_box').swidget
-        self.player = self.builder.get_object('gst_box').player
+        self.movie_box = self.builder.get_object('movie_box').movie_widget
+        self.player = self.builder.get_object('movie_box').player
         # Create bus to get events from GStreamer player
         bus = self.player.get_bus()
         bus.add_signal_watch()
@@ -171,7 +164,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         if self.keyframes is None:
             self.log.warning("Error: Keyframes konnten nicht ausgelesen werden.")
 
-        self.movie_window.set_size_request(self.config.get('general', 'cutinterface_resolution_x'),
+        self.movie_box.set_size_request(self.config.get('general', 'cutinterface_resolution_x'),
                                              self.config.get('general', 'cutinterface_resolution_y'))
         # Make window a bit bigger than natural size to avoid size changes
         ci_window = self.builder.get_object('cutinterface_dialog')
@@ -596,9 +589,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     # signals #
 
-    def on_button_reparent_clicked(self, widget):
-        self.xid = self.movie_window.get_window().get_xid()
-        self.player.set_window_handle(self.xid)
+    def on_movie_box_unrealize(self, widget):
+        self.player.set_state(Gst.State.NULL)
 
     def on_window_key_press_event(self, widget, event, *args):
         """handle keyboard events"""
