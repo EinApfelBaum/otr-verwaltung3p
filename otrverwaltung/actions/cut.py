@@ -24,7 +24,7 @@ import subprocess
 import bisect
 import logging
 
-from lib.pymediainfo import MediaInfo
+from libs.pymediainfo import MediaInfo
 
 from otrverwaltung.actions.baseaction import BaseAction
 from otrverwaltung.constants import Format, Program
