@@ -132,8 +132,9 @@ class CutSmartMkvmerge(Cut):
         self.log.debug("Codec: {}".format(codec))
         self.log.debug("Codec core: {}".format(codec_core))
 
-        if codec_core != 125:
-            warning_msg = "Unbekannte Kodierung entdeckt. Diese Datei genau prüfen und " + \
+        if not codec_core == 125:
+            warning_msg = "\nUnbekannte Kodierung entdeckt! codec_core: " + str(codec_core) + \
+                          "\nDiese Datei genau prüfen und " + \
                           "notfalls mit intern-Virtualdub und Codec ffdshow schneiden."
             return None, warning_msg
 
@@ -343,8 +344,9 @@ class CutSmartMkvmerge(Cut):
                 os.path.splitext(self.generate_filename((filename), 1))[0] + ".mkv")
         else:
             cut_video = os.path.splitext(self.generate_filename(filename, 1))[0] + ".mkv"
-        command = [mkvmerge, '--engage', 'no_cue_duration', '--engage', 'no_cue_relative_position', '--ui-language',
-                   'en_US', '-o', cut_video] + self.video_files + self.audio_files
+
+        command = [mkvmerge, '--engage', 'no_cue_duration', '--engage', 'no_cue_relative_position',
+                    '--ui-language', 'en_US', '-o', cut_video] + self.video_files + self.audio_files
         self.log.debug("Command: {}".format(command))
         try:
             blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -364,14 +366,16 @@ class CutSmartMkvmerge(Cut):
 
         # mux to mp4 
         if self.config.get('smartmkvmerge', 'remux_to_mp4'):
+            self.log.debug("Start muxing to MP4")
+            """
             # split files with eac3to
             with ChangeDir(self.workingdir):
-                command = ['wine', path.get_tools_path('intern-eac3to/eac3to.exe'), os.path.basename(cut_video),
-                           '-demux', '-silence', '-keepDialnorm']
+                command = ['wine', path.get_tools_path('intern-eac3to/eac3to.exe'),
+                            os.path.basename(cut_video), '-demux', '-silence', '-keepDialnorm']
                 self.log.debug("Command: {}".format(command))
                 try:
-                    blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                                        universal_newlines=True)
+                    blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE,
+                                            stderr=subprocess.STDOUT, universal_newlines=True)
                 except OSError:
                     return None, 'Eac3to konnte nicht aufgerufen werden'
 
@@ -386,7 +390,7 @@ class CutSmartMkvmerge(Cut):
                     if 'Creating file' in line:
                         m = re.search(file_match, line)
                         if m:
-                            self.rawstreams[m.group(2)] = m.group(1).decode("iso-8859-1").encode("utf-8")
+                            self.rawstreams[m.group(2)] = m.group(1)
                         else:
                             pass
 
@@ -428,7 +432,28 @@ class CutSmartMkvmerge(Cut):
                 returncode = blocking_process.wait()
                 if returncode != 0:
                     return None, 'Fehler beim Erstellen der MP4'
+                """
 
+            args = [self.config.get_program('ffmpeg'), '-i', cut_video, '-c', 'copy']
+            tmp_video = cut_video
+            cut_video = os.path.splitext(self.generate_filename(filename, 1))[0] + ".mp4"
+            args.append(cut_video)
+
+            self.gui.main_window.set_tasks_text('Muxe MP4')
+            try:
+                blocking_process = subprocess.Popen(args, stdout=subprocess.PIPE,
+                                                          stderr=subprocess.STDOUT,
+                                                          universal_newlines=True)
+            except OSError:
+                return None, 'ffmpeg konnte nicht aufgerufen werden'
+
+            self.show_progress(blocking_process)
+            returncode = blocking_process.wait()
+            if os.path.isfile(tmp_video):
+                os.remove(tmp_video)
+            if returncode != 0:
+                return None, 'Fehler beim Erstellen der MP4'
+        
         return cut_video, warning_msg
 
     def __simulate_smart_mkvmerge(self, start, duration, keyframes):

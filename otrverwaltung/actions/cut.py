@@ -514,10 +514,13 @@ class Cut(BaseAction):
         x264_core = int(self.media_info.tracks[1].writing_library.split(' ')[2])
         self.log.debug("x264_core: {}".format(x264_core))
 
-        if '709' in self.media_info.tracks[1].color_primaries:
-            x264_opts.extend(bt709)
-        elif '470' in self.media_info.tracks[1].color_primaries:
-            x264_opts.extend(bt470bg)
+        try:
+            if '709' in self.media_info.tracks[1].color_primaries:
+                x264_opts.extend(bt709)
+            elif '470' in self.media_info.tracks[1].color_primaries:
+                x264_opts.extend(bt470bg)
+        except TypeError:
+            pass
 
         level = ['--level', self.media_info.tracks[1].format_profile.split('@L')[1]]
         x264_opts.extend(level)
@@ -589,10 +592,13 @@ class Cut(BaseAction):
         if 'x264' in self.media_info.tracks[1].writing_library:
             codec = 'libx264'
         
-        if '709' in self.media_info.tracks[1].color_primaries:
-            ffmpeg_codec_options.extend(bt709)
-        elif '470' in self.media_info.tracks[1].color_primaries:
-            ffmpeg_codec_options.extend(bt470bg)
+        try:
+            if '709' in self.media_info.tracks[1].color_primaries:
+                ffmpeg_codec_options.extend(bt709)
+            elif '470' in self.media_info.tracks[1].color_primaries:
+                ffmpeg_codec_options.extend(bt470bg)
+        except TypeError:
+            pass
 
         profile = ['-profile:v', self.media_info.tracks[1].format_profile.split('@L')[0].lower()]
         ffmpeg_commandline.extend(profile)

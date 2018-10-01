@@ -131,11 +131,12 @@ class Config:
                             self.set(category, option, json_config[category][option])
                     elif category is 'general' and option is 'server':
                         # Check for trailing slash in url
-                        if not json_config[category][option].endswith("/"):
-                            json_config[category][option] += "/"
-                        self.set(category, option, json_config[category][option])
+                        serverurl = json_config[category][option].strip()
+                        if not serverurl.endswith("/"):
+                            serverurl += "/"
+                        self.set(category, option, serverurl)
                     elif category is 'smartmkvmerge' and option is 'x264_mp4_string':
-                        # Old default for mp4
+                        # If x264_mp4_string is old default for mp4, set to new one
                         if json_config[category][option] == '--force-cfr --profile baseline --preset medium --trellis 0':
                             json_config[category][option] = '--force-cfr --trellis 0 --preset veryfast'
                     else:                        
