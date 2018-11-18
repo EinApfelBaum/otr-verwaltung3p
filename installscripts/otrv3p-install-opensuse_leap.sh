@@ -154,7 +154,7 @@ usage () {
 }
 
 check_for_packman () {
-    check_pack = $(zypper repos | grep packman | grep Yes)
+    check_pack = $(zypper repos | grep -i packman | grep -i Yes)
     if [ -z $check_pack ]; then
         # packman repo not active
         echo -e "\n${RED}"
