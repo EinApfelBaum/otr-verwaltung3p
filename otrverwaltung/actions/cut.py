@@ -510,73 +510,73 @@ class Cut(BaseAction):
         bt470bg = ['--videoformat', 'pal', '--colorprim', 'bt470bg', '--transfer', 'bt470bg', '--colormatrix',
                    'bt470bg']
 
-        # NEW_X264_OPTS ->
-        x264_core = int(self.media_info.tracks[1].writing_library.split(' ')[2])
-        self.log.debug("x264_core: {}".format(x264_core))
-
         try:
-            if '709' in self.media_info.tracks[1].color_primaries:
-                x264_opts.extend(bt709)
-            elif '470' in self.media_info.tracks[1].color_primaries:
-                x264_opts.extend(bt470bg)
-        except TypeError:
-            pass
+            x264_core = int(self.media_info.tracks[1].writing_library.split(' ')[2])
+            self.log.debug("x264_core: {}".format(x264_core))
 
-        level = ['--level', self.media_info.tracks[1].format_profile.split('@L')[1]]
-        x264_opts.extend(level)
-
-        profile = ['--profile', self.media_info.tracks[1].format_profile.split('@L')[0].lower()]
-        x264_opts.extend(profile)
-
-        fps = ['--fps', self.media_info.tracks[1].frame_rate.split(' ')[0]]
-        x264_opts.extend(fps)
-        # <- NEW_X264_OPTS
-
-        """try:
-            blocking_process = subprocess.Popen([self.config.get_program('mediainfo'), filename],
-                                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        except OSError as e:
-            return None, "Fehler: %s Filename: %s Error: %s" % str(e.errno), str(e.filename), str(e.strerror)
-        except ValueError as e:
-            return None, "Falscher Wert: %s" % str(e)
-
-        while True:
-            line = blocking_process.stdout.readline()
-
-            if line != '':
-                if 'x264 core' in line:
-                    self.log.info(line)
-                    try:
-                        x264_core = int(line.strip().split(' ')[30])
-                    except ValueError as e:
-                        continue
-                    except IndexError as e:
-                        continue
-                elif 'Color primaries' in line and '709' in line:
+            try:
+                if '709' in self.media_info.tracks[1].color_primaries:
                     x264_opts.extend(bt709)
-                elif 'Color primaries' in line and '470' in line:
+                elif '470' in self.media_info.tracks[1].color_primaries:
                     x264_opts.extend(bt470bg)
-                elif 'Format profile' in line and '@L' in line:
-                    try:
-                        level = ['--level', str(float(line.strip().split('L')[1]))]  # test for float
-                        profile = ['--profile', line.strip().split('@L')[0].split(':')[1].lower().lstrip()]
-                    except ValueError as e:
-                        continue
-                    except IndexError as e:
-                        continue
-                    x264_opts.extend(profile)
-                    x264_opts.extend(level)
-                elif 'Frame rate' in line:
-                    try:
-                        fps = ['--fps', str(float(line.strip().split(' ')[3]))]
-                        self.log.debug("FPS: {}".format(fps))
-                    except ValueError as e:
-                        continue
-                    except IndexError as e:
-                        continue
-                    x264_opts.extend(fps)
-            else:
-                break"""
+            except TypeError:
+                pass
+
+            level = ['--level', self.media_info.tracks[1].format_profile.split('@L')[1]]
+            x264_opts.extend(level)
+
+            profile = ['--profile', self.media_info.tracks[1].format_profile.split('@L')[0].lower()]
+            x264_opts.extend(profile)
+
+            fps = ['--fps', self.media_info.tracks[1].frame_rate.split(' ')[0]]
+            x264_opts.extend(fps)
+        except IndexError:
+            self.log.debug("Mediainfo IndexError. Using old method.")
+            try:
+                blocking_process = subprocess.Popen([self.config.get_program('mediainfo'), filename],
+                                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            except OSError as e:
+                return None, "Fehler: %s Filename: %s Error: %s" % str(e.errno), str(e.filename), str(e.strerror)
+            except ValueError as e:
+                return None, "Falscher Wert: %s" % str(e)
+
+            while True:
+                line = blocking_process.stdout.readline()
+
+                if line != '':
+                    if 'x264 core' in line:
+                        self.log.info(line)
+                        try:
+                            x264_core = int(line.strip().split(' ')[30])
+                        except ValueError as e:
+                            continue
+                        except IndexError as e:
+                            continue
+                    elif 'Color primaries' in line and '709' in line:
+                        x264_opts.extend(bt709)
+                    elif 'Color primaries' in line and '470' in line:
+                        x264_opts.extend(bt470bg)
+                    elif 'Format profile' in line and '@L' in line:
+                        try:
+                            level = ['--level', str(float(line.strip().split('L')[1]))]  # test for float
+                            profile = ['--profile', line.strip().split('@L')[0].split(':')[1].lower().lstrip()]
+                        except ValueError as e:
+                            continue
+                        except IndexError as e:
+                            continue
+                        x264_opts.extend(profile)
+                        x264_opts.extend(level)
+                    elif 'Frame rate' in line:
+                        try:
+                            fps = ['--fps', str(float(line.strip().split(' ')[3]))]
+                            self.log.debug("FPS: {}".format(fps))
+                        except ValueError as e:
+                            continue
+                        except IndexError as e:
+                            continue
+                        x264_opts.extend(fps)
+                else:
+                    break
         return x264_opts, x264_core
 
     def ffmpeg_codec_options(self, ffmpeg_codec_options, filename, quality=None):
@@ -587,62 +587,60 @@ class Cut(BaseAction):
         bt709 = ['videoformat=pal:colorprim=bt709:transfer=bt709:colormatrix=bt709']
         bt470bg = ['videoformat=pal:colorprim=bt470bg:transfer=bt470bg:colormatrix=bt470bg']
 
-        # NEW_FFMPEG_OPTS ->
-        codec_core = int(self.media_info.tracks[1].writing_library.split(' ')[2])
-        if 'x264' in self.media_info.tracks[1].writing_library:
-            codec = 'libx264'
-        
         try:
-            if '709' in self.media_info.tracks[1].color_primaries:
-                ffmpeg_codec_options.extend(bt709)
-            elif '470' in self.media_info.tracks[1].color_primaries:
-                ffmpeg_codec_options.extend(bt470bg)
-        except TypeError:
-            pass
-
-        profile = ['-profile:v', self.media_info.tracks[1].format_profile.split('@L')[0].lower()]
-        ffmpeg_commandline.extend(profile)
-
-        level = ['-level', self.media_info.tracks[1].format_profile.split('@L')[1]]
-        ffmpeg_commandline.extend(level)
-        # <- NEW_FFMPEG_OPTS
-
-        """try:
-            blocking_process = subprocess.Popen([self.config.get_program('mediainfo'), filename],
-                                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        except OSError as e:
-            return None, "Fehler: %s Filename: %s Error: %s" % str(e.errno), str(e.filename), str(e.strerror)
-        except ValueError as e:
-            return None, "Falscher Wert: %s" % str(e)
-
-        while True:
-            line = blocking_process.stdout.readline()
-
-            if line != '':
-                if 'x264 core' in line:
-                    codec = 'libx264'
-                    try:
-                        codec_core = int(line.strip().split(' ')[30])
-                    except ValueError as e:
-                        continue
-                    except IndexError as e:
-                        continue
-                elif 'Matrix coefficients' in line and '709' in line:
+            codec_core = int(self.media_info.tracks[1].writing_library.split(' ')[2])
+            if 'x264' in self.media_info.tracks[1].writing_library:
+                codec = 'libx264'
+            try:
+                if '709' in self.media_info.tracks[1].color_primaries:
                     ffmpeg_codec_options.extend(bt709)
-                elif 'Matrix coefficients' in line and '470' in line:
+                elif '470' in self.media_info.tracks[1].color_primaries:
                     ffmpeg_codec_options.extend(bt470bg)
-                elif 'Format profile' in line and '@L' in line:
-                    try:
-                        level = ['-level', str(float(line.strip().split('L')[1]))]  # test for float
-                        profile = ['-profile:v', line.strip().split('@L')[0].split(':')[1].lower().lstrip()]
-                    except ValueError as e:
-                        continue
-                    except IndexError as e:
-                        continue
-                    ffmpeg_commandline.extend(profile)
-                    ffmpeg_commandline.extend(level)
-            else:
-                break"""
+            except TypeError:
+                pass
+            profile = ['-profile:v', self.media_info.tracks[1].format_profile.split('@L')[0].lower()]
+            ffmpeg_commandline.extend(profile)
+
+            level = ['-level', self.media_info.tracks[1].format_profile.split('@L')[1]]
+            ffmpeg_commandline.extend(level)
+        except IndexError:
+            self.log.debug("Mediainfo IndexError. Using old method.")
+            try:
+                blocking_process = subprocess.Popen([self.config.get_program('mediainfo'), filename],
+                                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            except OSError as e:
+                return None, "Fehler: %s Filename: %s Error: %s" % str(e.errno), str(e.filename), str(e.strerror)
+            except ValueError as e:
+                return None, "Falscher Wert: %s" % str(e)
+
+            while True:
+                line = blocking_process.stdout.readline()
+
+                if line != '':
+                    if 'x264 core' in line:
+                        codec = 'libx264'
+                        try:
+                            codec_core = int(line.strip().split(' ')[30])
+                        except ValueError as e:
+                            continue
+                        except IndexError as e:
+                            continue
+                    elif 'Matrix coefficients' in line and '709' in line:
+                        ffmpeg_codec_options.extend(bt709)
+                    elif 'Matrix coefficients' in line and '470' in line:
+                        ffmpeg_codec_options.extend(bt470bg)
+                    elif 'Format profile' in line and '@L' in line:
+                        try:
+                            level = ['-level', str(float(line.strip().split('L')[1]))]  # test for float
+                            profile = ['-profile:v', line.strip().split('@L')[0].split(':')[1].lower().lstrip()]
+                        except ValueError as e:
+                            continue
+                        except IndexError as e:
+                            continue
+                        ffmpeg_commandline.extend(profile)
+                        ffmpeg_commandline.extend(level)
+                else:
+                    break
 
         if codec == 'libx264':
             x264opts = (':'.join([option for option in ffmpeg_codec_options])) + ':force_cfr'

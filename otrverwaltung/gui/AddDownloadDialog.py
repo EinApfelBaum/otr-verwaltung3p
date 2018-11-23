@@ -14,7 +14,9 @@ import re
 import subprocess
 import base64
 import os
-import libtorrent as lt
+## del_libtorrent ->
+# ~ import libtorrent as lt
+## <- del_libtorrent
 
 from otrverwaltung.GeneratorTask import GeneratorTask
 from otrverwaltung import cutlists
@@ -47,6 +49,9 @@ class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
         selection = self.builder.get_object('treeview_programs').get_selection()
         selection.connect('changed', self.treeview_programs_selection_changed)
 
+    ## del_libtorrent ->
+
+    """
     def get_download_options(self):
         if self.builder.get_object('radiobutton_torrent').get_active():
             return ('torrent',)
@@ -114,9 +119,9 @@ class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
     #
 
     def forward(self, iter=None, link=None):
-        """ iter==None --> programs search was skipped 
-            iter!=None --> iter is the selected program 
-            link!=None --> executable was called with 'link' argument """
+        # ~ iter==None --> programs search was skipped 
+        # ~ iter!=None --> iter is the selected program 
+        # ~ link!=None --> executable was called with 'link' argument
 
         self.mode = 1  # download
 
@@ -294,6 +299,9 @@ class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
                         return
 
             self.response(-5)
+    """
+
+    ## <- del_libtorrent
 
 
 def NewAddDownloadDialog(gui, config, via_link, link=None):
