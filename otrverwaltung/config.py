@@ -86,7 +86,7 @@ class Config:
                     # Encryption
                     pad = lambda s: s + (self.__fields['general']['aes_blocksize'] - len(s) % self.__fields['general']['aes_blocksize']) * self.__fields['general']['aes_padding']
                     EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
-                    encryption_suite = AES.new(base64.b64decode(self.__fields['general']['aes_key'].encode('utf-8')))
+                    encryption_suite = AES.new(base64.b64decode(self.__fields['general']['aes_key'].encode('utf-8')),AES.MODE_ECB)
                     cipher_text = EncodeAES(encryption_suite, self.__fields['general']['password'])
                     self.__fields['general']['password'] = base64.b64encode(cipher_text).decode('utf-8')
             except ValueError:
@@ -123,7 +123,7 @@ class Config:
                             # Decryption
                             padding=json_config['general']['aes_padding']
                             DecodeAES = lambda c, e: (c.decrypt(base64.b64decode(e)).decode("utf-8")).rstrip(padding)
-                            decryption_suite = AES.new(base64.b64decode(json_config['general']['aes_key'].encode('utf-8')))
+                            decryption_suite = AES.new(base64.b64decode(json_config['general']['aes_key'].encode('utf-8')),AES.MODE_ECB)
                             b = base64.b64decode(json_config[category][option])
                             plain_text = DecodeAES(decryption_suite, b)
                             self.set(category, option, plain_text)
