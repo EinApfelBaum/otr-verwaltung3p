@@ -85,7 +85,7 @@ class Config:
                 if len(str(self.__fields['general']['password'])) > 0:
                     # Encryption
                     pad = lambda s: s + (self.__fields['general']['aes_blocksize'] - len(s) % self.__fields['general']['aes_blocksize']) * self.__fields['general']['aes_padding']
-                    EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
+                    EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s).encode('UTF-8')))
                     encryption_suite = AES.new(base64.b64decode(self.__fields['general']['aes_key'].encode('utf-8')),AES.MODE_ECB)
                     cipher_text = EncodeAES(encryption_suite, self.__fields['general']['password'])
                     self.__fields['general']['password'] = base64.b64encode(cipher_text).decode('utf-8')
