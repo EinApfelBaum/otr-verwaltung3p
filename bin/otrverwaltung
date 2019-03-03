@@ -25,7 +25,8 @@ import hashlib
 import optparse
 import logging
 import shutil
-import dbus, dbus.service, dbus.glib
+from dbus.mainloop.glib import DBusGMainLoop
+import dbus, dbus.service
 from base64 import b64encode
 
 try:
@@ -1013,6 +1014,8 @@ class OTRVerwaltungService(dbus.service.Object):
 
 
 if __name__ == "__main__":
+    # Set up a dbus mainloop
+    dbus_loop = DBusGMainLoop(set_as_default=True)
     if dbus.SessionBus().request_name("elbersb.otrverwaltung") != dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER:
         log.warning("OTR-Verwaltung läuft bereits. Zeige Fenster.")
         dbus.SessionBus().get_object("elbersb.otrverwaltung", "/elbersb/otrverwaltung").get_dbus_method("show_window")()
