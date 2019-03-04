@@ -111,9 +111,9 @@ DistUtilsExtra.auto.setup(
     version=open('data/VERSION', 'r').read().strip(),
     license='GPL-3',
     author='Benjamin Elbers',
-    author_email='elbersb@gmail.com',
+    author_email='noone@nowhere.org',
     description='Dateien von onlinetvrecorder.com verwalten',
     long_description='Dateien von onlinetvrecorder.com verwalten: Schneiden, Schnitte betrachten, Cutlists bewerten...',
-    url='http://github.com/elbersb/otr-verwaltung',
+    url='https://github.com/EinApfelBaum/otr-verwaltung3p',
     cmdclass={'install': InstallAndUpdateDataDirectory}  
     )
