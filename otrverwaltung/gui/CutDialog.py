@@ -23,6 +23,7 @@ import otrverwaltung.cutlists as cutlists_management
 from otrverwaltung import fileoperations
 from otrverwaltung import path
 from otrverwaltung.gui.widgets.CutlistsTreeView import CutlistsTreeView
+from otrverwaltung.GeneratorTask import GeneratorTask
 
 gi.require_version('Gtk', '3.0')
 
@@ -41,10 +42,11 @@ class CutDialog(Gtk.Dialog, Gtk.Buildable):
 
         self.chosen_cutlist = None
 
-        self.treeview_cutlists = CutlistsTreeView()
-        self.treeview_cutlists.show()
-        self.treeview_cutlists.get_selection().connect('changed', self._on_selection_changed)
-        self.builder.get_object('scrolledwindow_cutlists').add(self.treeview_cutlists)
+        self.treeview_cutlists_download = CutlistsTreeView()
+        self.treeview_cutlists_download.show()
+        self.treeview_cutlists_download.get_selection().connect('changed',
+                                                            self._on_selection_changed_download)
+        self.builder.get_object('scrolledwindow_cutlists').add(self.treeview_cutlists_download)
 
         self.filename = ""
 
@@ -56,7 +58,10 @@ class CutDialog(Gtk.Dialog, Gtk.Buildable):
         self.filename = video_file
         self.builder.get_object('label_file').set_markup("<b>%s</b>" % basename(video_file))
         self.builder.get_object('label_warning').set_markup(
-            '<span size="small">Wichtig! Um eine Cutlist zu erstellen muss das Projekt im Ordner %s gespeichert werden (siehe Website->Einstieg->Funktionen). OTR-Verwaltung schneidet die Datei dann automatisch.</span>' % folder_cut_avis)
+                    '<span size="small">Wichtig! Um eine Cutlist zu erstellen muss das Projekt ' +
+                    'im Ordner ' + folder_cut_avis + ' gespeichert werden (siehe ' +
+                    'Website->Einstieg->Funktionen). OTR-Verwaltung schneidet die ' +
+                    'Datei dann automatisch.</span>')
 
         if cut_action_ask:
             self.builder.get_object('radio_best_cutlist').set_active(True)
@@ -73,11 +78,12 @@ class CutDialog(Gtk.Dialog, Gtk.Buildable):
             self.builder.get_object('radio_local_cutlist').set_sensitive(False)
 
         # start looking for cutlists                
-        self.treeview_cutlists.get_model().clear()
-        self.builder.get_object('label_status').set_markup("<b>Cutlisten werden heruntergeladen...</b>")
+        self.treeview_cutlists_download.get_model().clear()
+        self.builder.get_object('label_status').set_markup(
+                                                    "<b>Cutlisten werden heruntergeladen...</b>")
 
     def add_cutlist(self, c):
-        self.treeview_cutlists.add_cutlist(c)
+        self.treeview_cutlists_download.add_cutlist(c)
 
     #
     # Signal handlers
@@ -96,7 +102,7 @@ class CutDialog(Gtk.Dialog, Gtk.Buildable):
             cutlist.local_filename = self.builder.get_object('label_cutlist').get_text()
 
         else:
-            cutlist = self.treeview_cutlists.get_selected()
+            cutlist = self.treeview_cutlists_download.get_selected()
 
             if not cutlist:
                 self.gui.message_error_box("Es wurde keine Cutlist ausgewählt!")
@@ -111,9 +117,10 @@ class CutDialog(Gtk.Dialog, Gtk.Buildable):
         self.app.show_cuts(self.filename, cutlist)
 
         # delete cutlist
-        fileoperations.remove_file(cutlist.local_filename)
+        if self.app.config.get('general', 'delete_cutlists'):
+            fileoperations.remove_file(cutlist.local_filename)
 
-    def _on_selection_changed(self, selection, data=None):
+    def _on_selection_changed_download(self, selection, data=None):
         model, paths = selection.get_selected_rows()
         if paths:
             self.builder.get_object('radio_choose_cutlist').set_active(True)
@@ -123,7 +130,7 @@ class CutDialog(Gtk.Dialog, Gtk.Buildable):
             self.response(Cut_action.BEST_CUTLIST)
 
         elif self.builder.get_object('radio_choose_cutlist').get_active() == True:
-            cutlist = self.treeview_cutlists.get_selected()
+            cutlist = self.treeview_cutlists_download.get_selected()
 
             if not cutlist:
                 self.gui.message_error_box("Es wurde keine Cutlist ausgewählt!")

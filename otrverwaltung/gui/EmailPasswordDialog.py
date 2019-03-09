@@ -36,17 +36,26 @@ class EmailPasswordDialog(Gtk.Dialog, Gtk.Buildable):
     def set_email_password(self, email, password):
         self.builder.get_object('entryDialogEMail').set_text(email)
         self.builder.get_object('entryDialogPassword').set_text(password)
+        if email:
+            self.builder.get_object('entryDialogPassword').grab_focus()
+        if self.app.config.get('general', 'passwd_store_memory'):
+            self.builder.get_object('check_save_password').set_active(True)
+        else:
+            self.builder.get_object('check_save_password').set_active(False)
 
     def get_email_password(self):
-        return self.builder.get_object('entryDialogEMail').get_text(), self.builder.get_object(
-            'entryDialogPassword').get_text()
+        return self.builder.get_object('entryDialogEMail').get_text(), \
+               self.builder.get_object('entryDialogPassword').get_text(), \
+               self.builder.get_object('check_save_password').get_active(), \
+               self.app.config
 
 
-def NewEmailPasswordDialog():
+def NewEmailPasswordDialog(app):
     glade_filename = path.getdatapath('ui', 'EmailPasswordDialog.glade')
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)
     dialog = builder.get_object("email_password_dialog")
+    dialog.app = app
 
     return dialog

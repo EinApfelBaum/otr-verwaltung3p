@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # otrv3p-install-deb.sh
-version="0.0.7"
-# 2018-04-27
+version="0.0.8"
+# 2019-03-09
 # https://raw.githubusercontent.com/einapfelbaum/otr-verwaltung3p/master/installscripts/otrv3p-install-deb.sh
 
 # BEGIN LICENSE
@@ -69,15 +69,14 @@ Icon=$HOME/otr-verwaltung3p/data/media/icon.png
 install_deps () {
     check_root
     if [ $root = 1 ]; then
+        if [ ! -e /tmp/otrv3p-install.log ]; then touch /tmp/otrv3p-install.log; fi
+        chown root /tmp/otrv3p-install.log && chmod 666 /tmp/otrv3p-install.log
         echo "otrv3p:install_deps: Installiere Abhängigkeiten" | tee -a /tmp/otrv3p-install.log
         for package in  python3-xdg                     \
                         python3-gst-1.0                 \
                         gir1.2-gstreamer-1.0            \
-                        python3-simplejson              \
-                        python3-libtorrent              \
                         python3-gi-cairo                \
                         python3-cairo                   \
-                        python3-crypto                  \
                         python3-requests                \
                         python3-pip                     \
                         gstreamer1.0-x                  \
@@ -92,7 +91,7 @@ install_deps () {
                         mediainfo-gui                   \
                         mpv                             \
                         git; do
-            ## Only install packages if they are not alredy installed
+            ## Only install packages if they are not already installed
             ## dkpg -s <packagename> returns 0 if package is installed else 1
             dpkg -s "$package" > /dev/null 2>&1 || apt-get -qq -y install "$package" 2>&1 | grep -ve "Preparing to unpack.*" | tee -a /tmp/otrv3p-install.log
         done

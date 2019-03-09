@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # otrv3p-install-arch.sh
-version="0.0.3"
-# 2018-04-27
+version="0.0.4"
+# 2019-03-09
 # https://raw.githubusercontent.com/einapfelbaum/otr-verwaltung3p/master/installscripts/otrv3p-install-arch.sh
 
 # BEGIN LICENSE
@@ -69,17 +69,17 @@ Icon=$HOME/otr-verwaltung3p/data/media/icon.png
 install_deps () {
     check_root
     if [ $root = 1 ]; then
+        if [ ! -e /tmp/otrv3p-install.log ]; then touch /tmp/otrv3p-install.log; fi
+        chown root /tmp/otrv3p-install.log && chmod 666 /tmp/otrv3p-install.log
         echo "otrv3p:install_deps: Installiere Abhängigkeiten" | tee -a /tmp/otrv3p-install.log
         for package in  python-gobject \
                         gst-python \
                         python-xdg \
                         python-dbus \
-                        python-simplejson \
                         python-cairo \
                         python-crypto \
                         python-requests \
                         python-gitpython \
-                        libtorrent-rasterbar \
                         gst-plugins-base \
                         gst-plugins-good \
                         gst-plugins-bad \
@@ -88,7 +88,7 @@ install_deps () {
                         mediainfo-gui \
                         mpv \
                         git; do
-            ## Only install packages if they are not alredy installed
+            ## Only install packages if they are not already installed
             pacman -S --noconfirm --needed "$package" 2>&1 | grep -v " there is nothing to do" | grep -ve ".* skipping" | tee -a /tmp/otrv3p-install.log
         done
         if [ $? = 0 ]; then echo -e "Alle Abhängigkeiten sind (jetzt) installiert.\n"; fi

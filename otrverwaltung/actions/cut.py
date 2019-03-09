@@ -24,7 +24,7 @@ import subprocess
 import bisect
 import logging
 
-from libs.pymediainfo import MediaInfo
+from otrverwaltung.libs.pymediainfo import MediaInfo
 
 from otrverwaltung.actions.baseaction import BaseAction
 from otrverwaltung.constants import Format, Program
@@ -310,6 +310,7 @@ class Cut(BaseAction):
             else:
                 pass
 
+        self.log.debug("Seconds: {0}, fps: {1}, sar: {2}, dar: {3}".format(seconds, fps, sar, dar))
         if seconds != 0 and fps != None and sar != None and dar != None:
             max_frames = seconds * fps
             self.log.debug("Leave function")

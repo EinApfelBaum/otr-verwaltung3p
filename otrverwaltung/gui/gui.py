@@ -55,7 +55,7 @@ class Gui:
         self.dialog_cut = CutDialog.NewCutDialog(app, self)
         set_transient_modal(self, self.dialog_cut)
 
-        self.dialog_email_password = EmailPasswordDialog.NewEmailPasswordDialog()
+        self.dialog_email_password = EmailPasswordDialog.NewEmailPasswordDialog(app)
         set_transient_modal(self, self.dialog_email_password)
 
         self.dialog_rename = RenameDialog.NewRenameDialog()

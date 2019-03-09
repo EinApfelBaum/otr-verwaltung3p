@@ -145,7 +145,6 @@ class App:
                 'aes_blocksize': 32,    # 16 (AES-128), 24 (AES-192), or 32 (AES-256)
                 'email': '',
                 'password': '',
-                'no_password_hint': False,
                 'verify_decoded': True,
                 'cut_avis_by': 'SmartMKVmerge',
                 'cut_hqs_by': 'SmartMKVmerge',
@@ -188,7 +187,9 @@ class App:
                 'ignore_suggested_filename': False,
                 'use_internal_icons': False,
                 'icon_size': 22,
-                'hide_archive_buttons': False
+                'hide_archive_buttons': False,
+                'passwd_store': 2,  # 0 = Store in conf, 1 = Store in wallet, 2 = Do not store
+                'passwd_store_memory': False
             },
             'downloader': {
                 'resume_on_startup': True,
@@ -281,7 +282,8 @@ class App:
             file = open(path.get_storage_dir("data"), 'r')
             downloads = json.loads(file.read())['downloads']
         except (IOError, ValueError) as message:
-            self.log.warning("Can't read downloads: %s" % message)
+            pass
+            #self.log.warning("Can't read downloads: %s" % message)
 
         for json_download in downloads:
             download = Download(self, self.config)
@@ -931,15 +933,17 @@ class App:
         self.gui.main_window.show()
         if not os.path.exists(script_root_dir+'/conf'):
             self.gui.message_info_box(
-                "Dies ist offenbar das erste Mal, dass OTR-Verwaltung gestartet wird.\n\nEs müssen zunächst einige wichtige Einstellungen vorgenommen werden. Klicken Sie dazu auf OK.")
+                "Dies ist offenbar das erste Mal, dass OTR-Verwaltung gestartet wird." + \
+                "\n\nEs müssen zunächst einige wichtige Einstellungen vorgenommen werden." + \
+                "Klicken Sie dazu auf OK.")
             self.gui.preferences_window.show()
         else:
             errstr = ''
             
             if self.config.get('general', 'email') == "":
                 errstr = errstr + '- setze eine E-Mail-Adresse für den OTR-Account\n'
-            if self.config.get('general', 'password') == "" and not self.config.get('general',
-                                                                            'no_password_hint'):
+            if self.config.get('general', 'password') == "" and not \
+                            self.config.get('general', 'passwd_store') == 2:
                 errstr = errstr + '- setze ein Passwort für den OTR-Account (optional)\n'
             if not os.path.exists(self.config.get('general', 'folder_new_otrkeys')):
                 errstr = errstr + '- definiere einen Ordner für .otrkey Dateien\n'
@@ -955,7 +959,8 @@ class App:
                 errstr = errstr + '- definiere einen "Müll"-Ordner für .otrkey Dateien\n'
                 
             if errstr != '':
-                self.gui.message_info_box('Es müssen noch ein paar wichtige Einstellungen vorgenommen werden.\n\n'+errstr+"\nKlicken Sie dazu auf OK.")
+                self.gui.message_info_box('Es müssen noch ein paar wichtige Einstellungen ' + \
+                                'vorgenommen werden.\n\n' + errstr + "\nKlicken Sie dazu auf OK.")
                 self.gui.preferences_window.show()
 
 
@@ -974,7 +979,8 @@ class App:
             file.write(json.dumps({'downloads': downloads}))
             file.close()
         except IOError as message:
-            self.log.warning("Can't write downloads: " + str(message))
+            pass
+            #self.log.warning("Can't write downloads: " + str(message))
 
         # kill downloads
         for row in self.gui.main_window.treeview_download.liststore:

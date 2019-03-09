@@ -244,13 +244,13 @@ class Mkv(Plugin):
                 self.progress = 0
 
                 # find Umlaute and rename files
-                umlaute = ["ö", "Ö", "ä", "Ä", "ü", "Ü"]
-                umlaute2 = ["oe", "OE", "ae", "AE", "ue", "UE"]
-                for umlaut in umlaute:
-                    if umlaut in filename:
-                        filenameOld = filename
-                        filename = filename.replace(umlaut, umlaute2[umlaute.index(umlaut)])
-                        os.rename(filenameOld, filename)
+                # ~ umlaute = ["ö", "Ö", "ä", "Ä", "ü", "Ü"]
+                # ~ umlaute2 = ["oe", "OE", "ae", "AE", "ue", "UE"]
+                # ~ for umlaut in umlaute:
+                    # ~ if umlaut in filename:
+                        # ~ filenameOld = filename
+                        # ~ filename = filename.replace(umlaut, umlaute2[umlaute.index(umlaut)])
+                        # ~ os.rename(filenameOld, filename)
 
                 mkvpass_file = fileoperations.make_unique_filename(os.path.splitext(filename)[0] + ".mkv")
 
@@ -300,13 +300,13 @@ class Mkv(Plugin):
                     self.success += 1
 
                     # find Umlaute and rename files
-                    umlaute = ["ö", "Ö", "ä", "Ä", "ü", "Ü"]
-                    umlaute2 = ["oe", "OE", "ae", "AE", "ue", "UE"]
-                    for umlaut in umlaute2:
-                        if umlaut in mkvpass_file:
-                            mkvpass_fileOld = mkvpass_file
-                            mkvpass_file = mkvpass_file.replace(umlaut, umlaute[umlaute2.index(umlaut)])
-                            os.rename(mkvpass_fileOld, mkvpass_file)
+                    # ~ umlaute = ["ö", "Ö", "ä", "Ä", "ü", "Ü"]
+                    # ~ umlaute2 = ["oe", "OE", "ae", "AE", "ue", "UE"]
+                    # ~ for umlaut in umlaute2:
+                        # ~ if umlaut in mkvpass_file:
+                            # ~ mkvpass_fileOld = mkvpass_file
+                            # ~ mkvpass_file = mkvpass_file.replace(umlaut, umlaute[umlaute2.index(umlaut)])
+                            # ~ os.rename(mkvpass_fileOld, mkvpass_file)
 
                     if self.Config['EncodeAudioToAAC']:
                         fileoperations.remove_file(ffmpegpass_file)

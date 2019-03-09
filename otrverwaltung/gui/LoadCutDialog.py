@@ -125,7 +125,8 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
                                                         ". Versuche es mit allen Qualitäten")
             self.download_generator(True)
         else:
-            self.builder.get_object('label_status').set_markup("<b>%s</b>" % error)
+            self.builder.get_object('label_status').set_markup("<b>%s</b>" % error +
+                                                    " (Es wurde nach allen Qualitäten gesucht)")
             self.download_error = True
             self.download_first_try = True
 

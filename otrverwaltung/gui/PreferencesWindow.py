@@ -143,8 +143,8 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             self.app.config.connect('general', option,
                                             lambda value: self.app.show_section(self.app.section))
 
+        CheckButtonBinding(self.obj('checkPasswdStoreMemory'), self.app.config, 'general', 'passwd_store_memory')
         CheckButtonBinding(self.obj('checkCorrect'), self.app.config, 'general', 'verify_decoded')
-        CheckButtonBinding(self.obj('checkPasswordCheckOnProgramStart'), self.app.config, 'general', 'no_password_hint')
         CheckButtonBinding(self.obj('check_delete_cutlists'), self.app.config, 'general', 'delete_cutlists')
         CheckButtonBinding(self.obj('check_rename_cut'), self.app.config, 'general', 'rename_cut')
         CheckButtonBinding(self.obj('check_merge_ac3'), self.app.config, 'general', 'merge_ac3s')
@@ -156,7 +156,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         CheckButtonBinding(self.obj('check_alt_time_frame_conv'), self.app.config, 'general', 'alt_time_frame_conv')
         CheckButtonBinding(self.obj('check_use_internal_icons'), self.app.config, 'general', 'use_internal_icons')
         CheckButtonBinding(self.obj('cb_hide_archive_buttons'), self.app.config, 'general', 'hide_archive_buttons')
-
+        
         self.app.config.connect('general', 'rename_cut',
                                 lambda value: self.obj('entry_schema').set_sensitive(value))
         self.app.config.connect('general', 'merge_ac3s',
@@ -169,6 +169,8 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                                 lambda value: self.obj('label_iconsize').set_sensitive(not value))
         self.app.config.connect('general', 'use_internal_icons',
                                 lambda value: self.obj('spinbutton_iconsize').set_sensitive(not value))
+        self.app.config.connect('general', 'passwd_store',
+                                lambda value: self._radioPasswdStore_toggled(value))
 
         ComboBoxEntryBinding(self.obj('combobox_avi'), self.app.config, 'general', 'cut_avis_by')
         ComboBoxEntryBinding(self.obj('combobox_hq'), self.app.config, 'general', 'cut_hqs_by')
@@ -185,21 +187,31 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
 
         RadioButtonsBinding([self.obj(widget) for widget in ['radio_size', 'radio_filename']],
                             self.app.config, 'general', 'choose_cutlists_by')
+        RadioButtonsBinding([self.obj(widget) for widget in ['radioPasswdStoreConf', 'radioPasswdStoreWallet','radioPasswdStoreNot']],
+                            self.app.config, 'general', 'passwd_store')
 
+        # Initializing
         self.obj('entryPassword').set_visibility(False)
         self.obj('entry_schema').set_sensitive(self.app.config.get('general', 'rename_cut'))
         self.obj('combobox_ac3').set_sensitive(self.app.config.get('general', 'merge_ac3s'))
         self.obj('label_iconsize').set_sensitive(not self.obj('check_use_internal_icons').get_active())
         self.obj('spinbutton_iconsize').set_sensitive(not self.obj('check_use_internal_icons').get_active())
+        self._radioPasswdStore_toggled(self.app.config.get('general', 'passwd_store'))
+
 
 ### Signal handlers ###
 
-    def on_check_use_internal_icons_toggled(self, widget):
-        pass
+    def _radioPasswdStore_toggled(self, value):
+        if value == 2:  # radioPasswdStoreNot
+            self.obj('checkPasswdStoreMemory').set_sensitive(True)
+            self.obj('labelPasswdStoreMemory').set_sensitive(True)
+            self.obj('entryPassword').set_sensitive(False)
+        else:
+            self.obj('checkPasswdStoreMemory').set_sensitive(False)
+            self.obj('labelPasswdStoreMemory').set_sensitive(False)
+            self.obj('entryPassword').set_sensitive(True)
 
-    def on_button_reset_size_moviewindow_clicked(self, widget):
-        # ~ self.app.config.set('general', 'cutinterface_resolution_x', 800)
-        # ~ self.app.config.set('general', 'cutinterface_resolution_y', 450)
+    def _on_button_reset_size_moviewindow_clicked(self, widget):
         self.obj('spinbuttonX').set_value(800.0)
         self.obj('spinbuttonY').set_value(450.0)
         
@@ -247,6 +259,13 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             self.obj('checkCorrect').set_sensitive(False)
         else:
             self.obj('checkCorrect').set_sensitive(True)
+
+    def on_preferences_window_key_press_event(self, widget, event):
+        keyname = Gdk.keyval_name(event.keyval).upper()
+        if event.type == Gdk.EventType.KEY_PRESS:
+            if keyname == 'ESCAPE':
+                self.hide()
+                return True
 
     def _on_preferences_buttonClose_clicked(self, widget, data=None):
         self.hide()
