@@ -20,10 +20,10 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-from otrverwaltung.pluginsystem import Plugin
+from otrverwaltung3p.pluginsystem import Plugin
 
-from otrverwaltung import fileoperations
-from otrverwaltung.constants import Section
+from otrverwaltung3p import fileoperations
+from otrverwaltung3p.constants import Section
 
 
 class ConvertToMP3(Plugin):

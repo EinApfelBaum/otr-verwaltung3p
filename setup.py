@@ -21,7 +21,7 @@ import sys
 try:
     import DistUtilsExtra.auto
 except ImportError:
-    print('To build otrverwaltung you need https://launchpad.net/python-distutils-extra', file=sys.stderr)
+    print('To build otrverwaltung3p you need https://launchpad.net/python-distutils-extra', file=sys.stderr)
     sys.exit(1)
 
 assert DistUtilsExtra.auto.__version__ >= '2.10', 'needs DistUtilsExtra.auto >= 2.10'
@@ -32,7 +32,7 @@ import tarfile
 def update_data_path(prefix, oldvalue=None):
 
     try:
-        fin = open('otrverwaltung/path.py', 'r')
+        fin = open('otrverwaltung3p/path.py', 'r')
         fout = open(fin.name + '.new', 'w')
 
         for line in fin:            
@@ -51,7 +51,7 @@ def update_data_path(prefix, oldvalue=None):
         fin.close()
         os.rename(fout.name, fin.name)
     except (OSError, IOError) as e:
-        print ("ERROR: Can't find otrverwaltung/path.py")
+        print ("ERROR: Can't find otrverwaltung3p/path.py")
         sys.exit(1)
     return oldvalue
 
@@ -90,12 +90,15 @@ def pack_tools_dir():
     
 class InstallAndUpdateDataDirectory(DistUtilsExtra.auto.install_auto):
     def run(self):
-        self.prefix='/usr'
         if self.root or self.home:
             print("WARNING: You don't use a standard --prefix installation. You can " \
             "ignore this warning if you are packaging and use --prefix.")
-        previous_value = update_data_path(self.prefix + '/share/otrverwaltung/')
-        update_desktop_file(self.prefix + '/share/otrverwaltung/')
+        if self.prefix:
+            pre = self.prefix
+        else:
+            pre = site.USER_BASE
+        previous_value = update_data_path(self.prefix + '/share/otrverwaltung3p/')
+        update_desktop_file(self.prefix + '/share/otrverwaltung3p/')
         pack_tools_dir()
         DistUtilsExtra.auto.install_auto.run(self)
         update_data_path(self.prefix, previous_value)

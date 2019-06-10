@@ -25,12 +25,12 @@ import time
 import re
 import os
 
-from otrverwaltung.GeneratorTask import GeneratorTask
-from otrverwaltung.pluginsystem import Plugin
-from otrverwaltung import fileoperations
-from otrverwaltung import path
-from otrverwaltung.constants import Section
-from otrverwaltung.actions.cut import Cut
+from otrverwaltung3p.GeneratorTask import GeneratorTask
+from otrverwaltung3p.pluginsystem import Plugin
+from otrverwaltung3p import fileoperations
+from otrverwaltung3p import path
+from otrverwaltung3p.constants import Section
+from otrverwaltung3p.actions.cut import Cut
 
 
 class Mkv(Plugin):

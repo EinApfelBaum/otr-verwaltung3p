@@ -22,11 +22,11 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
 import shutil
 
-from otrverwaltung.pluginsystem import Plugin
+from otrverwaltung3p.pluginsystem import Plugin
 
-import otrverwaltung.cutlists as cutlists_management
-from otrverwaltung import fileoperations
-from otrverwaltung.constants import Section
+import otrverwaltung3p.cutlists as cutlists_management
+from otrverwaltung3p import fileoperations
+from otrverwaltung3p.constants import Section
 
 
 class CutPlay(Plugin):

@@ -8,4 +8,4 @@ Comment[en]=Manage files from onlinetvrecorder.com : decode, cut, review cuts, r
 Categories=AudioVideo;AudioVideoEditing;
 Exec=otrverwaltung
 Terminal=0
-Icon=/usr/share/otrverwaltung/media/icon.png
+Icon=/home/dl/.local/share/otrverwaltung3p/media/icon.png

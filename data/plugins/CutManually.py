@@ -18,8 +18,8 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
 
-from otrverwaltung.pluginsystem import Plugin
-from otrverwaltung.constants import Section, Action, Cut_action
+from otrverwaltung3p.pluginsystem import Plugin
+from otrverwaltung3p.constants import Section, Action, Cut_action
 
 
 class CutManually(Plugin):
