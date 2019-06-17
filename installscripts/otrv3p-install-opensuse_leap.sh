@@ -86,6 +86,7 @@ install_deps () {
                         python3-dbus-python                  \
                         python3-cairo                        \
                         python3-requests                     \
+                        python3-keyring                      \
                         python3-pip                          \
                         gstreamer-plugins-base               \
                         gstreamer-plugins-good               \

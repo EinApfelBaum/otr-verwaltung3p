@@ -20,7 +20,7 @@ import time
 # ~ import urllib.request
 from urllib.request import Request, urlopen
 import webbrowser
-import git
+#import git
 import sys, os, datetime, logging
 
 import gi
@@ -630,34 +630,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             self.gui.message_error_box("Konnte keine Verbindung mit dem Internet herstellen!")
             return
 
-        if current_version in svn_version:
-            self.gui.message_info_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s" % \
+        self.gui.message_info_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s" % \
                                                                     (current_version, svn_version))
-        else:
-            if self.gui.question_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s\n\n\
-                                        Automatisch updaten?\n" % (current_version, svn_version)):
-                # TODO: script_root_dir won't work when program is installed?
-                #get new version from git
-                script_root_dir = os.path.abspath(os.path.realpath(sys.argv[0])+'/../..')
-                file = open(script_root_dir+"/.git/config", "r")
-                filelist = file.read()
-                # check if program is in right repo
-                if 'url = https://github.com/EinApfelBaum/otr-verwaltung3p.git' in filelist:
-                    g = git.cmd.Git(script_root_dir+'/')
-                    self.log.debug(g.checkout('master'))
-                    git_pull_output=g.pull()
-                    self.log.debug(git_pull_output)
-                    if "Already up-to-date" in git_pull_output:
-                        self.gui.message_error_box("Es konnten keine Updates gefunden werden.\n\
-                                    Bitte starte das Programm neu, damit ein bereits eingespieltes \
-                                    Update angewendet werden kann!\n")
-                    else:
-                        if self.gui.question_box("Die Version wurde auf %s geupdated.\n\nBestätige \
-                                    mit 'Ja', damit das Programm neu gestartet wird und das Update \
-                                    direkt angewendet werden kann!\n" %
-                                        (open(path.getdatapath("VERSION"), 'r').read().strip())):
-                            os.execv(sys.executable, ['python'] + sys.argv)
-                            sys.exit()
 
     def _on_menuHelpHelp_activate(self, widget, data=None):
         webbrowser.open("https://github.com/EinApfelBaum/otr-verwaltung3p/wiki")
@@ -665,8 +639,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     def _on_menuHelpAbout_activate(self, widget, data=None):
 
         version = open(path.getdatapath("VERSION"), 'r').read().strip()
-        # TODO: script_root_dir won't work when program is installed?
-        script_root_dir = os.path.abspath(os.path.realpath(sys.argv[0])+'/../..')
+        script_root_dir = script_root_dir = os.path.abspath(os.path.realpath(sys.argv[0])+'/../..')
         with open(os.path.join(script_root_dir, 'AUTHORS'), 'r') as f:
             authors = f.readlines()
         authors = [x.strip() for x in authors]
@@ -680,7 +653,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                 copyright='\xa9 2010 - ' + str(datetime.datetime.now().year) +' B. Elbers and others',
                 license=license,
                 website='https://github.com/EinApfelBaum/otr-verwaltung3p/wiki',
-                comments='Zum Verwalten von Dateien von onlinetvrecorder.com',
+                comments='Verwalten und Schneiden der Dateien von onlinetvrecorder.com',
                 authors=authors,
                 logo=GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('icon.png'))
                 )

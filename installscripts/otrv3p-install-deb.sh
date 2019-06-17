@@ -78,6 +78,7 @@ install_deps () {
                         python3-gi-cairo                \
                         python3-cairo                   \
                         python3-requests                \
+                        python3-keyring                 \
                         python3-pip                     \
                         gstreamer1.0-x                  \
                         gstreamer1.0-tools              \

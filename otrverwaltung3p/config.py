@@ -18,7 +18,12 @@
 import json
 import os.path
 import logging
+import shutil
 from base64 import b64decode, b64encode
+try:
+    import keyring
+except ImportError:
+    pass
 
 from otrverwaltung3p import path
 from otrverwaltung3p.libs import pyaes
@@ -32,10 +37,19 @@ class Config:
 
         self.__config_file = config_file
         self.__fields = fields
-
         self.__callbacks = {}
         self.log = logging.getLogger(self.__class__.__name__)
-
+        try:
+            import keyring
+            if shutil.which('kwalletd5') or shutil.which('gnome-keyring'):
+                self.secret_service_available = True
+            else:
+                self.secret_service_available = False
+        except Exception as e:
+            self.secret_service_available = False
+            self.log.debug("Keyring exception: {}".format())
+        self.log.debug("Keyring available: {}".format(self.secret_service_available))
+        
     def connect(self, category, option, callback):
         self.__callbacks.setdefault(category, {})
         self.__callbacks[category].setdefault(option, []).append(callback)
@@ -56,7 +70,7 @@ class Config:
             pass
 
         if option is 'password' and self.__fields['general']['passwd_store'] == 1 and value is not None:
-            keyring.set_password("otr-verwaltung", self.__fields['general']['email'], value)
+            keyring.set_password("otr-verwaltung3p", self.__fields['general']['email'], value)
             self.log.debug("Writing password to keyring")
         else:
             self.__fields[category][option] = value
@@ -66,7 +80,7 @@ class Config:
         value = ""
 
         if option is 'password' and self.__fields['general']['passwd_store'] == 1:
-            password = keyring.get_password("otr-verwaltung", self.__fields['general']['email'])
+            password = keyring.get_password("otr-verwaltung3p", self.__fields['general']['email'])
             if password is not None:
                 value = password
         else:

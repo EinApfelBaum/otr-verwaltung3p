@@ -100,7 +100,7 @@ import gettext, locale
 log.debug(locale_dir)
 gettext.install('otrverwaltung3p', locale_dir, True)
 
-locale.setlocale(locale.LC_ALL, '')
+locale.setlocale(locale.LC_ALL, 'C')
 #for module in gettext, Gtk.Gla glade:
 #    module.bindtextdomain('otrverwaltung3p', locale_dir)
 #    module.textdomain('otrverwaltung3p')
@@ -130,6 +130,14 @@ class App:
     def __init__(self):
 
         self.log = logging.getLogger(self.__class__.__name__)
+        # ~ try:
+            # ~ import keyring
+            # ~ self.keyring_avail = True
+        # ~ except ImportError:
+            # ~ self.keyring_avail = False
+        # ~ self.log.debug("Keyring import OK: {}".format(self.keyring_avail))
+        # ~ if self.keyring_avail:
+
         configuration = {
             'general': {
                 'folder_new_otrkeys': '',
@@ -183,7 +191,7 @@ class App:
                 'x264vfw_mp4_string': '--force-cfr --profile baseline --preset medium --trellis 0',
                 'pre_cut_show': 10,
                 'after_cut_show': 10,
-                'alt_time_frame_conv': False,
+                'alt_time_frame_conv': True,
                 'ignore_suggested_filename': False,
                 'use_internal_icons': False,
                 'icon_size': 22,

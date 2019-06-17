@@ -72,21 +72,21 @@ install_deps () {
         if [ ! -e /tmp/otrv3p-install.log ]; then touch /tmp/otrv3p-install.log; fi
         chown root /tmp/otrv3p-install.log && chmod 666 /tmp/otrv3p-install.log
         echo "otrv3p:install_deps: Installiere Abhängigkeiten" | tee -a /tmp/otrv3p-install.log
-        for package in  python-gobject \
-                        gst-python \
-                        python-xdg \
-                        python-dbus \
-                        python-cairo \
-                        python-crypto \
-                        python-requests \
-                        python-gitpython \
-                        gst-plugins-base \
-                        gst-plugins-good \
-                        gst-plugins-bad \
-                        gst-plugins-ugly \
-                        gst-libav \
-                        mediainfo-gui \
-                        mpv \
+        for package in  python-gobject      \
+                        gst-python          \
+                        python-xdg          \
+                        python-dbus         \
+                        python-cairo        \
+                        python-requests     \
+                        python-keyring      \
+                        python-gitpython    \
+                        gst-plugins-base    \
+                        gst-plugins-good    \
+                        gst-plugins-bad     \
+                        gst-plugins-ugly    \
+                        gst-libav           \
+                        mediainfo-gui       \
+                        mpv                 \
                         git; do
             ## Only install packages if they are not already installed
             pacman -S --noconfirm --needed "$package" 2>&1 | grep -v " there is nothing to do" | grep -ve ".* skipping" | tee -a /tmp/otrv3p-install.log

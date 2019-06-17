@@ -482,7 +482,6 @@ Die Sicherheit </property>
                       <object class="GtkRadioButton" id="radioPasswdStoreWallet">
                         <property name="label" translatable="yes">Passwort in keyring/wallet speichern</property>
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="active">True</property>
@@ -551,8 +550,9 @@ Die Sicherheit </property>
                     </child>
                     <child>
                       <object class="GtkLabel" id="label1">
-                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
+                        <property name="double_buffered">False</property>
                         <property name="margin_top">5</property>
                         <property name="label" translatable="yes">&lt;span font-size='small'&gt;&lt;i&gt;Das Passwort wird verschlüsselt gespeichert (AES-256).
 Dennoch kann dieses Feld auch leer gelassen werden.
