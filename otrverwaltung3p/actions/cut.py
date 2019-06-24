@@ -68,16 +68,19 @@ class Cut(BaseAction):
         outfile = self.workingdir + '/mediainfo.xml'
         mi_version = subprocess.getoutput(self.app.config.get_program('mediainfo') + ' --version'
                                            ).split(' ')[-1].replace('v', '').split('.')
+        self.log.error("Mediainfo version: {0}.{1}".format(mi_version[0], mi_version[1]))
         if int(mi_version[0] + mi_version[1]) >= 1710:
-            subprocess.call([self.app.config.get_program('mediainfo'),
-                                            '--Output=OLDXML', '--LogFile=' + outfile, filename],
-                                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            # ~ subprocess.call([self.app.config.get_program('mediainfo'),
+                                            # ~ '--Output=OLDXML', '--LogFile=' + outfile, filename],
+                                            # ~ stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            self.media_info = MediaInfo.parse(filename)
         else:
             subprocess.call([self.app.config.get_program('mediainfo'),
                                             '--Output=XML', '--LogFile=' + outfile, filename],
                                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        with open(outfile) as f:
-            self.media_info = MediaInfo(f.read())
+            with open(outfile) as f:
+                self.media_info = MediaInfo(f.read())
+
         if os.path.isfile(outfile):
             os.remove(outfile)
 
@@ -382,7 +385,7 @@ class Cut(BaseAction):
         try:
             index = open(filename_timecodes, 'r')
         except (IOError, TypeError) as e:
-            return None, "Timecode Datei von ffmsindex konnte nicht geöffnet werden."
+            return None, None, "Timecode Datei von ffmsindex konnte nicht geöffnet werden."
         index.readline()
         try:
             frame_timecode = {}
@@ -390,7 +393,7 @@ class Cut(BaseAction):
                 frame_timecode[line_num] = int(round(float(line.replace('\n', '').strip()), 2) / 1000 * Gst.SECOND)
         except ValueError:
             index.close()
-            return None, "Timecodes konnten nicht ermittelt werden."
+            return None, None, "Timecodes konnten nicht ermittelt werden."
 
         index.close()
         # Generate reverse dict
@@ -589,7 +592,7 @@ class Cut(BaseAction):
         bt470bg = ['videoformat=pal:colorprim=bt470bg:transfer=bt470bg:colormatrix=bt470bg']
 
         try:
-            codec_core = int(self.media_info.tracks[1].writing_library.split(' ')[2])
+            codec_core = int(self.media_info.tracks[1].writing_library.split(' ')[3])
             if 'x264' in self.media_info.tracks[1].writing_library:
                 codec = 'libx264'
             try:

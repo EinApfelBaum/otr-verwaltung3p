@@ -19,7 +19,7 @@ import urllib.request
 import configparser
 import os.path
 import http.client
-import logging
+import logging, codecs
 
 from otrverwaltung3p import fileoperations
 
@@ -183,7 +183,7 @@ class Cutlist:
         config_parser = configparser.ConfigParser()
 
         try:
-            config_parser.read(self.local_filename, encoding='latin-1')
+            config_parser.read(self.local_filename, encoding='utf-8')
         except configparser.ParsingError as message:
             self.log.info("Malformed cutlist: ", message)
 
@@ -236,7 +236,7 @@ class Cutlist:
         """ Writes a cutlist file to the instance's local_filename. """
 
         try:
-            cutlist = open(self.local_filename, 'w')
+            cutlist = codecs.open(self.local_filename, 'w', 'UTF-8')
 
             cutlist.writelines([
                 "[General]\n",
