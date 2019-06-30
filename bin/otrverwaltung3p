@@ -165,7 +165,7 @@ class App:
                 'seek_distance_default': 2000,
                 'cutinterface_hide_cuts': False,
                 'mplayer_fullscreen': True,
-                'prefer_mpv': False,
+                'prefer_mpv': True,
                 'merge_ac3s': True,
                 'merge_ac3s_by': 'mkvmerge',
                 'move_otrkey_to_trash_after_decode': True,

@@ -68,11 +68,8 @@ class Cut(BaseAction):
         outfile = self.workingdir + '/mediainfo.xml'
         mi_version = subprocess.getoutput(self.app.config.get_program('mediainfo') + ' --version'
                                            ).split(' ')[-1].replace('v', '').split('.')
-        self.log.error("Mediainfo version: {0}.{1}".format(mi_version[0], mi_version[1]))
+        self.log.debug("Mediainfo version: {0}.{1}".format(mi_version[0], mi_version[1]))
         if int(mi_version[0] + mi_version[1]) >= 1710:
-            # ~ subprocess.call([self.app.config.get_program('mediainfo'),
-                                            # ~ '--Output=OLDXML', '--LogFile=' + outfile, filename],
-                                            # ~ stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             self.media_info = MediaInfo.parse(filename)
         else:
             subprocess.call([self.app.config.get_program('mediainfo'),
@@ -596,10 +593,21 @@ class Cut(BaseAction):
             if 'x264' in self.media_info.tracks[1].writing_library:
                 codec = 'libx264'
             try:
-                if '709' in self.media_info.tracks[1].color_primaries:
-                    ffmpeg_codec_options.extend(bt709)
-                elif '470' in self.media_info.tracks[1].color_primaries:
-                    ffmpeg_codec_options.extend(bt470bg)
+                if self.media_info.tracks[1].color_primaries:
+                    if '709' in self.media_info.tracks[1].color_primaries:
+                        ffmpeg_codec_options.extend(bt709)
+                    elif '470' in self.media_info.tracks[1].color_primaries:
+                        ffmpeg_codec_options.extend(bt470bg)
+                elif self.media_info.tracks[1].transfer_characteristics:
+                    if '709' in self.media_info.tracks[1].transfer_characteristics:
+                        ffmpeg_codec_options.extend(bt709)
+                    elif '470' in self.media_info.tracks[1].transfer_characteristics:
+                        ffmpeg_codec_options.extend(bt470bg)
+                elif self.media_info.tracks[1].matrix_coefficients:
+                    if '709' in self.media_info.tracks[1].matrix_coefficients:
+                        ffmpeg_codec_options.extend(bt709)
+                    elif '470' in self.media_info.tracks[1].matrix_coefficients:
+                        ffmpeg_codec_options.extend(bt470bg)
             except TypeError:
                 pass
             profile = ['-profile:v', self.media_info.tracks[1].format_profile.split('@L')[0].lower()]
@@ -616,7 +624,6 @@ class Cut(BaseAction):
                 return None, "Fehler: %s Filename: %s Error: %s" % str(e.errno), str(e.filename), str(e.strerror)
             except ValueError as e:
                 return None, "Falscher Wert: %s" % str(e)
-
             while True:
                 line = blocking_process.stdout.readline()
 

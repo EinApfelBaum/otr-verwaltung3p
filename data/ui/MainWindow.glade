@@ -152,6 +152,7 @@
                     <child>
                       <object class="GtkMenuItem" id="menu_check_update">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Auf Update prüfen</property>
                         <property name="use_underline">True</property>

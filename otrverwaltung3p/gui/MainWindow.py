@@ -60,19 +60,19 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.__setup_widgets()
 
         # set window title
-        current_version = open(path.getdatapath("VERSION"), 'r').read().strip()
-        self.svn_version_url = "https://raw.githubusercontent.com/einapfelbaum/otr-verwaltung3p/master/data/VERSION"
+        # ~ current_version = open(path.getdatapath("VERSION"), 'r').read().strip()
+        # ~ self.svn_version_url = "https://raw.githubusercontent.com/einapfelbaum/otr-verwaltung3p/master/data/VERSION"
 
-        try:
-           svn_version = urlopen(self.svn_version_url).read().strip().decode('utf-8')
-        except IOError:
-           self.set_title('OTR-Verwaltung3p' + ' ' + current_version)
-        else:
-            if current_version in str(svn_version):
-                self.set_title('OTR-Verwaltung3p' + ' ' + current_version + '  -  Aktuell!')
-            else:
-                self.set_title('OTR-Verwaltung3p' + ' ' + current_version + '  -  aktuelle Version: ' + str(svn_version))
-                self._on_menu_check_update_activate(self)
+        # ~ try:
+           # ~ svn_version = urlopen(self.svn_version_url).read().strip().decode('utf-8')
+        # ~ except IOError:
+           # ~ self.set_title('OTR-Verwaltung3p' + ' ' + current_version)
+        # ~ else:
+            # ~ if current_version in str(svn_version):
+                # ~ self.set_title('OTR-Verwaltung3p' + ' ' + current_version + '  -  Aktuell!')
+            # ~ else:
+                # ~ self.set_title('OTR-Verwaltung3p' + ' ' + current_version + '  -  aktuelle Version: ' + str(svn_version))
+                # ~ self._on_menu_check_update_activate(self)
 
         # ~ self.treeview_files = self.builder.get_object('treeview_files')
 
@@ -622,16 +622,17 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         dialog.destroy()
 
     def _on_menu_check_update_activate(self, widget, data=None):
-        current_version = open(path.getdatapath("VERSION"), 'r').read().strip()
+        pass
+        # ~ current_version = open(path.getdatapath("VERSION"), 'r').read().strip()
 
-        try:
-            svn_version = urlopen(self.svn_version_url).read().strip().decode('utf-8')
-        except IOError:
-            self.gui.message_error_box("Konnte keine Verbindung mit dem Internet herstellen!")
-            return
+        # ~ try:
+            # ~ svn_version = urlopen(self.svn_version_url).read().strip().decode('utf-8')
+        # ~ except IOError:
+            # ~ self.gui.message_error_box("Konnte keine Verbindung mit dem Internet herstellen!")
+            # ~ return
 
-        self.gui.message_info_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s" % \
-                                                                    (current_version, svn_version))
+        # ~ self.gui.message_info_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s" % \
+                                                                    # ~ (current_version, svn_version))
 
     def _on_menuHelpHelp_activate(self, widget, data=None):
         webbrowser.open("https://github.com/EinApfelBaum/otr-verwaltung3p/wiki")

@@ -123,14 +123,15 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
             'comboboxentry_rename' (auto-updated by '_on_comboboxentry_rename_changed')
         """
         if self.obj('check_create_cutlist').get_active():
-            edit_fname = self.file_conclusion.cut.rename
-            self.log.debug("edit_fname = {}".format(edit_fname))
-            # If Cancel button is clicked edit_fname is set to False. So check.
-            if edit_fname:
-                for ext in fileextensions:
-                    if edit_fname.endswith(ext):
-                        edit_fname = edit_fname.replace(ext, '')
-                self.obj('entry_suggested').set_text(edit_fname)
+            if self.obj('entry_suggested').get_text() == "":
+                edit_fname = self.file_conclusion.cut.rename
+                self.log.debug("edit_fname = {}".format(edit_fname))
+                # If Cancel button is clicked edit_fname is set to False. So check.
+                if edit_fname:
+                    for ext in fileextensions:
+                        if edit_fname.endswith(ext):
+                            edit_fname = edit_fname.replace(ext, '')
+                    self.obj('entry_suggested').set_text(edit_fname)
 
     ###
     ### Controls
@@ -253,7 +254,11 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                     rename_list_entries['full_fname'] = rename_list_index
 
                 re_fname = re.compile(".*?\.[0-9]{2}\.[a-zA-Z0-9_-]*")
-                bare_fname = re_fname.match(os.path.basename(self.file_conclusion.uncut_video)).group()
+                try:
+                    bare_fname = re_fname.match(os.path.basename(self.file_conclusion.uncut_video)).group()
+                except Exception as e:
+                    self.log.info("Filename does not match the otr pattern.\nThis happens " + \
+                                    "when cutting a cut file.\nException: {}".format(e))
                 if self.file_conclusion.cut.cutlist.filename:  # suggested moviename
                     sugg_fname = self.file_conclusion.cut.cutlist.filename
                     for ext in fileextensions:
@@ -266,10 +271,10 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                             rename_label = self.obj('label5')
                             ## set background of label 'Umbenennen' to yellow to indicate there is
                             ## a suggested filename in cutlist. Set font color to black
-                            rename_label.override_background_color(Gtk.StateType.NORMAL,
-                                                                        Gdk.RGBA(100, 100, 0, 0.8))
-                            rename_label.override_color(Gtk.StateType.NORMAL,
-                                                                        Gdk.RGBA(0, 0, 0, 1.0))
+                            # ~ rename_label.override_background_color(Gtk.StateType.NORMAL,
+                                                                        # ~ Gdk.RGBA(100, 100, 0, 0.8))
+                            # ~ rename_label.override_color(Gtk.StateType.NORMAL,
+                                                                        # ~ Gdk.RGBA(0, 0, 0, 1.0))
 
                 edit_fname = self.file_conclusion.cut.rename
                 self.log.debug("edit_fname = {}".format(edit_fname))
