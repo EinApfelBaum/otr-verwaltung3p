@@ -152,7 +152,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         CheckButtonBinding(self.obj('check_rename_cut'), self.app.config, 'general', 'rename_cut')
         CheckButtonBinding(self.obj('check_merge_ac3'), self.app.config, 'general', 'merge_ac3s')
         CheckButtonBinding(self.obj('check_mplayer_fullscreen'), self.app.config, 'general', 'mplayer_fullscreen')
-        CheckButtonBinding(self.obj('check_prefer_mpv'), self.app.config, 'general', 'prefer_mpv')
+        CheckButtonBinding(self.obj('check_prefer_mplayer'), self.app.config, 'general', 'prefer_mplayer')
         CheckButtonBinding(self.obj('check_ignore_suggested'), self.app.config, 'general', 'ignore_suggested_filename')
         CheckButtonBinding(self.obj('smkv_normalize'), self.app.config, 'smartmkvmerge', 'normalize_audio')
         CheckButtonBinding(self.obj('smkv_mp4'), self.app.config, 'smartmkvmerge', 'remux_to_mp4')

@@ -512,6 +512,7 @@ Die Sicherheit </property>
                       <object class="GtkBox" id="boxCheckOTRCredentials">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="margin_top">10</property>
                         <child>
                           <object class="GtkButton" id="checkOTRCredentials">
                             <property name="label" translatable="yes">Prüfe Zugangsdaten</property>
@@ -1513,7 +1514,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="check_mplayer_fullscreen">
-                    <property name="label" translatable="yes">MPlayer bzw. mpv im Vollbildmodus starten</property>
+                    <property name="label" translatable="yes">Mpv im Vollbildmodus starten</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
@@ -1527,8 +1528,8 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="check_prefer_mpv">
-                    <property name="label" translatable="yes">mpv bevorzugen (Falls MPlayer und mpv installiert sind, wird normalerweise MPlayer benutzt).</property>
+                  <object class="GtkCheckButton" id="check_prefer_mplayer">
+                    <property name="label" translatable="yes">MPlayer bevorzugen (Falls Mpv und MPlayer installiert sind, wird normalerweise Mpv benutzt).</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>

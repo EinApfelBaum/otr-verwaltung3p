@@ -100,7 +100,7 @@ class CutSmartMkvmerge(Cut):
             return None, "Konnte FPS nicht bestimmen: " + error
 
         # codec configuration string
-        format, ac3_file, bframe_delay = self.get_format(filename)
+        format, ac3_file, bframe_delay, _ = self.get_format(filename)
         if format == Format.HQ:
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(
@@ -135,7 +135,10 @@ class CutSmartMkvmerge(Cut):
         if not codec_core == 125:
             warning_msg = "\nUnbekannte Kodierung entdeckt! codec_core: " + str(codec_core) + \
                           "\nDiese Datei genau prüfen und " + \
-                          "notfalls mit intern-Virtualdub und Codec ffdshow schneiden."
+                          "notfalls mit intern-vdub und Codec ffdshow schneiden.\n\n" + \
+                          "Wenn otr-verwaltung3p-vdub installiert ist und in Einstellungen - " + \
+                          "Schneiden:H264 Codec auf 'fddshow' gesetzt ist, würde automatisch " + \
+                          "mit intern-vdub geschnitten werden."
             return None, warning_msg
 
         # test workingdir

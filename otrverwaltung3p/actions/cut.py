@@ -65,21 +65,23 @@ class Cut(BaseAction):
         global bframe_delay
         root, extension = os.path.splitext(filename)
 
-        outfile = self.workingdir + '/mediainfo.xml'
         mi_version = subprocess.getoutput(self.app.config.get_program('mediainfo') + ' --version'
                                            ).split(' ')[-1].replace('v', '').split('.')
         self.log.debug("Mediainfo version: {0}.{1}".format(mi_version[0], mi_version[1]))
         if int(mi_version[0] + mi_version[1]) >= 1710:
             self.media_info = MediaInfo.parse(filename)
         else:
+            outfile = self.workingdir + '/mediainfo.xml'
             subprocess.call([self.app.config.get_program('mediainfo'),
                                             '--Output=XML', '--LogFile=' + outfile, filename],
                                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             with open(outfile) as f:
                 self.media_info = MediaInfo(f.read())
 
-        if os.path.isfile(outfile):
-            os.remove(outfile)
+            if os.path.isfile(outfile):
+                os.remove(outfile)
+
+        codec_core = int(self.media_info.tracks[1].writing_library.split(' ')[3])
 
         if extension == '.avi':
             bframe_delay = 2
@@ -122,11 +124,12 @@ class Cut(BaseAction):
             return -1, None
 
         if os.path.isfile(ac3name):
-            return format, ac3name, bframe_delay
+            return format, ac3name, bframe_delay, codec_core
         else:
-            return format, None, bframe_delay
+            return format, None, bframe_delay, codec_core
 
     def get_program(self, filename, manually=False):
+        print("get_program filename: {}".format(filename))
         if manually:
             programs = {Format.AVI: self.config.get('general', 'cut_avis_man_by'),
                         Format.HQ: self.config.get('general', 'cut_hqs_man_by'),
@@ -138,7 +141,7 @@ class Cut(BaseAction):
                         Format.HD: self.config.get('general', 'cut_hqs_by'),
                         Format.MP4: self.config.get('general', 'cut_mp4s_by')}
 
-        format, ac3, bframe_delay = self.get_format(filename)
+        format, ac3, bframe_delay, _ = self.get_format(filename)
 
         if format < 0:
             return -1, "Format konnte nicht bestimmt werden/wird noch nicht unterstützt.", False
@@ -148,6 +151,9 @@ class Cut(BaseAction):
 
         config_value = programs[format]
 
+        _, _, _, codec_core = self.get_format(filename)
+        vdub = path.get_internal_virtualdub_path('vdub.exe')
+        x264_codec = self.config.get('general', 'h264_codec')
         if 'avidemux' in config_value:
             return Program.AVIDEMUX, config_value, ac3
         elif 'intern-VirtualDub' in config_value:
@@ -159,7 +165,10 @@ class Cut(BaseAction):
         elif 'CutInterface' in config_value and manually:
             return Program.CUT_INTERFACE, config_value, ac3
         elif 'SmartMKVmerge' in config_value:
-            return Program.SMART_MKVMERGE, config_value, ac3
+            if codec_core is 125 or not os.path.isfile(vdub) or not x264_codec is 'ffdshow':
+                return Program.SMART_MKVMERGE, config_value, ac3
+            else:
+                return Program.VIRTUALDUB, vdub, ac3
         else:
             return -2, "Programm '%s' konnte nicht bestimmt werden. Es werden VirtualDub und Avidemux unterstützt." % config_value, False
 

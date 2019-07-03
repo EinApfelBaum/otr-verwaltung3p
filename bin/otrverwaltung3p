@@ -165,7 +165,7 @@ class App:
                 'seek_distance_default': 2000,
                 'cutinterface_hide_cuts': False,
                 'mplayer_fullscreen': True,
-                'prefer_mpv': True,
+                'prefer_mplayer': False,
                 'merge_ac3s': True,
                 'merge_ac3s_by': 'mkvmerge',
                 'move_otrkey_to_trash_after_decode': True,
@@ -182,7 +182,7 @@ class App:
                 'show_bottom': False,
                 'cutlist_hash': hashlib.md5(str(time.time()).encode()).hexdigest(),
                 'window_settings': '',
-                'h264_codec': 'x264vfw',
+                'h264_codec': 'ffdshow',
                 'komisar_hd_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --weightp 0',
                 'komisar_hq_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --aq-mode 2 --weightp 0',
                 'komisar_mp4_string': '--force-cfr --profile baseline --preset medium --trellis 0',
@@ -784,10 +784,10 @@ class App:
                         [self.config.get_program('mpv'), "-geometry", "50%:50%", "-sub-file", f_mpv_sub,
                              f_mpv_edl])
 
-        if self.config.get('general', 'prefer_mpv'):
-            self.playprog = ['mpv', 'mplayer']
-        else:
+        if self.config.get('general', 'prefer_mplayer'):
             self.playprog = ['mplayer', 'mpv']
+        else:
+            self.playprog = ['mpv', 'mplayer']
  
         if check_prog(self.playprog[0]):
             play_with(self.playprog[0])
