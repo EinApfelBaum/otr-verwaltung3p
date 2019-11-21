@@ -58,7 +58,7 @@ class FolderChooserComboBox(Gtk.ComboBox):
             return ""
 
     def fill(self, path):
-        image = Gtk.IconTheme.get_default().load_icon('folder', 16, Gtk.IconLookupFlags.USE_BUILTIN)
+        image = Gtk.IconTheme.get_default().load_icon('folder-symbolic', 16, Gtk.IconLookupFlags.USE_BUILTIN)
 
         self.liststore.clear()
 
