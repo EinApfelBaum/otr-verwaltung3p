@@ -130,13 +130,6 @@ class App:
     def __init__(self):
 
         self.log = logging.getLogger(self.__class__.__name__)
-        # ~ try:
-            # ~ import keyring
-            # ~ self.keyring_avail = True
-        # ~ except ImportError:
-            # ~ self.keyring_avail = False
-        # ~ self.log.debug("Keyring import OK: {}".format(self.keyring_avail))
-        # ~ if self.keyring_avail:
 
         configuration = {
             'general': {
@@ -149,8 +142,6 @@ class App:
                 'otrkey_search': 'http://otrkeyfinder.com/?search=',
                 'save_email_password': False,
                 'aes_key': b64encode(os.urandom(32)).decode('utf-8'),
-                'aes_padding': '{',
-                'aes_blocksize': 32,    # 16 (AES-128), 24 (AES-192), or 32 (AES-256)
                 'email': '',
                 'password': '',
                 'verify_decoded': True,

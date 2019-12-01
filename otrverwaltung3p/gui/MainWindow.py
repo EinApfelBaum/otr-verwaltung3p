@@ -641,12 +641,11 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
         version = open(path.getdatapath("VERSION"), 'r').read().strip()
         script_root_dir = script_root_dir = os.path.abspath(os.path.realpath(sys.argv[0])+'/../..')
-        with open(os.path.join(script_root_dir, 'AUTHORS'), 'r') as f:
-            authors = f.readlines()
-        authors = [x.strip() for x in authors]
+        authors = ["EinApfelBaum", "gCurse", "Timo08", "Mainboand","", "Predecessors:",
+                    "otr-verwaltung++ (2012-):", "monarc99", "JanS", "",
+                    "otr-verwaltung (-2010):", "B. Elbers"]
 
-        with open(os.path.join(script_root_dir, 'LICENSE'), 'r') as f:
-            license = f.read()
+        license = "GPL version 3, see http://www.gnu.org/licenses"
 
         about_dialog = Gtk.AboutDialog(parent=self.gui.main_window,
                 program_name=self.app.app_name,

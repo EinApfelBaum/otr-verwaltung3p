@@ -72,7 +72,7 @@ class PluginSystem:
 
         for path in plugin_paths:
             if not os.path.isdir(path):
-                self.log.error("{} is not a directory.".format(path))
+                self.log.info("{} is not a directory.".format(path))
                 continue
 
             sys.path.append(path)
