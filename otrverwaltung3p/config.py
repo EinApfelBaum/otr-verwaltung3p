@@ -49,7 +49,7 @@ class Config:
             self.secret_service_available = False
             self.log.debug("Keyring exception: {}".format())
         self.log.debug("Keyring available: {}".format(self.secret_service_available))
-        
+
     def connect(self, category, option, callback):
         self.__callbacks.setdefault(category, {})
         self.__callbacks[category].setdefault(option, []).append(callback)
@@ -114,7 +114,7 @@ class Config:
                     self.__fields['general']['password'] = b64encode(cipher_text).decode('UTF-8')
             else:  # Password will not be stored or stored in keyring/wallet
                 self.__fields['general']['password'] = ''
-                
+
             self.log.debug("Writing to {0}".format(self.__config_file))
             json.dump(self.__fields, config_file, ensure_ascii=False, sort_keys=True, indent=4)
             config_file.close()
@@ -153,14 +153,14 @@ class Config:
                         if not serverurl.endswith("/"):
                             serverurl += "/"
                         self.set(category, option, serverurl)
-                    else:                        
+                    else:
                         self.set(category, option, json_config[category][option])
                 except KeyError:
                     self.log.debug("KeyError")
                     self.set(category, option, value)
 
     def get_program(self, program):
-        """ Returns the full calling string of a program 
+        """ Returns the full calling string of a program
             either the pure config value or the internal version,
             if the config value contains 'intern' """
 
@@ -172,3 +172,6 @@ class Config:
                 return intern_program
 
         return value
+
+    def get_config_file_path(self):
+        return os.path.abspath(self.__config_file)
