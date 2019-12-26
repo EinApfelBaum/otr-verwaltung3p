@@ -248,7 +248,7 @@ class App:
 
         self.__search_text = ""
         self.locked = False
-       
+
         # regex
         regex_uncut_video = '.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])' + \
                             '*_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|mp4|mkv|HQ\.mkv|HD\.mkv|' + \
@@ -319,7 +319,7 @@ class App:
         self.gui.main_window.broadcasts_badge()
 
     """def import_old_config(self, configuration):
-        # TODO: Remove after one release          
+        # TODO: Remove after one release
 
         # try to move plugins
         import shutil
@@ -367,8 +367,8 @@ class App:
     ###
 
     def show_section(self, section):
-        """ Zeigt eine der verschiedenen `Sections <constants.Section>` an. 
-                        
+        """ Zeigt eine der verschiedenen `Sections <constants.Section>` an.
+
             * aktualisiert einen Treeview und zeigt den korrekten an
             * setzt die aktuelle `~otr.App.section`
             * zeigt die korrekten Toolbuttons an """
@@ -416,7 +416,7 @@ class App:
             files = self.__section_trash_otrkey()
 
         elif section == Section.ARCHIVE:
-            # returns NO files       
+            # returns NO files
             self.__section_archive()
 
         if len(files) > 0:  # this is not executed when the section is "Archive"
@@ -427,7 +427,7 @@ class App:
                 # TODO: don't show files if in use
                 self.__append_row_treeview_files(None, f)
 
-    # helper for different sections   
+    # helper for different sections
     def __section_otrkey(self):
         path = self.config.get('general', 'folder_new_otrkeys')
 
@@ -582,9 +582,9 @@ class App:
                                                        fileoperations.get_date(filename), isdir(filename))
         return iter
 
-    ### 
+    ###
     ### Search
-    ### 
+    ###
 
     def start_search(self, search):
         """ #FIXME """
@@ -604,7 +604,7 @@ class App:
             count = len(items)
             counts[section] = count
 
-        # archive 
+        # archive
         files = []
         for root, dirs, wfiles in os.walk(self.config.get('general', 'folder_archive')):
             for f in wfiles:
@@ -637,7 +637,7 @@ class App:
 
     ###
     ### Actions
-    ###        
+    ###
 
     def perform_action(self, chosen_action, cut_action=None):
 
@@ -741,7 +741,7 @@ class App:
         def check_prog(prog):
             cmdfound = False
             plays = False
-            
+
             if shutil.which(prog):
                 cmdfound = True
                 if not subprocess.call(prog, stdin=subprocess.PIPE,
@@ -779,7 +779,7 @@ class App:
             self.playprog = ['mplayer', 'mpv']
         else:
             self.playprog = ['mpv', 'mplayer']
- 
+
         if check_prog(self.playprog[0]):
             play_with(self.playprog[0])
         elif check_prog(self.playprog[1]):
@@ -930,15 +930,15 @@ class App:
         """ #FIXME """
 
         self.gui.main_window.show()
-        if not os.path.exists(path.get_config_dir("conf")):
+        if not os.path.exists(self.config.get_config_file_path()):
             self.gui.message_info_box(
                 "Dies ist offenbar das erste Mal, dass OTR-Verwaltung gestartet wird." + \
                 "\n\nEs müssen zunächst einige wichtige Einstellungen vorgenommen werden." + \
-                "Klicken Sie dazu auf OK.")
+                "\n\nKlicken Sie dazu auf OK.")
             self.gui.preferences_window.show()
         else:
             errstr = ''
-            
+
             if self.config.get('general', 'email') == "":
                 errstr = errstr + '- setze eine E-Mail-Adresse für den OTR-Account\n'
             if self.config.get('general', 'password') == "" and not \
@@ -956,7 +956,7 @@ class App:
                 errstr = errstr + '- definiere einen "Müll"-Ordner für .avi Dateien\n'
             if not os.path.exists(self.config.get('general', 'folder_trash_otrkeys')):
                 errstr = errstr + '- definiere einen "Müll"-Ordner für .otrkey Dateien\n'
-                
+
             if errstr != '':
                 self.gui.message_info_box('Es müssen noch ein paar wichtige Einstellungen ' + \
                                 'vorgenommen werden.\n\n' + errstr + "\nKlicken Sie dazu auf OK.")
