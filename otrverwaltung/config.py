@@ -129,8 +129,8 @@ class Config:
             json_config = {}
         for category, options in self._fields.items():
             for option, value in options.items():
-                conf = json_config[category][option]
                 try:
+                    conf = json_config[category][option]
                     if category == 'general' and option == 'password':
                         try:
                             general = json_config['general']
@@ -165,10 +165,6 @@ class Config:
                         self.set(category, option, conf)
                 except KeyError:
                     self.set(category, option, value)
-
-        # DELETE
-        # ~ for key, value in newConfFields.items():
-            # ~ self.set(value, key, newConfValues.get(key))
 
     def get_program(self, program):
         """ Returns the full calling string of a program
