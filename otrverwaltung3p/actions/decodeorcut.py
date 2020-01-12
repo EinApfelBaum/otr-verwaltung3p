@@ -456,7 +456,7 @@ class DecodeOrCut(Cut):
 
     def cut_file_manually(self, filename):
         """ Cuts a file manually with Avidemux or VirtualDub or the CutInterface and gets cuts from
-            possibly created project files (VD) or from output (AD). 
+            possibly created project files (VD) or from output (AD).
             returns: error_message, cutlist """
 
         global cutlist_error, cuts_frames

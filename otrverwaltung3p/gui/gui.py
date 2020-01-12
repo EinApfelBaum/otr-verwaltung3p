@@ -38,7 +38,7 @@ class Gui:
             instance.set_transient_for(self.main_window)
             instance.set_modal(True)
 
-        # TODO: einheitliches benennungsschema für widgets: MainWindow oder main_window        
+        # TODO: einheitliches benennungsschema für widgets: MainWindow oder main_window
         self.main_window = MainWindow.NewMainWindow(app, self)
         self.main_window.post_init()
 

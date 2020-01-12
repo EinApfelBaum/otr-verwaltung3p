@@ -482,7 +482,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         rows = listmodel.iter_n_children(None)
         if listiter:  # A cut is selected
             if direction =="next":
-                listiter = listmodel.iter_next(listiter)    
+                listiter = listmodel.iter_next(listiter)
                 if listiter is None:
                     listiter = listmodel.get_iter_first()
             elif direction =="prev":
@@ -512,7 +512,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
             tree_path = listmodel.get_path(listiter)
             listselection.select_path(tree_path)
-            
+
     def is_remove_modus(self):
         return self.cut_selected < 0 or self.hide_cuts
 
@@ -699,7 +699,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def on_label_filename_button_press_event(self, widget, event):
         if event.type == Gdk.EventType.BUTTON_PRESS:
-            self.contextmenu_label_filename()  # Gdk.BUTTON_SECONDARY 
+            self.contextmenu_label_filename()  # Gdk.BUTTON_SECONDARY
 
     def on_slider_value_changed(self, slider):
         frames = slider.get_value()
@@ -755,7 +755,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 nano_seconds = self.frame_to_time(self.get_frames() - 1)  # TESTING_ACTIVE
             else:
                 nano_seconds = (self.get_frames() - 1) * Gst.SECOND * self.framerate_denom / self.framerate_num
-            
+
 
         self.jump_to(nanoseconds=nano_seconds, flags=flags)
 

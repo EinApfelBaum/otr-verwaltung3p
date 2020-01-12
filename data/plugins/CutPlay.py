@@ -68,7 +68,7 @@ class CutPlay(Plugin):
         cutlist.download(self.app.config.get('general', 'server'), filename)
         cutlist.read_cuts()
 
-        # delete cutlist?        
+        # delete cutlist?
         if self.app.config.get('general', 'delete_cutlists'):
             fileoperations.remove_file(cutlist.local_filename)
 
@@ -97,7 +97,7 @@ class CutPlay(Plugin):
         def check_prog(prog):
             cmdfound = False
             plays = False
-            
+
             if shutil.which(prog):
                 cmdfound = True
                 if not subprocess.call(prog, stdin=subprocess.PIPE,
@@ -122,7 +122,7 @@ class CutPlay(Plugin):
             self.playprog = ['mplayer', 'mpv']
         else:
             self.playprog = ['mpv', 'mplayer']
- 
+
         if check_prog(self.playprog[0]):
             play_with(self.playprog[0])
         elif check_prog(self.playprog[1]):

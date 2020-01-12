@@ -67,7 +67,7 @@ class EntryBinding(ConfigBinding):
                     self.widget.set_text(base64.b64decode(value.decode('utf-8')).decode('utf-8'))
                 except AttributeError:
                     self.widget.set_text(value)
-                    
+
         else:
             self.widget.set_text(value)
 
@@ -132,7 +132,7 @@ class ComboBoxEntryBinding(ConfigBinding):
     def change_value(self, value):
         if self.data == 'cut_default':
             self.widget.set_active(value)
-        else: 
+        else:
             self.widget.set_active_id(value)
         #self.widget.append_text(value)
 

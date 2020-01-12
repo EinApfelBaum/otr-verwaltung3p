@@ -14,7 +14,7 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-""" Stellt Methoden für Dateioperationen bereit. 
+""" Stellt Methoden für Dateioperationen bereit.
 Zeigt bei Fehlern einen gtk.MessageDialog an."""
 
 import gi

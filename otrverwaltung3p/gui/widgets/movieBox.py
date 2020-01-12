@@ -9,10 +9,10 @@ Gst.init_check(None)
 
 class MovieBox(Gtk.Box):
     __gtype_name__ = "MovieBox"
-    
+
     def __init__(self):
         super().__init__()
-        
+
         self.gtksink = Gst.ElementFactory.make('gtksink')
         self.movie_widget = self.gtksink.props.widget
         self.pack_start(self.movie_widget, True, True, 0)

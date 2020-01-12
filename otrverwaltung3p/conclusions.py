@@ -95,7 +95,7 @@ class ConclusionsManager:
         self.app.gui.main_window.builder.get_object('box_conclusion').hide()
         self.conclusions = []
 
-        # create cutlists            
+        # create cutlists
         cutlists = []
 
         for conclusion in conclusions:
@@ -202,7 +202,7 @@ class ConclusionsManager:
 
                 GeneratorTask(upload, change_status).start()
 
-        # rate cutlists                
+        # rate cutlists
         def rate():
             yield 0  # fake generator
             messages = []

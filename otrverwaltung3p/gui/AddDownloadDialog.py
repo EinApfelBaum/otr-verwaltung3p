@@ -119,8 +119,8 @@ class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
     #
 
     def forward(self, iter=None, link=None):
-        # ~ iter==None --> programs search was skipped 
-        # ~ iter!=None --> iter is the selected program 
+        # ~ iter==None --> programs search was skipped
+        # ~ iter!=None --> iter is the selected program
         # ~ link!=None --> executable was called with 'link' argument
 
         self.mode = 1  # download
@@ -219,7 +219,7 @@ class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
         #
 
     # SIGNALS
-    #     
+    #
 
     def on_entry_link_changed(self, widget, data=None):
         download_link = widget.get_text()

@@ -68,7 +68,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         #self.gui.set_model_from_list(self.obj('combobox_avi'), avidemux + virtualdub + smartmkvmerge)
         #self.gui.set_model_from_list(self.obj(''), virtualdub + smartmkvmerge)
         #self.gui.set_model_from_list(self.obj('combobox_mp4'), virtualdub)
-        
+
         # manually
         avidemux_man = [r"avidemux3_qt4",r"avidemux2_qt4",r"avidemux2_gtk"]
         virtualdub_man = [r"intern-VirtualDub", r"/pfad/zu/VirtualDub.exe"]
@@ -76,24 +76,24 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         #self.gui.set_model_from_list(self.obj('combobox_man_avi'), cut_interface + avidemux_man + virtualdub_man)
         #self.gui.set_model_from_list(self.obj('combobox_man_hq'), cut_interface + avidemux_man + virtualdub_man)
         #self.gui.set_model_from_list(self.obj('combobox_man_mp4'), cut_interface + avidemux_man + virtualdub_man)
-       
+
         #self.gui.set_model_from_list(self.obj('comboboxServer'), ["http://cutlist.at/"])
         #self.gui.set_model_from_list(self.obj('entry_decoder'), ['intern-otrdecoder','intern-easydecoder'])
 
         #self.gui.set_model_from_list(self.obj(''), ["ffdshow", "x264vfw", "komisar"])
-        
+
         # mkvmerge for ac3
         mkvmerge = ["mkvmerge", "/pfad/zu/mkvmerge"]
         #self.gui.set_model_from_list(self.obj('combobox_ac3'), mkvmerge)
-        
+
         # smartmkvmerge
-        smkv_first_audio = [ 'MP3 Spur kopieren', 
-                                        'MP3 nach AAC konvertieren',  
-                                        'nach 2-Kanal AAC konvertieren - von AC3 wenn vorhanden',  
+        smkv_first_audio = [ 'MP3 Spur kopieren',
+                                        'MP3 nach AAC konvertieren',
+                                        'nach 2-Kanal AAC konvertieren - von AC3 wenn vorhanden',
                                         'nach Mehr-Kanal AAC konvertieren - von AC3 wenn vorhanden']
         #self.gui.set_model_from_list(self.obj('smkv_first_audio'), smkv_first_audio)
-        smkv_second_audio = [   'AC3 Spur kopieren', 
-                                                'AC3 Spur nach AAC konvertieren',  
+        smkv_second_audio = [   'AC3 Spur kopieren',
+                                                'AC3 Spur nach AAC konvertieren',
                                                 'AC3 Spur entfernen']
         #self.gui.set_model_from_list(self.obj('smkv_second_audio'), smkv_second_audio)
         '''
@@ -115,7 +115,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         EntryBinding(self.obj('entry_schema'), self.app.config, 'general', 'rename_schema')
         EntryBinding(self.obj('smkv_workingdir'), self.app.config, 'smartmkvmerge', 'workingdir')
         EntryBinding(self.obj('entry_server'), self.app.config, 'general', 'server')
-       
+
         SpinbuttonBinding(self.obj('spinbutton_seeker'), self.app.config, 'general', 'seek_distance_default')
         SpinbuttonBinding(self.obj('spinbutton_x'), self.app.config, 'general', 'cutinterface_resolution_x')
         SpinbuttonBinding(self.obj('spinbutton_y'), self.app.config, 'general', 'cutinterface_resolution_y')
@@ -159,7 +159,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         CheckButtonBinding(self.obj('check_alt_time_frame_conv'), self.app.config, 'general', 'alt_time_frame_conv')
         CheckButtonBinding(self.obj('check_use_internal_icons'), self.app.config, 'general', 'use_internal_icons')
         CheckButtonBinding(self.obj('cb_hide_archive_buttons'), self.app.config, 'general', 'hide_archive_buttons')
-        
+
         self.app.config.connect('general', 'rename_cut',
                                 lambda value: self.obj('entry_schema').set_sensitive(value))
         self.app.config.connect('general', 'merge_ac3s',
@@ -217,13 +217,13 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
     def _on_button_reset_size_moviewindow_clicked(self, widget):
         self.obj('spinbuttonX').set_value(800.0)
         self.obj('spinbuttonY').set_value(450.0)
-        
+
     def _on_button_check_otr_credentials_clicked(self, entry):
         request_answer=""
         if self.app.config.get('general', 'password') != "" and internet_on():
             URL = "http://www.onlinetvrecorder.com/webrecording/isuser.php"
             PARAMS = {
-                'email': self.app.config.get('general', 'email'), 
+                'email': self.app.config.get('general', 'email'),
                 'pass': hashlib.md5(self.app.config.get('general', 'password').encode('utf-8')).hexdigest()
             }
             r = requests.get(url = URL, params = PARAMS)
@@ -294,5 +294,5 @@ def internet_on():
         ## google.com ip
         urllib2.urlopen('http://216.58.192.142', timeout=1)
         return True
-    except urllib2.URLError as err: 
+    except urllib2.URLError as err:
         return False

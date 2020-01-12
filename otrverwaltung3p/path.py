@@ -18,7 +18,7 @@ import sys
 import os.path
 import filecmp
 from xdg import BaseDirectory
-from shutil import copytree, rmtree
+import shutil
 
 data_dir = '../data'
 
@@ -74,11 +74,11 @@ def get_internal_virtualdub_path(filename=""):
             if not filecmp.cmp(getdatapath("tools/intern-VirtualDub", 'VERSION'),
                                os.path.join(BaseDirectory.xdg_data_home, "otrverwaltung3p/intern-VirtualDub", 'VERSION')):
                 # Version ist nicht aktuell
-                rmtree(os.path.join(BaseDirectory.xdg_data_home, "otrverwaltung3p/intern-VirtualDub"), ignore_errors=True)
-                copytree(getdatapath('tools/intern-VirtualDub'),
+                shutil.rmtree(os.path.join(BaseDirectory.xdg_data_home, "otrverwaltung3p/intern-VirtualDub"), ignore_errors=True)
+                shutil.copytree(getdatapath('tools/intern-VirtualDub'),
                          os.path.join(BaseDirectory.xdg_data_home, "otrverwaltung3p/intern-VirtualDub"), symlinks=True)
         else:
-            copytree(getdatapath('tools/intern-VirtualDub'),
+            shutil.copytree(getdatapath('tools/intern-VirtualDub'),
                      os.path.join(BaseDirectory.xdg_data_home, "otrverwaltung3p/intern-VirtualDub"), symlinks=True)
 
         return os.path.join(BaseDirectory.xdg_data_home, "otrverwaltung3p/intern-VirtualDub", filename)

@@ -37,7 +37,7 @@ class CutlistsTreeView(Gtk.TreeView):
             "000001": "Falscher Inhalt/EPG-Error"
         }
 
-        # setup combobox_archive       
+        # setup combobox_archive
         self.liststore = Gtk.ListStore(object)
         self.set_model(self.liststore)
 
@@ -55,7 +55,7 @@ class CutlistsTreeView(Gtk.TreeView):
             ("Dauer in s", "duration"),
             ("Anzahl Heruntergeladen", "downloadcount")]
 
-        # add a pixbuf renderer in case of errors in cutlists              
+        # add a pixbuf renderer in case of errors in cutlists
         cell_renderer_pixbuf = Gtk.CellRendererPixbuf()
         col = Gtk.TreeViewColumn('', cell_renderer_pixbuf)
         col.set_cell_data_func(cell_renderer_pixbuf, self._treeview_warning)

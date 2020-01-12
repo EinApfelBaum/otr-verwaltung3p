@@ -22,7 +22,7 @@ from gi.repository import Gtk
 
 class BetterTreeView(Gtk.TreeView):
     def __init__(self, columns):
-        """ columns is a list of tuples: 
+        """ columns is a list of tuples:
                 (column_name, None or an attribute name of object, None or a method callback) """
 
         Gtk.TreeView.__init__(self)

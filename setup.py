@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 ### BEGIN LICENSE
 # Copyright (C) 2010 Benjamin Elbers <elbersb@gmail.com>
-#This program is free software: you can redistribute it and/or modify it 
-#under the terms of the GNU General Public License version 3, as published 
+#This program is free software: you can redistribute it and/or modify it
+#under the terms of the GNU General Public License version 3, as published
 #by the Free Software Foundation.
 #
-#This program is distributed in the hope that it will be useful, but 
-#WITHOUT ANY WARRANTY; without even the implied warranties of 
-#MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+#This program is distributed in the hope that it will be useful, but
+#WITHOUT ANY WARRANTY; without even the implied warranties of
+#MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
 #PURPOSE.  See the GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public License along 
+#You should have received a copy of the GNU General Public License along
 #with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE
 
@@ -35,7 +35,7 @@ def update_data_path(prefix, oldvalue=None):
         fin = open('otrverwaltung3p/path.py', 'r')
         fout = open(fin.name + '.new', 'w')
 
-        for line in fin:            
+        for line in fin:
             fields = line.split(' = ') # Separate variable from value
             if fields[0] == 'data_dir':
                 # update to prefix, store oldvalue
@@ -62,7 +62,7 @@ def update_desktop_file(datadir):
         fin = open('otrverwaltung.desktop.in', 'r')
         fout = open(fin.name + '.new', 'w')
 
-        for line in fin:            
+        for line in fin:
             if 'Icon=' in line:
                 line = "Icon=%s\n" % (datadir + 'media/icon.png')
             fout.write(line)
@@ -78,16 +78,16 @@ def pack_tools_dir():
 
     if os.path.isfile('data/tools.tar.bz2'):
         os.remove('data/tools.tar.bz2')
-        
+
     def reset(tarinfo):
         tarinfo.uid = tarinfo.gid = 0
         tarinfo.uname = tarinfo.gname = "root"
         return tarinfo
-        
+
         tar = tarfile.open("data/tools.tar.bz2", "w:bz2")
         tar.add("data/tools", filter=reset)
         tar.close()
-    
+
 class InstallAndUpdateDataDirectory(DistUtilsExtra.auto.install_auto):
     def run(self):
         if self.root or self.home:
@@ -104,7 +104,7 @@ class InstallAndUpdateDataDirectory(DistUtilsExtra.auto.install_auto):
         update_data_path(self.prefix, previous_value)
 
 
-        
+
 ##################################################################################
 ###################### YOU SHOULD MODIFY ONLY WHAT IS BELOW ######################
 ##################################################################################
@@ -118,5 +118,5 @@ DistUtilsExtra.auto.setup(
     description='Dateien von onlinetvrecorder.com verwalten',
     long_description='Dateien von onlinetvrecorder.com verwalten: Schneiden, Schnitte betrachten, Cutlists bewerten...',
     url='https://github.com/EinApfelBaum/otr-verwaltung3p',
-    cmdclass={'install': InstallAndUpdateDataDirectory}  
+    cmdclass={'install': InstallAndUpdateDataDirectory}
     )

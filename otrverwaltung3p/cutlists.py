@@ -39,7 +39,7 @@ from otrverwaltung3p import fileoperations
 
 wrong_right_chars = {"Ã„" : "Ä", "Ã¤" : "ä", "Ã–" : "Ö", "Ã¶" : "ö", "Ãœ" : "Ü",
                      "Ã¼" : "ü", "ÃŸ" : "ß", "Ã " : "à", "Ã¡" : "á", "Ã¢" : "â",
-                     "Ã§" : "ç", "Ã©" : "é", "Ã¨" : "è", "Ãª" : "ê", "Ã´" : "ô", 
+                     "Ã§" : "ç", "Ã©" : "é", "Ã¨" : "è", "Ãª" : "ê", "Ã´" : "ô",
                      "Ã«" : "ë"}
 
 qualities = {'.mpg.mp4' : 'MP4', '.mpg.avi' : 'AVI', '.HQ.avi' : 'HQ', '.HD.avi' : 'HD'}
@@ -88,8 +88,8 @@ class Cutlist:
 
     def upload(self, server, cutlist_hash):
         """ Uploads a cutlist to cutlist.at "
-            Upload code from:  http://code.activestate.com/recipes/146306/ 
-            
+            Upload code from:  http://code.activestate.com/recipes/146306/
+
             Returns: error message, otherwise None
         """
 
@@ -124,9 +124,9 @@ class Cutlist:
             return response
 
     def download(self, server, video_filename):
-        """ Downloads a cutlist to the folder where video_filename is. 
+        """ Downloads a cutlist to the folder where video_filename is.
             Checks whether cutlist already exists.
-            
+
             Returns: error message, otherwise None
         """
 
@@ -173,7 +173,7 @@ class Cutlist:
 
     def read_cuts(self):
         """ Reads cuts from local_filename.
-            
+
             Returns: error message, otherwise None
         """
 
@@ -213,8 +213,8 @@ class Cutlist:
             return "Fehler in Cutlist: " + str(message)
 
     def rate(self, rating, server):
-        """ Rates a cutlist. 
-            
+        """ Rates a cutlist.
+
             Returns: True for success.
         """
 
@@ -294,15 +294,15 @@ class Cutlist:
 
 def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq, error_cb=None,
                                                     cutlist_found_cb=None, get_all_qualities=None):
-    """ Downloads all cutlists for the given file. 
+    """ Downloads all cutlists for the given file.
             filename            - movie filename
             server              - cutlist server
             choose_cutlists_by  - 0 by size, 1 by name
-            cutlist_mp4_as_hq   - 
+            cutlist_mp4_as_hq   -
             error_cb            - callback: an error occurs (message)
             cutlist_found_cb    - callback: a cutlist is found (Cutlist instance)
-        
-        Returns: error, a list of Cutlist instances    
+
+        Returns: error, a list of Cutlist instances
     """
 
     llog = logging.getLogger(__name__)

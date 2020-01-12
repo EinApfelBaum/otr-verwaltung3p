@@ -80,7 +80,7 @@ class Remove(BaseAction):
             model = self.__gui.main_window.builder.get_object('treeview_planning').get_model()
             planning_items = [model.get_value(iter, 0) for iter in broadcast_iters]
 
-            # remove rows            
+            # remove rows
             row_references = [Gtk.TreeRowReference.new(model, model.get_path(iter)) for iter in broadcast_iters]
             for row_reference in row_references:
                 iter = model.get_iter(row_reference.get_path())

@@ -50,15 +50,31 @@ class Cut(BaseAction):
             self.config.set('smartmkvmerge', 'workingdir', '/tmp')
         self.workingdir = self.config.get('smartmkvmerge', 'workingdir')
 
-        self.format_dict = {"High@L3.2": Format.HD, "High@L4": Format.HD,
-                            "High@L3": Format.HQ, "High@L3.0": Format.HQ,
-                            "Simple@L1": Format.AVI, "Baseline@L1.3": Format.MP4}
+        self.format_dict = {"High@L4": Format.HD, "High@L3.2": Format.HD, "High@L3.1": Format.HQ,
+                            "High@L3.0": Format.HQ, "High@L3": Format.HQ, "Simple@L1": Format.AVI,
+                            "Baseline@L1.3": Format.MP4}
 
     def cut_file_by_cutlist(self, filename, cutlist, program_config_value):
         raise Exception("Override this method!")
 
     def create_cutlist(self, filename, program_config_value):
         raise Exception("Override this method!")
+
+    def get_codeccore(self):
+        if not "core" in self.media_info.tracks[1].writing_library:
+            codeccore = -1
+        else:
+            try:
+                codeccore = int(self.media_info.tracks[1].writing_library.split(' ')[3])
+            except ValueError:
+                try:
+                    codeccore = int(self.media_info.tracks[1].writing_library.split(' ')[2])
+                except ValueError:
+                    codeccore = -1
+
+        self.log.error("self.media_info.tracks[1].writing_library: {}".format(
+                                                        self.media_info.tracks[1].writing_library))
+        return codeccore
 
     def get_format(self, filename):
         self.log.debug("function start")
@@ -81,7 +97,7 @@ class Cut(BaseAction):
             if os.path.isfile(outfile):
                 os.remove(outfile)
 
-        codec_core = int(self.media_info.tracks[1].writing_library.split(' ')[3])
+        codec_core = self.get_codeccore()
 
         if extension == '.avi':
             bframe_delay = 2
@@ -144,7 +160,7 @@ class Cut(BaseAction):
         format, ac3, bframe_delay, _ = self.get_format(filename)
 
         if format < 0:
-            return -1, "Format konnte nicht bestimmt werden/wird noch nicht unterstützt.", False
+            return -1, "Format konnte nicht bestimmt werden/wird (noch) nicht unterstützt.", False
 
         if format == Format.AC3:
             return -1, "AC3 wird automatisch mit der HD.avi verarbeitet und nicht einzeln geschnitten.", False
@@ -165,7 +181,8 @@ class Cut(BaseAction):
         elif 'CutInterface' in config_value and manually:
             return Program.CUT_INTERFACE, config_value, ac3
         elif 'SmartMKVmerge' in config_value:
-            if codec_core is 125 or not os.path.isfile(vdub) or not x264_codec is 'ffdshow':
+            if codec_core >= 125 or codec_core == -1 or not os.path.isfile(vdub) or \
+                                                                    not x264_codec == 'ffdshow':
                 return Program.SMART_MKVMERGE, config_value, ac3
             else:
                 return Program.VIRTUALDUB, vdub, ac3
@@ -463,7 +480,7 @@ class Cut(BaseAction):
             return self.frame_timecode[frame_number]
         else:
             return self.videolength
-            
+
         return self.timecode_frame[nearest_position]
 
     def find_closest(self, find_in, position):  # TESTING
@@ -509,8 +526,8 @@ class Cut(BaseAction):
                 raise ValueError
 
     def complete_x264_opts(self, x264_opts, filename):
-        """Analyse filename and complete the x264 options 
-        returns 
+        """Analyse filename and complete the x264 options
+        returns
           x264_opts  x264 options
           x264_core  x264 core version
         """
@@ -521,7 +538,7 @@ class Cut(BaseAction):
                    'bt470bg']
 
         try:
-            x264_core = int(self.media_info.tracks[1].writing_library.split(' ')[2])
+            x264_core = self.get_codeccore()
             self.log.debug("x264_core: {}".format(x264_core))
 
             try:
@@ -598,7 +615,8 @@ class Cut(BaseAction):
         bt470bg = ['videoformat=pal:colorprim=bt470bg:transfer=bt470bg:colormatrix=bt470bg']
 
         try:
-            codec_core = int(self.media_info.tracks[1].writing_library.split(' ')[3])
+            codec_core = self.get_codeccore()
+
             if 'x264' in self.media_info.tracks[1].writing_library:
                 codec = 'libx264'
             try:
@@ -736,10 +754,10 @@ class Cut(BaseAction):
 
             while Gtk.events_pending():
                 Gtk.main_iteration()
-            
+
     def get_norm_volume(self, filename, stream):
-        """ Gets the volume correction of a movie using ffprobe. 
-            Returns without error:              
+        """ Gets the volume correction of a movie using ffprobe.
+            Returns without error:
                         norm_vol, None
                     with error:
                         1.0, error_message """

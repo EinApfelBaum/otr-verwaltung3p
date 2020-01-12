@@ -77,7 +77,7 @@ class CutDialog(Gtk.Dialog, Gtk.Buildable):
             self.builder.get_object('label_cutlist').set_markup("Keine lokale Cutlist gefunden.")
             self.builder.get_object('radio_local_cutlist').set_sensitive(False)
 
-        # start looking for cutlists                
+        # start looking for cutlists
         self.treeview_cutlists_download.get_model().clear()
         self.builder.get_object('label_status').set_markup(
                                                     "<b>Cutlisten werden heruntergeladen...</b>")

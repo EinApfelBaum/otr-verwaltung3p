@@ -38,35 +38,35 @@ def _decode_dict(input):
         r = _decode_string(remainder)
         key = r[0]
         remainder = r[1]
-        
+
         if remainder[0] == 'i':
             r = _decode_integer(remainder)
             value = r[0]
             result[key] = value
             remainder = r[1]
-        
+
         elif remainder[0].isdigit():
             r = _decode_string(remainder)
             value = r[0]
             result[key] = value
             remainder = r[1]
-        
+
         elif remainder[0] == 'l':
             r = _decode_list(remainder)
             value = r[0]
             result[key] = value
             remainder = r[1]
-        
+
         elif remainder[0] == 'd':
             r = _decode_dict(remainder)
             value = r[0]
             result[key] = value
             remainder = r[1]
-        
+
         else:
             #raise ValueError("Invalid initial delimiter '%r' found while decoding a dictionary" % ramainder[0])
             raise ValueError("Invalid initial delimiter '%r' found while decoding a dictionary")
-    
+
     return (result,remainder[1:])
 
 def _decode_integer(input):
@@ -85,29 +85,29 @@ def _decode_list(input):
             r = _decode_integer(remainder)
             result.append(r[0])
             remainder = r[1]
-        
+
         elif remainder[0].isdigit():
             r = _decode_string(remainder)
             result.append(r[0])
             remainder = r[1]
-        
+
         elif remainder[0] == 'l':
             r = _decode_list(remainder)
             result.append(r[0])
             remainder = r[1]
-        
+
         elif remainder[0] == 'd':
             r = _decode_dict(remainder)
             result.append(r[0])
             remainder = r[1]
-        
+
         elif remainder[0] == 'e':
             remainder = remainder[1:]
             break
-        
+
         else:
             raise ValueError("Invalid initial delimiter '%r' found while decoding a list" % remainder[0])
-    
+
     return (result,remainder)
 
 def _decode_string(input):
@@ -127,25 +127,25 @@ def _decode_string(input):
 
 def bencode(input):
     '''Encode python types to bencode format.
-    
+
     Keyword arguments:
     input -- the input value to be encoded
     '''
-    
+
     itype = type(input)
-    
+
     if itype == type(str()) or itype == type(str()):
         return _encode_string(input.encode('utf8'))
-    
+
     elif itype == type(float()):
         return _encode_string(str(input))
-    
+
     elif itype == type(int()):
         return _encode_integer(input)
-    
+
     elif itype == type(dict()):
         return _encode_dictionary(input)
-    
+
     else:
         try:
             return _encode_iterable(iter(input))
@@ -155,19 +155,19 @@ def bencode(input):
 
 def bdecode(input):
     '''Decode strings from bencode format to python value types.
-    
+
     Keyword arguments:
     input -- the input string to be decoded
     '''
-    
+
     input = input.strip()
-    
+
     if input[0] == 'i':
         return _decode_integer(input)[0]
-    
+
     elif input[0].isdigit():
         return _decode_string(input)[0]
-    
+
     elif input[0] == 'l':
         return _decode_list(input)[0]
 

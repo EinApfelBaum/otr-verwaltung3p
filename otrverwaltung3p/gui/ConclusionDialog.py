@@ -236,7 +236,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                 for ext in fileextensions:
                     if full_fname.endswith(ext):
                         full_fname = full_fname.replace(ext, '')
-                
+
                 if self.app.config.get('general', 'rename_cut'):
                     auto_fname = self.rename_by_schema(os.path.basename(self.file_conclusion.cut_video))
                     for ext in fileextensions:
