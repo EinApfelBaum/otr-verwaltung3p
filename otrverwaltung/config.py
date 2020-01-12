@@ -83,8 +83,8 @@ class Config:
 
     def _decrypt_aes(self, suite, crypted, padding):
         return suite.decrypt(
-            b64decode(crypted).decode('utf-8')
-        ).rstrip(padding)
+            b64decode(crypted)
+        ).decode('utf-8').rstrip(padding)
 
     def save(self):
         """ Saves configuration to disk. """
@@ -140,7 +140,7 @@ class Config:
                                 b64decode(general['aes_key'].encode('utf-8')),
                                 AES.MODE_ECB
                             )
-                            crypted = b64decode(json_config[category][option])
+                            crypted = b64decode(conf)
                             plain_text = self._decrypt_aes(
                                 decryption_suite, crypted, padding
                             )
