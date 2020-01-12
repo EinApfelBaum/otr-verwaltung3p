@@ -18,11 +18,11 @@ try:
     import simplejson as json
 except ImportError:
     import json
-import os.path
+import os
 import logging
 import base64
 
-from otrverwaltung import path
+from otrverwaltung import path as otrv_path
 from Crypto.Cipher import AES
 
 
@@ -32,15 +32,15 @@ class Config:
     def __init__(self, config_file, fields):
         """ """
 
-        self.__config_file = config_file
-        self.__fields = fields
+        self._config_file = config_file
+        self._fields = fields
 
-        self.__callbacks = {}
+        self._callbacks = {}
         self.log = logging.getLogger(self.__class__.__name__)
 
     def connect(self, category, option, callback):
-        self.__callbacks.setdefault(category, {})
-        self.__callbacks[category].setdefault(option, []).append(callback)
+        self._callbacks.setdefault(category, {})
+        self._callbacks[category].setdefault(option, []).append(callback)
 
     def set(self, category, option, value):
         if option in ['email', 'password']:
@@ -51,17 +51,17 @@ class Config:
                                                                                                 "value": value})
 
         try:
-            for callback in self.__callbacks[category][option]:
+            for callback in self._callbacks[category][option]:
                 callback(value)
         except KeyError:
             pass
 
-        self.__fields[category][option] = value
+        self._fields[category][option] = value
 
     def get(self, category, option):
         """ Gets a configuration option. """
 
-        value = self.__fields[category][option]
+        value = self._fields[category][option]
         if option in ['email', 'password']:
             self.log.debug("[%(category)s][%(option)s]: *****" % {"category": category, "option": option})
         else:
@@ -75,35 +75,35 @@ class Config:
         try:
             # make sure directories exist
             try:
-                os.makedirs(os.path.dirname(self.__config_file))
+                os.makedirs(os.path.dirname(self._config_file))
             except OSError:
                 pass
 
-            config_file = open(self.__config_file, "w")
-            
+            config_file = open(self._config_file, "w")
+
             try:
-                if len(str(self.__fields['general']['password'])) > 0:
+                if len(str(self._fields['general']['password'])) > 0:
                     # Encryption
-                    pad = lambda s: s + (self.__fields['general']['aes_blocksize'] - len(s) % self.__fields['general']['aes_blocksize']) * self.__fields['general']['aes_padding']
+                    pad = lambda s: s + (self._fields['general']['aes_blocksize'] - len(s) % self._fields['general']['aes_blocksize']) * self._fields['general']['aes_padding']
                     EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s).encode('UTF-8')))
-                    encryption_suite = AES.new(base64.b64decode(self.__fields['general']['aes_key'].encode('utf-8')),AES.MODE_ECB)
-                    cipher_text = EncodeAES(encryption_suite, self.__fields['general']['password'])
-                    self.__fields['general']['password'] = base64.b64encode(cipher_text).decode('utf-8')
+                    encryption_suite = AES.new(base64.b64decode(self._fields['general']['aes_key'].encode('utf-8')),AES.MODE_ECB)
+                    cipher_text = EncodeAES(encryption_suite, self._fields['general']['password'])
+                    self._fields['general']['password'] = base64.b64encode(cipher_text).decode('utf-8')
             except ValueError:
-                self.__fields['general']['password']=self.__fields['general']['password']
-            
+                self._fields['general']['password']=self._fields['general']['password']
+
             self.log.debug("Writing to {0}".format(config_file))
-            json.dump(self.__fields, config_file, ensure_ascii=False, sort_keys=True, indent=4)
+            json.dump(self._fields, config_file, ensure_ascii=False, sort_keys=True, indent=4)
             config_file.close()
         except IOError as message:
             self.log.error("Config file not available. Dumping configuration:")
-            print(json.dumps(self.__fields, sort_keys=True, indent=4))
+            print(json.dumps(self._fields, sort_keys=True, indent=4))
 
     def load(self):
         """ Reads an existing configuration file. """
 
         try:
-            config = open(self.__config_file, 'r')
+            config = open(self._config_file, 'r')
             json_config = json.load(config)
             config.close()
         except (IOError, json.decoder.JSONDecodeError) as message:
@@ -115,7 +115,7 @@ class Config:
         # ~ newConfFields = {'no_password_hint':'general'}
         # ~ newConfValues = {'no_password_hint':False}
 
-        for category, options in self.__fields.items():
+        for category, options in self._fields.items():
             for option, value in options.items():
                 try:
                     if category is 'general' and option is 'password':
@@ -139,7 +139,7 @@ class Config:
                         # If x264_mp4_string is old default for mp4, set to new one
                         if json_config[category][option] == '--force-cfr --profile baseline --preset medium --trellis 0':
                             json_config[category][option] = '--force-cfr --trellis 0 --preset veryfast'
-                    else:                        
+                    else:
                         self.set(category, option, json_config[category][option])
                     # DELETE
                     # ~ if option in newConfFields:
@@ -155,14 +155,12 @@ class Config:
             # ~ self.set(value, key, newConfValues.get(key))
 
     def get_program(self, program):
-        """ Returns the full calling string of a program 
-            either the pure config value or the internal version, if the config value contains 'intern' """
-
-        value = self.__fields['programs'][program]
-        intern_program = path.get_tools_path(value)
-
+        """ Returns the full calling string of a program
+            either the pure config value or the internal version,
+            if the config value contains 'intern' """
+        value = self._fields['programs'][program]
+        intern_program = otrv_path.get_tools_path(value)
         if 'intern-' in value:
             if os.path.isfile(intern_program):
                 return intern_program
-
         return value
