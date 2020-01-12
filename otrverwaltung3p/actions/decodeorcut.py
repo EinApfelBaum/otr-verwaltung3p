@@ -368,8 +368,14 @@ class DecodeOrCut(Cut):
                     file_conclusion.cut.upload_cutlist = True
                     file_conclusion.cut.cutlist = cutlist
                 else:
-                    file_conclusion.cut.status = Status.ERROR
+                    self.log.debug("Error message: {}".format(error_message))
                     file_conclusion.cut.message = error_message
+                    if error_message == "Keine Schnitte angegeben":
+                        self.log.info("Error message CutinterfaceDialog: {}".format(error_message))
+                        file_conclusion.cut.status = Status.NOT_DONE
+                    else:
+                        file_conclusion.cut.status = Status.ERROR
+                        file_conclusion.cut.message = error_message
 
             elif file_conclusion.cut.cut_action == Cut_action.BEST_CUTLIST:
                 error, cutlists = cutlists_management.download_cutlists(

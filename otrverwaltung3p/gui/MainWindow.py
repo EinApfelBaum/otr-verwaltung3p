@@ -25,7 +25,7 @@ import sys, os, datetime, logging
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GdkPixbuf, Gdk, Gio
+from gi.repository import Gtk, GdkPixbuf, Gdk, Gio, GLib
 
 from otrverwaltung3p import path
 from otrverwaltung3p.constants import Action, Section, Cut_action, DownloadStatus
@@ -43,6 +43,25 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         Gtk.Window.__init__(self)
         self.log = logging.getLogger(self.__class__.__name__)
         self.svn_version_url = ''
+        self.conclusion_eventbox = None
+        self.conclusion_css = b"""
+* {
+    transition-property: color, background-color;
+    transition-duration: 2.5s;
+}
+.conclusion {
+    background-image: none;
+    background-color: rgb(255,180,0);
+    color: black;
+}
+.conclusion2 {
+    background-image: none;
+    background-color: rgb(255,225,0);
+    color: black;
+}
+        """
+        self.css_provider = Gtk.CssProvider()
+        self.css_provider.load_from_data(self.conclusion_css)
 
     def do_parser_finished(self, builder):
         self.builder = builder
@@ -357,15 +376,31 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.sidebar.show_all()
         ## sidebar end ##
 
-        # change background of conclusin bar
-        # TODO: maybe change background with CssProvider
-        # http://stackoverflow.com/questions/11927785/how-to-make-buttons-different-colours-in-python-gtk3-using-gi
+        # change background of conclusion button
+        conclusion_button = self.builder.get_object('button_show_conclusion')
+        # https://stackoverflow.com/q/11927785
+        conclusion_eventbox = self.builder.get_object('box_conclusion')
         eventbox = self.builder.get_object('box_conclusion')
+        conclusion_button.get_style_context().add_provider(self.css_provider,
+                                                        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         # cmap = eventbox.get_colormap()
         # colour = cmap.alloc_color("#E8E7B6")
+        conclusion_button.get_style_context().add_class("conclusion")
         # style = eventbox.get_style().copy()
+        # Soft blinking
         # style.bg[Gtk.StateFlags.NORMAL] = colour
+        GLib.timeout_add(2500, self._css_callback, conclusion_button)
         # eventbox.set_style(style)
+
+    def _css_callback(self, widget):
+        if widget.get_style_context().has_class("conclusion"):
+            widget.get_style_context().remove_class("conclusion")
+            widget.get_style_context().add_class("conclusion2")
+        else:
+            widget.get_style_context().remove_class("conclusion2")
+            widget.get_style_context().add_class("conclusion")
+
+        return True
 
     #
     # treeview_files

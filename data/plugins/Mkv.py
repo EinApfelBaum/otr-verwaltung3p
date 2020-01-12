@@ -277,13 +277,13 @@ class Mkv(Plugin):
                     line += char.decode('utf-8')
 
                     progress = ''
-                    if line.find('Progress:') is not -1:
+                    if line.find('Progress:') != -1:
                         line = ''
                         if "Error" in line or "Warning" in line:
                             break
 
                         for i in range(6):
-                            if char.decode('utf-8') is '%':
+                            if char.decode('utf-8') == '%':
                                 break
                             char = p.stdout.read(1)
                             progress += char.decode('utf-8')

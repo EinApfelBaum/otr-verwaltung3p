@@ -82,11 +82,12 @@ class ConclusionsManager:
             self.conclusions.append(conclusion)
 
         if len(self.conclusions) == 1:
-            text = "Eine Datei ist fertig."
+            text = "Eine geschnittene Datei anzeigen."
         else:
-            text = "%i Dateien sind fertig." % len(self.conclusions)
+            text = "{} geschnittene Dateien anzeigen.".format(len(self.conclusions))
 
-        self.app.gui.main_window.builder.get_object('label_conclusion').set_text(text)
+        # ~ self.app.gui.main_window.builder.get_object('label_conclusion').set_text(text)
+        self.app.gui.main_window.builder.get_object('button_show_conclusion').set_label(text)
         self.app.gui.main_window.builder.get_object('box_conclusion').show()
 
     def show_conclusions(self):

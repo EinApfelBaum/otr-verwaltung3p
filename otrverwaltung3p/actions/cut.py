@@ -72,7 +72,7 @@ class Cut(BaseAction):
                 except ValueError:
                     codeccore = -1
 
-        self.log.error("self.media_info.tracks[1].writing_library: {}".format(
+        self.log.debug("self.media_info.tracks[1].writing_library: {}".format(
                                                         self.media_info.tracks[1].writing_library))
         return codeccore
 
@@ -145,7 +145,6 @@ class Cut(BaseAction):
             return format, None, bframe_delay, codec_core
 
     def get_program(self, filename, manually=False):
-        print("get_program filename: {}".format(filename))
         if manually:
             programs = {Format.AVI: self.config.get('general', 'cut_avis_man_by'),
                         Format.HQ: self.config.get('general', 'cut_hqs_man_by'),

@@ -70,7 +70,7 @@ def scrape_http(parsed_tracker, hashes):
     pt = parsed_tracker
     url = parse.urlunsplit((pt.scheme, pt.netloc, pt.path, qs, pt.fragment))
     handle = request.urlopen(url);
-    if handle.getcode() is not 200:
+    if handle.getcode() != 200:
         raise RuntimeError("%s status code returned" % handle.getcode())
     decoded = bdecode(handle.read())
     ret = {}

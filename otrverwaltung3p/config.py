@@ -69,7 +69,7 @@ class Config:
         except KeyError:
             pass
 
-        if option is 'password' and self.__fields['general']['passwd_store'] == 1 and value is not None:
+        if option == 'password' and self.__fields['general']['passwd_store'] == 1 and value is not None:
             keyring.set_password("otr-verwaltung3p", self.__fields['general']['email'], value)
             self.log.debug("Writing password to keyring")
         else:
@@ -79,7 +79,7 @@ class Config:
         """ Gets a configuration option. """
         value = ""
 
-        if option is 'password' and self.__fields['general']['passwd_store'] == 1:
+        if option == 'password' and self.__fields['general']['passwd_store'] == 1:
             password = keyring.get_password("otr-verwaltung3p", self.__fields['general']['email'])
             if password is not None:
                 value = password
@@ -139,7 +139,7 @@ class Config:
         for category, options in self.__fields.items():
             for option, value in options.items():
                 try:
-                    if category is 'general' and option is 'password':
+                    if category == 'general' and option == 'password':
                         if json_config['general']['passwd_store'] == 0:
                             if len(str(json_config[category][option])) > 0:
                                 key = b64decode(self.__fields['general']['aes_key'].encode('UTF-8'))
@@ -147,7 +147,7 @@ class Config:
                                 bdec = b64decode(json_config[category][option].encode('UTF-8'))
                                 plain_text = decrypt_aes.decrypt(bdec).decode('UTF-8')
                                 self.set(category, option, plain_text)
-                    elif category is 'general' and option is 'server':
+                    elif category == 'general' and option == 'server':
                         # Check for trailing slash in url
                         serverurl = json_config[category][option].strip()
                         if not serverurl.endswith("/"):

@@ -428,7 +428,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         # TODO check port 2.7 to 3.0
         # catch Gst.QueryError
         except TypeError as typeError:
-           self.log.info("Exeption: {}".format(typeError))
+           self.log.debug("Exeption: {}".format(typeError))
 
     def seeker(self, direction):
         """ Jump forward or backward by self.seek_distance.
@@ -1014,18 +1014,31 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                         pixel_start = border + int(round(start * one_frame_in_pixels))
                         pixel_duration = int(round(duration * one_frame_in_pixels))
 
-                        # draw keyframe cuts that don't need reencoding with a different color
+                        # draw keyframe cuts that don't need reencoding in a different color
                         # ROUND
-                        # ~ if (round(start + duration) in self.keyframes) or (round(start + duration) == self.frames):
                         if round(start) in self.keyframes and (round(start + duration) in self.keyframes or round(start + duration) == self.frames):
-                            # ~ self.log.debug("Number of frames: {}".format(self.frames))
-                            # ~ self.log.debug("start+duration: {}".format(round(start + duration)))
                             cr.set_source_rgb(0.0, 0.6, 0.0)  # green
+                            cr.rectangle(pixel_start, slider.get_allocation().height - 5, pixel_duration, 5)
+                            cr.fill()
                         else:
-                            cr.set_source_rgb(1.0, 0.6, 0.0)  # orange
+                            if round(start) in self.keyframes:
+                                cr.set_source_rgb(0.0, 0.6, 0.0)  # green
+                            else:
+                                cr.set_source_rgb(1.0, 0.6, 0.0)  # orange
+                            cr.rectangle(pixel_start, slider.get_allocation().height - 5, pixel_duration/10, 5)
+                            cr.fill()
 
-                        cr.rectangle(pixel_start, slider.get_allocation().height - 5, pixel_duration, 5)
-                        cr.fill()
+                            if round(start + duration) in self.keyframes or round(start + duration) == self.frames:
+                                cr.set_source_rgb(0.0, 0.6, 0.0)  # green
+                            else:
+                                cr.set_source_rgb(1.0, 0.6, 0.0)  # orange
+
+                            cr.rectangle(pixel_start + pixel_duration/10*9, slider.get_allocation().height - 5, pixel_duration/10, 5)
+                            cr.fill()
+
+                            cr.set_source_rgb(1.0, 0.6, 0.0)  # orange
+                            cr.rectangle(pixel_start + pixel_duration/10, slider.get_allocation().height - 5, pixel_duration/10*8, 5)
+                            cr.fill()
 
                 # slider.queue_draw()
             except AttributeError as ex:
