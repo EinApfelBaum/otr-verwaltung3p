@@ -20,21 +20,22 @@ except ImportError:
     import json
 import os
 import logging
-import base64
 
+from base64 import b64decode, b64encode
 from otrverwaltung import path as otrv_path
 from Crypto.Cipher import AES
+
+
+X264_MP4_OLD = '--force-cfr --profile baseline --preset medium --trellis 0'
+X264_MP4_NEW = '--force-cfr --trellis 0 --preset veryfast'
 
 
 class Config:
     """ Loads and saves configuration fields from/to file. """
 
     def __init__(self, config_file, fields):
-        """ """
-
         self._config_file = config_file
         self._fields = fields
-
         self._callbacks = {}
         self.log = logging.getLogger(self.__class__.__name__)
 
@@ -43,110 +44,125 @@ class Config:
         self._callbacks[category].setdefault(option, []).append(callback)
 
     def set(self, category, option, value):
-        if option in ['email', 'password']:
-            self.log.debug("[%(category)s][%(option)s] to *****" % {"category": category, "option": option})
-        else:
-            pass
-            self.log.debug("[%(category)s][%(option)s] to %(value)s" % {"category": category, "option": option,
-                                                                                                "value": value})
-
+        """Set a configuration option."""
+        removed = '**REMOVED**' if option in ('email', 'password') else value
+        self.log.debug(
+            "[%(category)s][%(option)s] to %(value)s",
+            {"category": category, "option": option, "value": removed}
+        )
         try:
             for callback in self._callbacks[category][option]:
                 callback(value)
         except KeyError:
             pass
-
         self._fields[category][option] = value
 
     def get(self, category, option):
         """ Gets a configuration option. """
-
         value = self._fields[category][option]
-        if option in ['email', 'password']:
-            self.log.debug("[%(category)s][%(option)s]: *****" % {"category": category, "option": option})
-        else:
-            self.log.debug("[%(category)s][%(option)s]: %(value)s" % {"category": category, "option": option, "value": value})
-
+        removed = '**REMOVED**' if option in ('email', 'password') else value
+        self.log.debug(
+            "[%(category)s][%(option)s] to %(value)s",
+            {"category": category, "option": option, "value": removed}
+        )
         return value
+
+    def _pad(self, password):
+        general = self._fields['general']
+        blocksize = general['aes_blocksize']
+        return (
+            password
+            + (blocksize - len(password) % blocksize)
+            * general['aes_padding']
+        )
+
+    def _encrypt_aes(self, suite, password):
+        return b64encode(
+            suite.encrypt(self._pad(password).encode('utf-8'))
+        )
+
+    def _decrypt_aes(self, suite, crypted, padding):
+        return suite.decrypt(
+            b64decode(crypted).decode('utf-8')
+        ).rstrip(padding)
 
     def save(self):
         """ Saves configuration to disk. """
-
         try:
             # make sure directories exist
-            try:
-                os.makedirs(os.path.dirname(self._config_file))
-            except OSError:
-                pass
-
-            config_file = open(self._config_file, "w")
-
-            try:
-                if len(str(self._fields['general']['password'])) > 0:
-                    # Encryption
-                    pad = lambda s: s + (self._fields['general']['aes_blocksize'] - len(s) % self._fields['general']['aes_blocksize']) * self._fields['general']['aes_padding']
-                    EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s).encode('UTF-8')))
-                    encryption_suite = AES.new(base64.b64decode(self._fields['general']['aes_key'].encode('utf-8')),AES.MODE_ECB)
-                    cipher_text = EncodeAES(encryption_suite, self._fields['general']['password'])
-                    self._fields['general']['password'] = base64.b64encode(cipher_text).decode('utf-8')
-            except ValueError:
-                self._fields['general']['password']=self._fields['general']['password']
-
-            self.log.debug("Writing to {0}".format(config_file))
-            json.dump(self._fields, config_file, ensure_ascii=False, sort_keys=True, indent=4)
-            config_file.close()
-        except IOError as message:
+            os.makedirs(os.path.dirname(self._config_file), exist_ok=True)
+            general = self._fields['general']
+            with open(self._config_file, "w") as config_file:
+                try:
+                    if len(general['password']) > 0:
+                        # Encryption
+                        encryption_suite = AES.new(
+                            b64decode(general['aes_key'].encode('utf-8')),
+                            AES.MODE_ECB
+                        )
+                        cipher_text = self._encrypt_aes(
+                            encryption_suite, general['password']
+                        )
+                        self._fields['general']['password'] = b64encode(
+                            cipher_text
+                        ).decode('utf-8')
+                except ValueError:
+                    self._fields['general']['password'] = general['password']
+                self.log.debug("Writing to %s", config_file)
+                json.dump(self._fields, config_file, ensure_ascii=False,
+                          sort_keys=True, indent=4)
+        except IOError:
             self.log.error("Config file not available. Dumping configuration:")
             print(json.dumps(self._fields, sort_keys=True, indent=4))
+            self.log.exception("Error:")
 
     def load(self):
         """ Reads an existing configuration file. """
-
         try:
-            config = open(self._config_file, 'r')
-            json_config = json.load(config)
-            config.close()
-        except (IOError, json.decoder.JSONDecodeError) as message:
-            self.log.error("Config file is not available or has invalid json content. Using default configuration.")
-            self.log.debug(message)
+            with open(self._config_file, 'r') as config:
+                json_config = json.load(config)
+        except (IOError, json.decoder.JSONDecodeError):
+            self.log.exception(
+                "Config file is not available or has invalid json content. "
+                "Using default configuration. Error:"
+            )
             json_config = {}
-
-        # DELETE
-        # ~ newConfFields = {'no_password_hint':'general'}
-        # ~ newConfValues = {'no_password_hint':False}
-
         for category, options in self._fields.items():
             for option, value in options.items():
+                conf = json_config[category][option]
                 try:
-                    if category is 'general' and option is 'password':
+                    if category == 'general' and option == 'password':
                         try:
+                            general = json_config['general']
                             # Decryption
-                            padding=json_config['general']['aes_padding']
-                            DecodeAES = lambda c, e: (c.decrypt(base64.b64decode(e)).decode("utf-8")).rstrip(padding)
-                            decryption_suite = AES.new(base64.b64decode(json_config['general']['aes_key'].encode('utf-8')),AES.MODE_ECB)
-                            b = base64.b64decode(json_config[category][option])
-                            plain_text = DecodeAES(decryption_suite, b)
+                            padding = general['aes_padding']
+                            decryption_suite = AES.new(
+                                b64decode(general['aes_key'].encode('utf-8')),
+                                AES.MODE_ECB
+                            )
+                            crypted = b64decode(json_config[category][option])
+                            plain_text = self._decrypt_aes(
+                                decryption_suite, crypted, padding
+                            )
                             self.set(category, option, plain_text)
                         except ValueError:
-                            self.set(category, option, json_config[category][option])
-                    elif category is 'general' and option is 'server':
+                            self.set(category, option, conf)
+                    elif category == 'general' and option == 'server':
                         # Check for trailing slash in url
-                        serverurl = json_config[category][option].strip()
+                        serverurl = conf.strip()
                         if not serverurl.endswith("/"):
                             serverurl += "/"
                         self.set(category, option, serverurl)
-                    elif category is 'smartmkvmerge' and option is 'x264_mp4_string':
-                        # If x264_mp4_string is old default for mp4, set to new one
-                        if json_config[category][option] == '--force-cfr --profile baseline --preset medium --trellis 0':
-                            json_config[category][option] = '--force-cfr --trellis 0 --preset veryfast'
+                    elif (
+                        category == 'smartmkvmerge'
+                        and option == 'x264_mp4_string'
+                    ):
+                        # If x264_mp4_string is old default for mp4,
+                        # set to new one
+                        if conf == X264_MP4_OLD:
+                            json_config[category][option] = X264_MP4_NEW
                     else:
-                        self.set(category, option, json_config[category][option])
-                    # DELETE
-                    # ~ if option in newConfFields:
-                        # ~ try:
-                            # ~ del newConfFields[option]
-                        # ~ except KeyError:
-                            # ~ pass
+                        self.set(category, option, conf)
                 except KeyError:
                     self.set(category, option, value)
 
