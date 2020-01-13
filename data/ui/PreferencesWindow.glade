@@ -874,10 +874,10 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                   <object class="GtkComboBoxText" id="combobox_mp4">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="active_id">intern_vdub</property>
+                                    <property name="active_id">SmartMKVmerge</property>
                                     <items>
-                                      <item id="intern-vdub" translatable="yes">intern-vdub</item>
                                       <item id="SmartMKVmerge" translatable="yes">SmartMKVmerge</item>
+                                      <item id="intern-vdub" translatable="yes">intern-vdub</item>
                                     </items>
                                   </object>
                                   <packing>
@@ -914,11 +914,9 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                   <object class="GtkComboBoxText" id="h264_codec_cbox">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="active_id">x264vfw</property>
+                                    <property name="active_id">ffdshow</property>
                                     <items>
                                       <item id="ffdshow" translatable="yes">ffdshow</item>
-                                      <item id="x264vfw" translatable="yes">x264vfw</item>
-                                      <item id="komisar" translatable="yes">komisar</item>
                                     </items>
                                   </object>
                                   <packing>

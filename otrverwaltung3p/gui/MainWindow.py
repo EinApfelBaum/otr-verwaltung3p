@@ -680,7 +680,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                     "otr-verwaltung++ (2012-):", "monarc99", "JanS", "",
                     "otr-verwaltung (-2010):", "B. Elbers"]
 
-        license = "GPL version 3, see http://www.gnu.org/licenses"
+        license = "GPL version 3, see http://www.gnu.org/licenses/gpl-3.0.html#content"
 
         about_dialog = Gtk.AboutDialog(parent=self.gui.main_window,
                 program_name=self.app.app_name,

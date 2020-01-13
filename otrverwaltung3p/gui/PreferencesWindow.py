@@ -175,6 +175,12 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         self.app.config.connect('general', 'passwd_store',
                                 lambda value: self._radioPasswdStore_toggled(value))
 
+        # Delete combobox entries for intern-vdub/intern-virtualdub if they are not installed
+        if path.get_internal_virtualdub_path('vdub.exe') is None:
+            for widget_name in ['combobox_avi', 'combobox_hq', 'combobox_mp4',
+                                        'combobox_man_avi', 'combobox_man_hq', 'combobox_man_mp4']:
+                self.obj(widget_name).remove(1)
+
         ComboBoxEntryBinding(self.obj('combobox_avi'), self.app.config, 'general', 'cut_avis_by')
         ComboBoxEntryBinding(self.obj('combobox_hq'), self.app.config, 'general', 'cut_hqs_by')
         ComboBoxEntryBinding(self.obj('combobox_mp4'), self.app.config, 'general', 'cut_mp4s_by')
@@ -215,8 +221,8 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             self.obj('entryPassword').set_sensitive(True)
 
     def _on_button_reset_size_moviewindow_clicked(self, widget):
-        self.obj('spinbuttonX').set_value(800.0)
-        self.obj('spinbuttonY').set_value(450.0)
+        self.obj('spinbutton_x').set_value(800.0)
+        self.obj('spinbutton_y').set_value(450.0)
 
     def _on_button_check_otr_credentials_clicked(self, entry):
         request_answer=""

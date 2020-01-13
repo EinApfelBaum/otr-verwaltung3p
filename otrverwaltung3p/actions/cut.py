@@ -180,13 +180,12 @@ class Cut(BaseAction):
         elif 'CutInterface' in config_value and manually:
             return Program.CUT_INTERFACE, config_value, ac3
         elif 'SmartMKVmerge' in config_value:
-            if codec_core >= 125 or codec_core == -1 or not os.path.isfile(vdub) or \
-                                                                    not x264_codec == 'ffdshow':
+            if codec_core >= 125 or codec_core == -1 or vdub is None or not x264_codec == 'ffdshow':
                 return Program.SMART_MKVMERGE, config_value, ac3
             else:
                 return Program.VIRTUALDUB, vdub, ac3
         else:
-            return -2, "Programm '%s' konnte nicht bestimmt werden. Es werden VirtualDub und Avidemux unterstützt." % config_value, False
+            return -2, "Programm '%s' konnte nicht bestimmt werden. Es wird nur VirtualDub unterstützt." % config_value, False
 
     def generate_filename(self, filename, forceavi=0):
         """ generate filename for a cut video file. """
