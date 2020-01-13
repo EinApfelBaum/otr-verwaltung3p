@@ -38,6 +38,7 @@
     <property name="destroy_with_parent">True</property>
     <property name="skip_taskbar_hint">True</property>
     <signal name="delete-event" handler="_on_preferences_window_delete_event" swapped="no"/>
+    <signal name="key-press-event" handler="on_preferences_window_key_press_event" swapped="no"/>
     <child>
       <placeholder/>
     </child>
@@ -193,7 +194,7 @@
                       <object class="GtkLabel" id="labelDescCutAvis">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">In diesen Ordner werden die Dateien nach dem Schneiden verschoben. Dieser Ordner kann derselbe sein wie der für die neuen otrkey-Dateien.</property>
+                        <property name="label" translatable="yes">In diesen Ordner werden die Dateien nach dem Schneiden verschoben. Dieser Ordner kann derselbe sein wie der für die ungeschnittenen Dateien.</property>
                         <property name="wrap">True</property>
                         <property name="max_width_chars">60</property>
                         <property name="xalign">0</property>
@@ -230,7 +231,7 @@
                       <object class="GtkLabel" id="labelDescUncutAvis">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">In diesen Ordner werden die dekodierten Dateien verschoben. Dieser Ordner kann derselbe sein wie der für die neuen otrkey-Dateien.</property>
+                        <property name="label" translatable="yes">In diesen Ordner werden die dekodierten Dateien verschoben. Dieser Ordner sollte nicht derselbe sein wie der für die neuen otrkey-Dateien.</property>
                         <property name="wrap">True</property>
                         <property name="max_width_chars">60</property>
                         <property name="xalign">0</property>
@@ -396,47 +397,6 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox" id="boxCheckOTRCredentials">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="margin_top">5</property>
-                        <child>
-                          <object class="GtkButton" id="checkOTRCredentials">
-                            <property name="label" translatable="yes">Prüfe Zugangsdaten</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="halign">start</property>
-                            <signal name="clicked" handler="_on_button_check_otr_credentials_clicked" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="OTRCredentialCheckResponse">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="margin_left">15</property>
-                            <property name="use_markup">True</property>
-                            <property name="wrap">True</property>
-                            <property name="xalign">0</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">6</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkEntry" id="entryPassword">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -503,13 +463,14 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="checkPasswordCheckOnProgramStart">
-                        <property name="label" translatable="yes">Passworthinweis beim Start ausblenden</property>
+                      <object class="GtkRadioButton" id="radioPasswdStoreConf">
+                        <property name="label" translatable="yes">Passwort in conf-Datei speichern</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="halign">start</property>
-                        <property name="margin_top">5</property>
+                        <property name="tooltip_text" translatable="yes">Das Passwort wird AES-256 verschlüsselt gespeichert, aber dennoch sind alle Informationen zum Entschlüsseln in der conf-Datei vorhanden.
+Die Sicherheit </property>
+                        <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
@@ -518,9 +479,81 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="label1">
+                      <object class="GtkRadioButton" id="radioPasswdStoreWallet">
+                        <property name="label" translatable="yes">Passwort in keyring/wallet speichern</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="active">True</property>
+                        <property name="draw_indicator">True</property>
+                        <property name="group">radioPasswdStoreConf</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkRadioButton" id="radioPasswdStoreNot">
+                        <property name="label" translatable="yes">Passwort nicht speichern</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="active">True</property>
+                        <property name="draw_indicator">True</property>
+                        <property name="group">radioPasswdStoreConf</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">6</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="boxCheckOTRCredentials">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="margin_top">10</property>
+                        <child>
+                          <object class="GtkButton" id="checkOTRCredentials">
+                            <property name="label" translatable="yes">Prüfe Zugangsdaten</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="halign">start</property>
+                            <signal name="clicked" handler="_on_button_check_otr_credentials_clicked" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="OTRCredentialCheckResponse">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="margin_left">15</property>
+                            <property name="use_markup">True</property>
+                            <property name="wrap">True</property>
+                            <property name="xalign">0</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">10</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label1">
+                        <property name="sensitive">False</property>
+                        <property name="can_focus">False</property>
+                        <property name="double_buffered">False</property>
                         <property name="margin_top">5</property>
                         <property name="label" translatable="yes">&lt;span font-size='small'&gt;&lt;i&gt;Das Passwort wird verschlüsselt gespeichert (AES-256).
 Dennoch kann dieses Feld auch leer gelassen werden.
@@ -532,8 +565,48 @@ In diesem Fall bitte "Passworthinweis beim Start ausblenden" aktivieren.&lt;/i&g
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">5</property>
+                        <property name="top_attach">9</property>
                       </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="checkPasswdStoreMemory">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_left">20</property>
+                        <property name="margin_top">5</property>
+                        <property name="draw_indicator">True</property>
+                        <child>
+                          <object class="GtkLabel" id="labelPasswdStoreMemory">
+                            <property name="visible">True</property>
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">&lt;span font-size='small'&gt;Passwort nach Eingabe bis zum Beenden im Speicher halten&lt;/span&gt;</property>
+                            <property name="use_markup">True</property>
+                            <property name="track_visited_links">False</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">7</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>
@@ -801,10 +874,10 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                   <object class="GtkComboBoxText" id="combobox_mp4">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="active_id">intern_vdub</property>
+                                    <property name="active_id">SmartMKVmerge</property>
                                     <items>
-                                      <item id="intern-vdub" translatable="yes">intern-vdub</item>
                                       <item id="SmartMKVmerge" translatable="yes">SmartMKVmerge</item>
+                                      <item id="intern-vdub" translatable="yes">intern-vdub</item>
                                     </items>
                                   </object>
                                   <packing>
@@ -841,11 +914,9 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                   <object class="GtkComboBoxText" id="h264_codec_cbox">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="active_id">x264vfw</property>
+                                    <property name="active_id">ffdshow</property>
                                     <items>
                                       <item id="ffdshow" translatable="yes">ffdshow</item>
-                                      <item id="x264vfw" translatable="yes">x264vfw</item>
-                                      <item id="komisar" translatable="yes">komisar</item>
                                     </items>
                                   </object>
                                   <packing>
@@ -1441,7 +1512,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="check_mplayer_fullscreen">
-                    <property name="label" translatable="yes">MPlayer bzw. mpv im Vollbildmodus starten</property>
+                    <property name="label" translatable="yes">Mpv im Vollbildmodus starten</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
@@ -1455,8 +1526,8 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="check_prefer_mpv">
-                    <property name="label" translatable="yes">mpv bevorzugen (Falls MPlayer und mpv installiert sind, wird normalerweise MPlayer benutzt).</property>
+                  <object class="GtkCheckButton" id="check_prefer_mplayer">
+                    <property name="label" translatable="yes">MPlayer bevorzugen (Falls Mpv und MPlayer installiert sind, wird normalerweise Mpv benutzt).</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
@@ -2034,7 +2105,7 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.&lt;/s
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="halign">start</property>
-                        <signal name="clicked" handler="on_button_reset_size_moviewindow_clicked" swapped="no"/>
+                        <signal name="clicked" handler="_on_button_reset_size_moviewindow_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">2</property>

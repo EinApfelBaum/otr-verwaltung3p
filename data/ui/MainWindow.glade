@@ -152,6 +152,7 @@
                     <child>
                       <object class="GtkMenuItem" id="menu_check_update">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Auf Update prüfen</property>
                         <property name="use_underline">True</property>
@@ -237,7 +238,7 @@
                     <property name="spacing">15</property>
                     <child>
                       <object class="GtkButton" id="button_show_conclusion">
-                        <property name="label" translatable="yes">Anzeigen</property>
+                        <property name="label" translatable="yes">Geschnittene Datei(en) anzeigen</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -253,7 +254,6 @@
                       <object class="GtkLabel" id="label_conclusion">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Es sind 3 Dateien fertig</property>
                         <property name="use_markup">True</property>
                       </object>
                       <packing>

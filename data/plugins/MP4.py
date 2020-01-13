@@ -25,12 +25,12 @@ import time
 import re
 import os
 
-from otrverwaltung.GeneratorTask import GeneratorTask
-from otrverwaltung.pluginsystem import Plugin
-from otrverwaltung import fileoperations
-from otrverwaltung import path
-from otrverwaltung.constants import Section
-from otrverwaltung.actions.cut import Cut
+from otrverwaltung3p.GeneratorTask import GeneratorTask
+from otrverwaltung3p.pluginsystem import Plugin
+from otrverwaltung3p import fileoperations
+from otrverwaltung3p import path
+from otrverwaltung3p.constants import Section
+from otrverwaltung3p.actions.cut import Cut
 
 
 class MP4(Plugin):
@@ -78,7 +78,7 @@ class MP4(Plugin):
         dialog.vbox.pack_start(checkbutton_encode_audio, expand=False, fill=False, padding=0)
         checkbutton_encode_audio.connect('toggled', on_checkbutton_toggled, 'EncodeAudioToAAC')
 
-        # checkbutton encode first audio only 
+        # checkbutton encode first audio only
         checkbutton_encode_only_first_audio = Gtk.CheckButton("AAC: nur erste Audiospur kodieren?")
         checkbutton_encode_only_first_audio.set_margin_left(margin)
         dialog.vbox.pack_start(checkbutton_encode_only_first_audio, expand=False,
@@ -109,7 +109,7 @@ class MP4(Plugin):
         checkbutton_remove_other_audio_streams_than_ac3.connect('toggled', on_checkbutton_toggled,
                                                                 'RemoveOtherAudioStreamsThanAC3')
 
-        # checkbutton mp4box 
+        # checkbutton mp4box
         checkbutton_dont_optimize = Gtk.CheckButton(
             "MP4 nicht mit MP4Box optimieren. Schneller erzeugt, aber nicht so kompatible Dateien")
         dialog.vbox.pack_start(checkbutton_dont_optimize, expand=False, fill=False, padding=0)
@@ -172,7 +172,7 @@ class MP4(Plugin):
                     line = ""
 
                     while p.poll() == None:
-                        # read progress from stdout 
+                        # read progress from stdout
                         char = p.stdout.read(1)
                         line += char.decode('utf-8')
                         progress = ''
@@ -217,7 +217,7 @@ class MP4(Plugin):
                 else:
                     vol = 1.0
 
-                # ffmpeg pass               
+                # ffmpeg pass
                 yield 1, count
                 self.progress = 0
                 ffmpegpass_file = fileoperations.make_unique_filename(os.path.splitext(filename)[0] + "_remux.mp4")
@@ -247,7 +247,7 @@ class MP4(Plugin):
                     audiocodec.extend(['-ac:0', '2'])
 
                 if ac3_stream == None:
-                    # no ac3 stream found - all streams are muxed 
+                    # no ac3 stream found - all streams are muxed
                     map = ['-map', '0']
                 else:
                     if self.Config['RemoveOtherAudioStreamsThanAC3']:
@@ -387,8 +387,8 @@ class MP4(Plugin):
         GeneratorTask(mp4, loop, complete).start()
 
     def get_norm_volume(self, filename):
-        """ Gets the volume correction of a movie using ffmpeg and sox. 
-            Returns without error:              
+        """ Gets the volume correction of a movie using ffmpeg and sox.
+            Returns without error:
                         norm_vol, None
                     with error:
                         1.0, error_message """

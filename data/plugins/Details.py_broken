@@ -20,10 +20,10 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 import subprocess, os.path
 
-from otrverwaltung.pluginsystem import Plugin
-from otrverwaltung.GeneratorTask import GeneratorTask
+from otrverwaltung3p.pluginsystem import Plugin
+from otrverwaltung3p.GeneratorTask import GeneratorTask
 
-from otrverwaltung.constants import Section
+from otrverwaltung3p.constants import Section
 
 
 class Details(Plugin):

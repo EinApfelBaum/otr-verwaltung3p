@@ -25,12 +25,12 @@ import time
 import re
 import os
 
-from otrverwaltung.GeneratorTask import GeneratorTask
-from otrverwaltung.pluginsystem import Plugin
-from otrverwaltung import fileoperations
-from otrverwaltung import path
-from otrverwaltung.constants import Section
-from otrverwaltung.actions.cut import Cut
+from otrverwaltung3p.GeneratorTask import GeneratorTask
+from otrverwaltung3p.pluginsystem import Plugin
+from otrverwaltung3p import fileoperations
+from otrverwaltung3p import path
+from otrverwaltung3p.constants import Section
+from otrverwaltung3p.actions.cut import Cut
 
 
 class Mkv(Plugin):
@@ -69,7 +69,7 @@ class Mkv(Plugin):
                 checkbutton_encode_only_first_audio.set_sensitive(self.Config['EncodeAudioToAAC'])
                 checkbutton_downmix_stereo.set_sensitive(self.Config['EncodeAudioToAAC'])
                 checkbutton_normalize_audio.set_sensitive(self.Config['EncodeAudioToAAC'])
-                
+
 
         # checkbutton for dumping media files
         checkbutton_dump_avis = Gtk.CheckButton("Originaldatei automatisch in Mülleimer verschieben?")
@@ -86,7 +86,7 @@ class Mkv(Plugin):
         dialog.vbox.pack_start(checkbutton_encode_audio, expand=False, fill=False, padding=0)
         checkbutton_encode_audio.connect('toggled', on_checkbutton_toggled, 'EncodeAudioToAAC')
 
-        # checkbutton encode first audio only 
+        # checkbutton encode first audio only
         checkbutton_encode_only_first_audio = Gtk.CheckButton("AAC: nur erste Audiospur kodieren?")
         checkbutton_encode_only_first_audio.set_margin_left(margin)
         dialog.vbox.pack_start(checkbutton_encode_only_first_audio, expand=False, fill=False, padding=0)
@@ -165,7 +165,7 @@ class Mkv(Plugin):
                     else:
                         vol = 1.0
 
-                    # ffmpeg pass               
+                    # ffmpeg pass
                     yield 1, count
                     self.progress = 0
                     ffmpegpass_file = fileoperations.make_unique_filename(os.path.splitext(
@@ -192,7 +192,7 @@ class Mkv(Plugin):
                         audiocodec.extend(['-ac:0', '2'])
 
                     if ac3_stream == None:
-                        # no ac3 stream found - all streams are muxed 
+                        # no ac3 stream found - all streams are muxed
                         map = ['-map', '0']
                     else:
                         if self.Config['RemoveOtherAudioStreamsThanAC3']:
@@ -244,13 +244,13 @@ class Mkv(Plugin):
                 self.progress = 0
 
                 # find Umlaute and rename files
-                umlaute = ["ö", "Ö", "ä", "Ä", "ü", "Ü"]
-                umlaute2 = ["oe", "OE", "ae", "AE", "ue", "UE"]
-                for umlaut in umlaute:
-                    if umlaut in filename:
-                        filenameOld = filename
-                        filename = filename.replace(umlaut, umlaute2[umlaute.index(umlaut)])
-                        os.rename(filenameOld, filename)
+                # ~ umlaute = ["ö", "Ö", "ä", "Ä", "ü", "Ü"]
+                # ~ umlaute2 = ["oe", "OE", "ae", "AE", "ue", "UE"]
+                # ~ for umlaut in umlaute:
+                    # ~ if umlaut in filename:
+                        # ~ filenameOld = filename
+                        # ~ filename = filename.replace(umlaut, umlaute2[umlaute.index(umlaut)])
+                        # ~ os.rename(filenameOld, filename)
 
                 mkvpass_file = fileoperations.make_unique_filename(os.path.splitext(filename)[0] + ".mkv")
 
@@ -272,18 +272,18 @@ class Mkv(Plugin):
 
                 line = ""
                 while p.poll() == None:
-                    # read progress from stdout 
+                    # read progress from stdout
                     char = p.stdout.read(1)
                     line += char.decode('utf-8')
 
                     progress = ''
-                    if line.find('Progress:') is not -1:
+                    if line.find('Progress:') != -1:
                         line = ''
                         if "Error" in line or "Warning" in line:
                             break
 
                         for i in range(6):
-                            if char.decode('utf-8') is '%':
+                            if char.decode('utf-8') == '%':
                                 break
                             char = p.stdout.read(1)
                             progress += char.decode('utf-8')
@@ -300,13 +300,13 @@ class Mkv(Plugin):
                     self.success += 1
 
                     # find Umlaute and rename files
-                    umlaute = ["ö", "Ö", "ä", "Ä", "ü", "Ü"]
-                    umlaute2 = ["oe", "OE", "ae", "AE", "ue", "UE"]
-                    for umlaut in umlaute2:
-                        if umlaut in mkvpass_file:
-                            mkvpass_fileOld = mkvpass_file
-                            mkvpass_file = mkvpass_file.replace(umlaut, umlaute[umlaute2.index(umlaut)])
-                            os.rename(mkvpass_fileOld, mkvpass_file)
+                    # ~ umlaute = ["ö", "Ö", "ä", "Ä", "ü", "Ü"]
+                    # ~ umlaute2 = ["oe", "OE", "ae", "AE", "ue", "UE"]
+                    # ~ for umlaut in umlaute2:
+                        # ~ if umlaut in mkvpass_file:
+                            # ~ mkvpass_fileOld = mkvpass_file
+                            # ~ mkvpass_file = mkvpass_file.replace(umlaut, umlaute[umlaute2.index(umlaut)])
+                            # ~ os.rename(mkvpass_fileOld, mkvpass_file)
 
                     if self.Config['EncodeAudioToAAC']:
                         fileoperations.remove_file(ffmpegpass_file)
@@ -363,8 +363,8 @@ class Mkv(Plugin):
         GeneratorTask(mkvmerge, loop, complete).start()
 
     def get_norm_volume(self, filename):
-        """ Gets the volume correction of a movie using ffmpeg and sox. 
-            Returns without error:              
+        """ Gets the volume correction of a movie using ffmpeg and sox.
+            Returns without error:
                         norm_vol, None
                     with error:
                         1.0, error_message """

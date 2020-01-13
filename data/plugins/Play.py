@@ -20,9 +20,9 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-from otrverwaltung.pluginsystem import Plugin
+from otrverwaltung3p.pluginsystem import Plugin
 
-from otrverwaltung.constants import Section
+from otrverwaltung3p.constants import Section
 
 
 class Play(Plugin):

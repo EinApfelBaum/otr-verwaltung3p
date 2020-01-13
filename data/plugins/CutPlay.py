@@ -22,23 +22,21 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
 import shutil
 
-from otrverwaltung.pluginsystem import Plugin
+from otrverwaltung3p.pluginsystem import Plugin
 
-import otrverwaltung.cutlists as cutlists_management
-from otrverwaltung import fileoperations
-from otrverwaltung.constants import Section
+import otrverwaltung3p.cutlists as cutlists_management
+from otrverwaltung3p import fileoperations
+from otrverwaltung3p.constants import Section
 
 
 class CutPlay(Plugin):
     Name = "Geschnittenes Abspielen"
     Desc = "Spielt Video-Dateien mit Hilfe von Cutlisten geschnitten ab, ohne jedoch die " + \
            "Datei zu schneiden. Es werden die Server-Einstellungen von OTR-Verwaltung benutzt."
-    Author = "Benjamin Elbers, Dirk Lorenzen (gCurse)"
+    Author = "Benjamin Elbers, gCurse"
     Configurable = False
 
     def enable(self):
-        if not shutil.which('mplayer'):
-            self.disable()
         if self.app.config.get('general', 'use_internal_icons'):
             image = Gtk.Image.new_from_file(self.get_path('play.png'))
         else:
@@ -70,7 +68,7 @@ class CutPlay(Plugin):
         cutlist.download(self.app.config.get('general', 'server'), filename)
         cutlist.read_cuts()
 
-        # delete cutlist?        
+        # delete cutlist?
         if self.app.config.get('general', 'delete_cutlists'):
             fileoperations.remove_file(cutlist.local_filename)
 
@@ -93,15 +91,13 @@ class CutPlay(Plugin):
         # make mpv edl
         # https://github.com/mpv-player/mpv-player.github.io/blob/master/guides/edl-playlists.rst
         edlurl="edl://"
-
         for count, (start, duration) in enumerate(cutlist.cuts_seconds):
             edlurl = edlurl + filename + "," + str(start) + "," + str(duration) + ";"
-
 
         def check_prog(prog):
             cmdfound = False
             plays = False
-            
+
             if shutil.which(prog):
                 cmdfound = True
                 if not subprocess.call(prog, stdin=subprocess.PIPE,
@@ -117,16 +113,16 @@ class CutPlay(Plugin):
 
         def play_with(prog):
             if prog == 'mplayer':
-                p = subprocess.Popen([self.app.config.get_program('mplayer'), "-edl",
+                self.p = subprocess.Popen([self.app.config.get_program('mplayer'), "-edl",
                                                                   edl_filename, filename])
             elif prog == 'mpv':
-                p = subprocess.Popen([self.app.config.get_program('mpv'), edlurl])
+                self.p = subprocess.Popen([self.app.config.get_program('mpv'), edlurl])
 
-        if self.app.config.get('general', 'prefer_mpv'):
-            self.playprog = ['mpv', 'mplayer']
-        else:
+        if self.app.config.get('general', 'prefer_mplayer'):
             self.playprog = ['mplayer', 'mpv']
- 
+        else:
+            self.playprog = ['mpv', 'mplayer']
+
         if check_prog(self.playprog[0]):
             play_with(self.playprog[0])
         elif check_prog(self.playprog[1]):
@@ -136,9 +132,10 @@ class CutPlay(Plugin):
                                        "installiert bzw. funktionieren nicht.")
             return
 
-        while p.poll() == None:
+        while self.p.poll() == None:
             time.sleep(1)
             while Gtk.events_pending():
                 Gtk.main_iteration()
 
         fileoperations.remove_file(edl_filename)
+        print("removing: {}".format(edl_filename))
