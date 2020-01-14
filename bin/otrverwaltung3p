@@ -241,6 +241,10 @@ class App:
 
         self.app_name = 'otr-verwaltung3p'
 
+        version = open(path.getdatapath("VERSION"), 'r').read().strip()
+        print("{0}, version {1}".format(self.app_name, version))
+
+
         if local:
             self.config = Config(os.path.join(launch_dir, "..", "conf"), configuration)
         else:

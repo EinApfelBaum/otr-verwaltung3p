@@ -676,8 +676,13 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
         version = open(path.getdatapath("VERSION"), 'r').read().strip()
         script_root_dir = script_root_dir = os.path.abspath(os.path.realpath(sys.argv[0])+'/../..')
-        authors = ["EinApfelBaum", "gCurse", "Timo08", "Mainboand","", "Predecessors:",
-                    "otr-verwaltung++ (2012-):", "monarc99", "JanS", "",
+        authors = ["EinApfelBaum https://github.com/EinApfelBaum",
+                    "gCurse https://github.com/gCurse",
+                    "binsky08 https://github.com/binsky08",
+                    "Mainboand https://github.com/Mainboand","",
+                    "Predecessors:", "otr-verwaltung++ (2012-):",
+                    "monarc99 https://github.com/monarc99",
+                    "JanS", "",
                     "otr-verwaltung (-2010):", "B. Elbers"]
 
         license = "GPL version 3, see http://www.gnu.org/licenses/gpl-3.0.html#content"
