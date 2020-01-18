@@ -461,8 +461,7 @@ class DecodeOrCut(Cut):
         return True
 
     def cut_file_manually(self, filename):
-        """ Cuts a file manually with Avidemux or VirtualDub or the CutInterface and gets cuts from
-            possibly created project files (VD) or from output (AD).
+        """ Cuts a file manually with the CutInterface.
             returns: error_message, cutlist """
 
         global cutlist_error, cuts_frames
@@ -556,16 +555,17 @@ class DecodeOrCut(Cut):
         if error:
             return None, None, error
 
-        if not cutlist.cuts_frames:
+        if (cutlist.cuts_frames and cutlist.filename_original != os.path.basename(filename)) \
+                                            or (not cutlist.cuts_frames and cutlist.cuts_seconds):
+            cutlist.cuts_frames = []
             fps, dar, sar, max_frames, ac3_stream, error = self.analyse_mediafile(filename)
             if not error:
                 cutlist.fps = fps
             else:
                 return None, None, "Konnte FPS nicht bestimmen: " + error
-
             self.log.info("Calculate frame values from seconds.")
             for start, duration in cutlist.cuts_seconds:
-                cutlist.cuts_frames.append((start * cutlist.fps, duration * cutlist.fps))
+                    cutlist.cuts_frames.append((round(start * cutlist.fps), round(duration * cutlist.fps)))
 
         if program == Program.AVIDEMUX:
             cutter = CutAvidemux(self.app, self.gui)

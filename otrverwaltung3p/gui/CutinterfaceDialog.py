@@ -108,6 +108,15 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             cutlist.local_filename = filename
             cutlist.read_from_file()
             cutlist.read_cuts()
+            if (cutlist.cuts_frames and cutlist.filename_original != os.path.basename(self.filename)) \
+                                            or (not cutlist.cuts_frames and cutlist.cuts_seconds):
+                cutlist.fps = self.framerate_num / self.framerate_denom
+                cutlist.cuts_frames = []
+                self.log.info("Calculate frame values from seconds.")
+                for start, duration in cutlist.cuts_seconds:
+                    cutlist.cuts_frames.append((round(start * cutlist.fps), round(duration * cutlist.fps)))
+                print("CUTLIST CHANGED")
+
             if cutlist.author != self.app.config.get('general', 'cutlist_username'):
                 cutlist.usercomment = 'OTRV3p; Vorlage von ' + cutlist.author + '; ' + cutlist.usercomment
             if cutlist.cuts_frames:
@@ -147,7 +156,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.app = app
         self.config = app.config
         self.filename = filename
-        self.cutlist = self.load_cutlist(cutlist)
+        
 
         self.seek_distance_default = self.config.get('general', 'seek_distance_default')
         self.seek_distance = self.seek_distance_default
@@ -188,6 +197,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.log.debug("framerate_denom: {}".format(self.framerate_denom))
         self.videolength = self.d.get_duration()
         self.frames = round(self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND)  # ROUND
+        self.cutlist = self.load_cutlist(cutlist)
         self.timelines = [self.get_cuts_in_frames(self.initial_cutlist,
                                                   self.initial_cutlist_in_frames)]
 
