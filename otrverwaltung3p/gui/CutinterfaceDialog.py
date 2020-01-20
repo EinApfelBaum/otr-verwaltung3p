@@ -11,7 +11,7 @@ gi.require_version('GdkX11', '3.0')
 gi.require_version('GstVideo', '1.0')
 from gi.repository import Gtk, Gdk, GObject, Gst, GstPbutils
 
-import os, time, logging
+import os, time, logging, json, re
 
 GObject.threads_init()
 Gst.init(None)
@@ -49,7 +49,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.seek_distance_default = 0
         self.seek_distance = 0
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
-        self.player_videosink = None
         self.state = Gst.State.NULL
 
     def do_parser_finished(self, builder):
@@ -63,12 +62,12 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.movie_box = self.builder.get_object('movie_box').movie_widget
         self.player = self.builder.get_object('movie_box').player
         # Create bus to get events from GStreamer player
-        bus = self.player.get_bus()
-        bus.add_signal_watch()
-        bus.connect('message::error', self.on_error)
-        bus.connect('message::eos', self.on_eos)
-        bus.connect("message::state-changed", self.on_state_changed)
-        bus.connect("message", self.on_message)
+        self.bus = self.player.get_bus()
+        self.bus.add_signal_watch()
+        self.busConn1 = self.bus.connect('message::error', self.on_error)
+        self.busConn2 = self.bus.connect('message::eos', self.on_eos)
+        self.busConn3 = self.bus.connect("message::state-changed", self.on_state_changed)
+        self.busConn4 = self.bus.connect("message", self.on_message)
 
         self.hide_cuts = self.builder.get_object('checkbutton_hide_cuts').get_active()
 
@@ -115,7 +114,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 self.log.info("Calculate frame values from seconds.")
                 for start, duration in cutlist.cuts_seconds:
                     cutlist.cuts_frames.append((round(start * cutlist.fps), round(duration * cutlist.fps)))
-                print("CUTLIST CHANGED")
 
             if cutlist.author != self.app.config.get('general', 'cutlist_username'):
                 cutlist.usercomment = 'OTRV3p; Vorlage von ' + cutlist.author + '; ' + cutlist.usercomment
@@ -203,6 +201,17 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         # Set player uri only after discoverer is done
         self.player.set_property('uri', "file://" + self.filename)
+        if self.app.config.get('general', 'vol_adjust_on'):
+            vol_adjust = re.findall("[a-z.0-9,]+", self.app.config.get('general', 'vol_adjust'))
+            if vol_adjust:
+                # get station name from video filename
+                parts = self.filename.split('_'); parts.reverse(); station = parts[3]
+                for adj in vol_adjust:
+                    if adj.split(",")[0].lower() in station:
+                        self.player.set_property('volume', float(adj.split(",")[1]))
+                        self.log.info(f"Cutinterface volume: {self.player.get_property('volume')}")
+                        break
+
         self.ready_callback()
 
         self.timer2 = GObject.timeout_add(600, self.update_listview)
@@ -601,6 +610,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def on_movie_box_unrealize(self, widget):
         self.player.set_state(Gst.State.NULL)
+        self.bus.remove_signal_watch()
 
     def on_window_key_press_event(self, widget, event, *args):
         """handle keyboard events"""

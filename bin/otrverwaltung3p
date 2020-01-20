@@ -164,7 +164,7 @@ class App:
                 'cut_action': Cut_action.ASK,
                 'delete_cutlists': True,
                 'smart': True,
-                'choose_cutlists_by': 1,  # 0 = size, 1=name
+                'choose_cutlists_by': 1,  # 0=name, 1=size
                 'cutlist_username': '',
                 'planned_items': '',
                 'rename_cut': True,
@@ -188,7 +188,10 @@ class App:
                 'icon_size': 22,
                 'hide_archive_buttons': False,
                 'passwd_store': 2,  # 0 = Store in conf, 1 = Store in wallet, 2 = Do not store
-                'passwd_store_memory': False
+                'passwd_store_memory': False,
+                'mpv_vol_max': 150.0,
+                'vol_adjust': 'usw,3.0,140',
+                'vol_adjust_on': False
             },
             'downloader': {
                 'resume_on_startup': True,
@@ -720,6 +723,17 @@ class App:
 
     def __show(self, cuts, video_filename, edl_subtitles_cb):
         video_filename_dirname = os.path.dirname(video_filename)
+        mpv_vol = 100.0; mpv_vol_max = 130.0
+        if self.config.get('general', 'vol_adjust_on'):
+            mpv_vol_max = self.config.get('general', 'mpv_vol_max')
+            vol_adjust = re.findall("[a-z.0-9,]+", self.config.get('general', 'vol_adjust'))
+            if vol_adjust:
+                # get station name from video filename
+                parts = video_filename.split('_'); parts.reverse(); station = parts[3]
+                for adj in vol_adjust:
+                    if adj.split(",")[0].lower() in station:
+                        mpv_vol = adj.split(",")[2]
+                        break
         f_edl = open(join(video_filename_dirname, ".tmp.edl"), "w")
         f_mpv_edl = open(join(video_filename_dirname, ".tmp_mpv.edl"), "w")
         f_sub = open(join(video_filename_dirname, ".tmp.sub"), "w")
@@ -738,9 +752,6 @@ class App:
         f_mpv_edl = join(video_filename_dirname, ".tmp_mpv.edl")
         f_sub = join(video_filename_dirname, ".tmp.sub")
         f_mpv_sub = join(video_filename_dirname, ".tmp_mpv.sub")
-
-        # cmd_exists = lambda x: any(
-            # os.access(os.path.join(pathx, x), os.X_OK) for pathx in os.environ["PATH"].split(os.pathsep))
 
         def check_prog(prog):
             cmdfound = False
@@ -770,14 +781,12 @@ class App:
                         [self.config.get_program('mplayer'), "-geometry", "50%:50%", "-osdlevel", "3", "-edl", f_edl,
                          "-sub", f_sub, video_filename])
             elif prog == 'mpv':
+                mpv_args = [self.config.get_program('mpv')]
                 if self.config.get('general', 'mplayer_fullscreen'):
-                    self.p = subprocess.Popen(
-                        [self.config.get_program('mpv'), "-fs", "-geometry", "50%:50%", "-sub-file",
-                         f_mpv_sub, f_mpv_edl])
-                else:
-                     self.p = subprocess.Popen(
-                        [self.config.get_program('mpv'), "-geometry", "50%:50%", "-sub-file", f_mpv_sub,
-                             f_mpv_edl])
+                    mpv_args.append("-fs")
+                mpv_args.extend(["-geometry", "50%:50%", "--volume-max", str(mpv_vol_max),
+                                "--volume", str(mpv_vol), "-sub-file", f_mpv_sub, f_mpv_edl])
+                self.p = subprocess.Popen(mpv_args)
 
         if self.config.get('general', 'prefer_mplayer'):
             self.playprog = ['mplayer', 'mpv']

@@ -19,6 +19,7 @@ import json
 import os.path
 import logging
 import shutil
+import re
 from base64 import b64decode, b64encode
 try:
     import keyring
@@ -83,6 +84,9 @@ class Config:
             password = keyring.get_password("otr-verwaltung3p", self.__fields['general']['email'])
             if password is not None:
                 value = password
+        # ~ elif option == 'vol_adjust':
+            # ~ val = self.__fields[category][option]
+            # ~ value = re.findall("[a-z.0-9,]+", val)
         else:
             value = self.__fields[category][option]
         if option in ['email', 'password']:
