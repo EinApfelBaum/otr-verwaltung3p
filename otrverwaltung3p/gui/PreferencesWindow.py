@@ -36,6 +36,11 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
     def __init__(self):
         Gtk.Window.__init__(self)
         self.log = logging.getLogger(self.__class__.__name__)
+        self.css = b"""
+.font_larger { font-size: larger; }
+.font_smaller { font-size: smaller; }"""
+        self.css_provider = Gtk.CssProvider()
+        self.css_provider.load_from_data(self.css)
         pass
 
     def do_parser_finished(self, builder):
@@ -49,14 +54,17 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         self.example_filename = 'James_Bond_007_09.01.06_20-15_ard_120_TVOON_DE.mpg.HQ.avi'
         self.example_cut_filename = 'James_Bond_007_09.01.06_20-15_ard_120_TVOON_DE.mpg.HQ-cut.avi'
 
-        # preferences fonts (small font for explanations)
+        # ~ # preferences fonts (small font for explanations)
         labels = ['labelDescNewOtrkeys',
                   'labelDescUncutAvis',
                   'labelDescCutAvis',
                   'labelDescTrashOtrkeys',
-                  'labelDescTrashAvis']
+                  'labelDescTrashAvis',
+                  'lbl_help_volume']
         for label in labels:
-            self.obj(label).modify_font(Pango.FontDescription("9"))
+            self.obj(label).get_style_context().add_provider(self.css_provider,
+                                                        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+            self.obj(label).get_style_context().add_class("font_smaller")
 
         ''' verschoben in die glade Datei
 
@@ -115,6 +123,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         EntryBinding(self.obj('entry_schema'), self.app.config, 'general', 'rename_schema')
         EntryBinding(self.obj('smkv_workingdir'), self.app.config, 'smartmkvmerge', 'workingdir')
         EntryBinding(self.obj('entry_server'), self.app.config, 'general', 'server')
+        EntryBinding(self.obj('entry_vol_adjust'), self.app.config, 'general', 'vol_adjust')
 
         SpinbuttonBinding(self.obj('spinbutton_seeker'), self.app.config, 'general', 'seek_distance_default')
         SpinbuttonBinding(self.obj('spinbutton_x'), self.app.config, 'general', 'cutinterface_resolution_x')
@@ -158,7 +167,8 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         CheckButtonBinding(self.obj('smkv_mp4'), self.app.config, 'smartmkvmerge', 'remux_to_mp4')
         CheckButtonBinding(self.obj('check_alt_time_frame_conv'), self.app.config, 'general', 'alt_time_frame_conv')
         CheckButtonBinding(self.obj('check_use_internal_icons'), self.app.config, 'general', 'use_internal_icons')
-        CheckButtonBinding(self.obj('cb_hide_archive_buttons'), self.app.config, 'general', 'hide_archive_buttons')
+        CheckButtonBinding(self.obj('check_hide_archive_buttons'), self.app.config, 'general', 'hide_archive_buttons')
+        CheckButtonBinding(self.obj('check_vol_adjust_on'), self.app.config, 'general', 'vol_adjust_on')
 
         self.app.config.connect('general', 'rename_cut',
                                 lambda value: self.obj('entry_schema').set_sensitive(value))

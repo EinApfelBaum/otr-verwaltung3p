@@ -61,19 +61,22 @@ class Cut(BaseAction):
         raise Exception("Override this method!")
 
     def get_codeccore(self):
-        if not "core" in self.media_info.tracks[1].writing_library:
-            codeccore = -1
-        else:
-            try:
-                codeccore = int(self.media_info.tracks[1].writing_library.split(' ')[3])
-            except ValueError:
+        try:
+            if not "core" in self.media_info.tracks[1].writing_library:
+                codeccore = -1
+            else:
                 try:
-                    codeccore = int(self.media_info.tracks[1].writing_library.split(' ')[2])
+                    codeccore = int(self.media_info.tracks[1].writing_library.split(' ')[3])
                 except ValueError:
-                    codeccore = -1
+                    try:
+                        codeccore = int(self.media_info.tracks[1].writing_library.split(' ')[2])
+                    except ValueError:
+                        codeccore = -1
 
-        self.log.debug("self.media_info.tracks[1].writing_library: {}".format(
-                                                        self.media_info.tracks[1].writing_library))
+            self.log.debug("self.media_info.tracks[1].writing_library: {}".format(
+                                                    self.media_info.tracks[1].writing_library))
+        except TypeError:
+            codeccore = -1                                             
         return codeccore
 
     def get_format(self, filename):
@@ -93,6 +96,7 @@ class Cut(BaseAction):
                                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             with open(outfile) as f:
                 self.media_info = MediaInfo(f.read())
+                print(self.media_info)
 
             if os.path.isfile(outfile):
                 os.remove(outfile)

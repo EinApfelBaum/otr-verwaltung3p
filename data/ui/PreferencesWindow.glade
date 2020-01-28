@@ -764,7 +764,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                             </child>
                             <child>
                               <object class="GtkLabel" id="h264_codec1">
-                                <property name="visible">True</property>
+                                <property name="sensitive">False</property>
                                 <property name="can_focus">False</property>
                                 <property name="margin_right">5</property>
                                 <property name="label" translatable="yes">H264 Codec</property>
@@ -912,7 +912,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                 <property name="can_focus">False</property>
                                 <child>
                                   <object class="GtkComboBoxText" id="h264_codec_cbox">
-                                    <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
                                     <property name="can_focus">False</property>
                                     <property name="active_id">ffdshow</property>
                                     <items>
@@ -1860,7 +1860,7 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.&lt;/s
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="cb_hide_archive_buttons">
+                      <object class="GtkCheckButton" id="check_hide_archive_buttons">
                         <property name="label" translatable="yes">Archivieren-Buttons ausblenden</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -2154,6 +2154,42 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.&lt;/s
                       </packing>
                     </child>
                     <child>
+                      <object class="GtkLabel" id="lbl_vol_adjust_on">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_top">30</property>
+                        <property name="label" translatable="yes">Lautstärkeanhebung aktivieren:</property>
+                        <property name="wrap">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="check_vol_adjust_on">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="margin_top">30</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
                       <placeholder/>
                     </child>
                     <child>
@@ -2185,7 +2221,54 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.&lt;/s
                   </packing>
                 </child>
                 <child>
-                  <placeholder/>
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <child>
+                      <object class="GtkLabel" id="lbl_adjust_vol">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_top">10</property>
+                        <property name="label" translatable="yes">Lautstärkeanhebung Konfiguration:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="entry_vol_adjust">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_help_volume">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">Aufbau: &lt;Sender Suchstring&gt;,&lt;Lautstärke Cutinterface&gt;,&lt;Lautstärke mpv (Schnitte anspielen)&gt;
+Beispiel: usw,3.0,140
+Dies hebt die Wiedergabelautstärke für alle US-Sender an. Dies ist die Voreinstellung.</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
                 </child>
               </object>
               <packing>
