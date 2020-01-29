@@ -76,7 +76,7 @@ class Cut(BaseAction):
             self.log.debug("self.media_info.tracks[1].writing_library: {}".format(
                                                     self.media_info.tracks[1].writing_library))
         except TypeError:
-            codeccore = -1                                             
+            codeccore = -1
         return codeccore
 
     def get_format(self, filename):

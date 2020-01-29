@@ -23,11 +23,13 @@ import re
 from base64 import b64decode, b64encode
 try:
     import keyring
+    keyring_available = True
 except ImportError:
-    pass
+    keyring_available = False
 
 from otrverwaltung3p import path
 from otrverwaltung3p.libs import pyaes
+from otrverwaltung3p import fileoperations
 
 
 class Config:
@@ -40,16 +42,9 @@ class Config:
         self.__fields = fields
         self.__callbacks = {}
         self.log = logging.getLogger(self.__class__.__name__)
-        try:
-            import keyring
-            if shutil.which('kwalletd5') or shutil.which('gnome-keyring'):
-                self.secret_service_available = True
-            else:
-                self.secret_service_available = False
-        except Exception as e:
-            self.secret_service_available = False
-            self.log.debug("Keyring exception: {}".format())
-        self.log.debug("Keyring available: {}".format(self.secret_service_available))
+        self.keyring_available = keyring_available
+
+        self.log.debug(f"Keyring available: {self.keyring_available}")
 
     def connect(self, category, option, callback):
         self.__callbacks.setdefault(category, {})
@@ -84,9 +79,8 @@ class Config:
             password = keyring.get_password("otr-verwaltung3p", self.__fields['general']['email'])
             if password is not None:
                 value = password
-        # ~ elif option == 'vol_adjust':
-            # ~ val = self.__fields[category][option]
-            # ~ value = re.findall("[a-z.0-9,]+", val)
+        elif option == 'h264_codec':
+            value = 'ffdshow'
         else:
             value = self.__fields[category][option]
         if option in ['email', 'password']:
@@ -134,10 +128,12 @@ class Config:
             config = open(self.__config_file, 'r')
             json_config = json.load(config)
             config.close()
-        except (IOError, json.decoder.JSONDecodeError) as message:
-            self.log.error("Config file is not available or has invalid json content. " + \
+        except json.decoder.JSONDecodeError as message:
+            fileoperations.rename_file(self.__config_file, self.__config_file + ".bak")
+            json_config = {}
+        except IOError as message:
+            self.log.error("Config file is not available. " + "(" + f"{message}" + ") " +
                                                                 "Using default configuration.")
-            self.log.debug(message)
             json_config = {}
 
         for category, options in self.__fields.items():

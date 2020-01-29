@@ -135,7 +135,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             self.obj('label_schema').set_label(
                 "<i>%s</i> wird zu <i>%s</i>" % (self.example_filename, new))
 
-        if not self.app.config.secret_service_available:
+        if not self.app.config.keyring_available:
             self.obj('radioPasswdStoreWallet').set_sensitive(False)
 
         self.app.config.connect('general', 'rename_schema', rename_schema_changed)
