@@ -204,7 +204,7 @@ class App:
                 'aria2c_opts_torrent': ["--check-integrity=true", "--continue"]
             },
             'plugins': {
-                'enabled': 'Play:Mkv:MP4:Mediainfo',
+                'enabled': 'Play:Mkv:MP4',
                 'config': {}  # used as plugin config storage
             },
             'programs': {

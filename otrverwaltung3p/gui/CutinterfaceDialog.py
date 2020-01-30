@@ -50,6 +50,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.seek_distance = 0
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
         self.state = Gst.State.NULL
+        self.bus_conn = None
 
     def do_parser_finished(self, builder):
         self.log.debug("funtion start")
@@ -64,10 +65,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         # Create bus to get events from GStreamer player
         self.bus = self.player.get_bus()
         self.bus.add_signal_watch()
-        self.busConn1 = self.bus.connect('message::error', self.on_error)
-        self.busConn2 = self.bus.connect('message::eos', self.on_eos)
-        self.busConn3 = self.bus.connect("message::state-changed", self.on_state_changed)
-        self.busConn4 = self.bus.connect("message", self.on_message)
+        self.bus_conn = self.bus.connect("message", self.on_message)
 
         self.hide_cuts = self.builder.get_object('checkbutton_hide_cuts').get_active()
 
@@ -154,18 +152,14 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.app = app
         self.config = app.config
         self.filename = filename
-        
-
         self.seek_distance_default = self.config.get('general', 'seek_distance_default')
         self.seek_distance = self.seek_distance_default
         self.atfc = self.config.get('general', 'alt_time_frame_conv')
 
-        # TESTING_ACTIVE
         if self.atfc:
             self.frame_timecode, self.timecode_frame, error = self.get_timecodes_from_file(self.filename)
             if self.frame_timecode is None:
                 self.log.warning("Error: Timecodes konnten nicht ausgelesen werden.")
-        # TESTING_ACTIVE
 
         self.keyframes, error = self.get_keyframes_from_file(self.filename)
         if self.keyframes is None:
@@ -194,7 +188,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.log.debug("framerate_num: {}".format(self.framerate_num))
         self.log.debug("framerate_denom: {}".format(self.framerate_denom))
         self.videolength = self.d.get_duration()
-        self.frames = round(self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND)  # ROUND
+        self.frames = round(self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND)
         self.cutlist = self.load_cutlist(cutlist)
         self.timelines = [self.get_cuts_in_frames(self.initial_cutlist,
                                                   self.initial_cutlist_in_frames)]
@@ -420,11 +414,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 return
 
             if self.atfc:
-                self.current_frame_position = self.time_to_frame(current_position )  # TESTING_ACTIVE
+                self.current_frame_position = self.time_to_frame(current_position )
             else:
-                self.current_frame_position = current_position * self.framerate_num / self.framerate_denom / Gst.SECOND  # ROUND
+                self.current_frame_position = current_position * self.framerate_num / self.framerate_denom / Gst.SECOND
 
-            # ROUND
             if self.keyframes != None and round(self.current_frame_position) in self.keyframes:
                 string = 'Frame(K): '
             else:
@@ -439,7 +432,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             # block seek handler so we don't seek when we set_value()
             self.builder.get_object('slider').handler_block_by_func(self.on_slider_value_changed)
 
-            frames = nanosecs * self.framerate_num / self.framerate_denom / Gst.SECOND  # ROUND
+            frames = nanosecs * self.framerate_num / self.framerate_denom / Gst.SECOND
             self.builder.get_object('slider').set_value(frames)
 
             self.builder.get_object('slider').handler_unblock_by_func(self.on_slider_value_changed)
@@ -576,26 +569,26 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.player.set_state(Gst.State.NULL)
         self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
 
-    def on_eos(self, bus, msg):
-        self.player.set_state(Gst.State.NULL)
-        self.state = Gst.State.NULL
-        self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
+    # ~ def on_eos(self, bus, msg):
+        # ~ self.player.set_state(Gst.State.NULL)
+        # ~ self.state = Gst.State.NULL
+        # ~ self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
 
-    def on_state_changed(self, bus, msg):
-        old, new, pending = msg.parse_state_changed()
-        if not msg.src == self.player:
-            # not from the player, ignore
-            return
-        self.state = new
+    # ~ def on_state_changed(self, bus, msg):
+        # ~ old, new, pending = msg.parse_state_changed()
+        # ~ if not msg.src == self.player:
+            # ~ # not from the player, ignore
+            # ~ return
+        # ~ self.state = new
 
-    def on_message(self, bus, message):
-        t = message.type
+    def on_message(self, bus, msg):
+        t = msg.type
         if t == Gst.MessageType.ASYNC_DONE:
             if self.getVideoLength:
                 self.getVideoLength = not self.getVideoLength
                 self.log.debug("Async done")
                 self.videolength = self.player.query_duration(Gst.Format.TIME)[1]
-                self.frames = round(self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND)  # ROUND
+                self.frames = round(self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND)
                 self.slider.set_range(0, self.get_frames())
                 self.timelines = [self.get_cuts_in_frames(self.initial_cutlist, self.initial_cutlist_in_frames)]
                 self.builder.get_object('slider').set_range(0, self.get_frames())
@@ -605,12 +598,33 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 self.log.debug("framerate_denom: {}".format(self.framerate_denom))
                 self.log.debug("videolength: {}".format(self.videolength))
                 self.log.debug("Number of frames: {}".format(self.frames))
+        elif t == Gst.MessageType.STATE_CHANGED:
+            old, new, pending = msg.parse_state_changed()
+            if not msg.src == self.player:
+                # not from the player, ignore
+                return
+            self.state = new
+        elif t == Gst.MessageType.EOS:
+            self.player.set_state(Gst.State.NULL)
+            self.state = Gst.State.NULL
+            self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
+        elif t == Gst.MessageType.ERROR:
+            self.player.set_state(Gst.State.NULL)
+            err, debug = msg.parse_error()
+            self.log.error(f"Error: {err}, {debug}")
+            self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
+        return True
 
     # signals #
 
     def on_movie_box_unrealize(self, widget):
         self.player.set_state(Gst.State.NULL)
+        # MEMORYLEAK:
         self.bus.remove_signal_watch()
+        del self.bus
+        del self.frame_timecode
+        del self.timecode_frame
+        del self.keyframes
 
     def on_window_key_press_event(self, widget, event, *args):
         """handle keyboard events"""
@@ -754,17 +768,17 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             return
 
         self.videolength = self.player.query_duration(Gst.Format.TIME)[1]
-        self.frames = round(self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND)  # ROUND
+        self.frames = round(self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND)
 
         if self.atfc:
-            nano_seconds = self.frame_to_time(self.time_to_frame(nano_seconds) + frames)  # TESTING_ACTIVE
+            nano_seconds = self.frame_to_time(self.time_to_frame(nano_seconds) + frames)
         else:
             nano_seconds += frames * (1 * Gst.SECOND * self.framerate_denom / self.framerate_num)
 
         if self.atfc:
-            cond = (self.time_to_frame(nano_seconds) >= self.get_frames())  # TESTING_ACTIVE
+            cond = (self.time_to_frame(nano_seconds) >= self.get_frames())
         else:
-            cond = (nano_seconds * self.framerate_num / self.framerate_denom / Gst.SECOND >= self.get_frames())  # ROUND
+            cond = (nano_seconds * self.framerate_num / self.framerate_denom / Gst.SECOND >= self.get_frames())
 
         if nano_seconds < 0:
             self.log.debug("restrict")
@@ -772,7 +786,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         elif cond:
             self.log.debug("restrict")
             if self.atfc:
-                nano_seconds = self.frame_to_time(self.get_frames() - 1)  # TESTING_ACTIVE
+                nano_seconds = self.frame_to_time(self.get_frames() - 1)
             else:
                 nano_seconds = (self.get_frames() - 1) * Gst.SECOND * self.framerate_denom / self.framerate_num
 
@@ -797,7 +811,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 frames = self.get_frames()-1
 
             if self.atfc:
-                nanoseconds = self.frame_to_time(frames)  # TESTING_ACTIVE
+                nanoseconds = self.frame_to_time(frames)
             else:
                 nanoseconds = frames * Gst.SECOND * self.framerate_denom / self.framerate_num
         elif seconds:
@@ -1035,7 +1049,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                         pixel_duration = int(round(duration * one_frame_in_pixels))
 
                         # draw keyframe cuts that don't need reencoding in a different color
-                        # ROUND
+
                         if round(start) in self.keyframes and (round(start + duration) in self.keyframes or round(start + duration) == self.frames):
                             cr.set_source_rgb(0.0, 0.6, 0.0)  # green
                             cr.rectangle(pixel_start, slider.get_allocation().height - 5, pixel_duration, 5)

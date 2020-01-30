@@ -23,6 +23,7 @@ import base64
 import subprocess
 import os, re, shutil
 import logging
+import gc
 
 from otrverwaltung3p import fileoperations
 from otrverwaltung3p.conclusions import FileConclusion
@@ -519,6 +520,11 @@ class DecodeOrCut(Cut):
             ci.set_modal(True)
             cutlist = ci._run(filename, local_cutlist, self.app)
             ci.destroy()
+            # MEMORYLEAK
+            # ~ print(f"dir(Cutinterface): {dir(ci)}")
+            del ci
+            gc.collect()
+
 
             if cutlist.cuts_frames is None or len(cutlist.cuts_frames) == 0:
                 cutlist_error = "Keine Schnitte angegeben"
