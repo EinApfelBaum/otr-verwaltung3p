@@ -120,8 +120,7 @@ class CutlistsTreeView(Gtk.TreeView):
 
     def _treeview_error_desc(self, column, cell, model, iter):
         cutlist = model.get_value(iter, 0)
-        cell.set_property('markup', "<span foreground='red'>%s</span>" %
-                                                                    cutlist.othererrordescription)
+        cell.set_property('markup', "<span foreground='red'>%s</span>" % cutlist.othererrordescription)
 
     def add_cutlist(self, c):
         if c.errors in self.errors:

@@ -105,8 +105,8 @@ class DecodeOrCut(Cut):
                     show_conclusions = True
 
             if not show_conclusions:
-                self.app.gui.main_window.change_status(0, "%i Datei(en) erfolgreich dekodiert" %
-                                                            len(file_conclusions), permanent=True)
+                self.app.gui.main_window.change_status(0, "%i Datei(en) erfolgreich dekodiert" % len(file_conclusions),
+                                                       permanent=True)
 
         # Decode and cut - always show
         else:
@@ -206,8 +206,7 @@ class DecodeOrCut(Cut):
                         error_message += line.strip()
 
                     if "Decrypting" in line:
-                        self.gui.main_window.set_tasks_text("Datei %s/%s dekodieren und prüfen" %
-                                                                                        file_count)
+                        self.gui.main_window.set_tasks_text("Datei %s/%s dekodieren und prüfen" % file_count)
 
                     if ("gui" in line) and not ("Finished" in line):
                         progress = int(line[5:])
@@ -234,14 +233,11 @@ class DecodeOrCut(Cut):
                             file_count = count + 1, len(file_conclusions)
 
                             if "input" in l:
-                                self.gui.main_window.set_tasks_text("Eingabedatei %s/%s " + \
-                                                                    "kontrollieren" % file_count)
+                                self.gui.main_window.set_tasks_text("Eingabedatei %s/%s kontrollieren" % file_count)
                             elif "output" in l:
-                                self.gui.main_window.set_tasks_text("Ausgabedatei %s/%s " + \
-                                                                    "kontrollieren" % file_count)
+                                self.gui.main_window.set_tasks_text("Ausgabedatei %s/%s kontrollieren" % file_count)
                             elif "Decoding" in l:
-                                self.gui.main_window.set_tasks_text("Datei %s/%s dekodieren"
-                                                                                    % file_count)
+                                self.gui.main_window.set_tasks_text("Datei %s/%s dekodieren" % file_count)
 
                         if len(l) > 13 and l[12].isdigit():
                             progress = int(l[10:13])
@@ -405,8 +401,7 @@ class DecodeOrCut(Cut):
                     file_conclusion.cut.message = "Keine Cutlist gefunden."
 
             elif file_conclusion.cut.cut_action == Cut_action.LOCAL_CUTLIST:
-                file_conclusion.cut.cutlist.local_filename = file_conclusion.uncut_video + \
-                                                                                        ".cutlist"
+                file_conclusion.cut.cutlist.local_filename = file_conclusion.uncut_video + ".cutlist"
 
                 if not exists(file_conclusion.cut.cutlist.local_filename):
                     file_conclusion.cut.status = Status.ERROR
@@ -423,16 +418,14 @@ class DecodeOrCut(Cut):
                 continue
 
             self.log.info("[Decodeandcut] Datei %s wird geschnitten" % file_conclusion.uncut_video)
-            self.gui.main_window.set_tasks_text("Datei %s/%s schneiden" % (count + 1,
-                                                                           len(file_conclusions)))
+            self.gui.main_window.set_tasks_text("Datei %s/%s schneiden" % (count + 1, len(file_conclusions)))
             self.gui.main_window.set_tasks_progress(0)
             while Gtk.events_pending():
                 Gtk.main_iteration()
 
             # download cutlist
             if file_conclusion.cut.cut_action in [Cut_action.BEST_CUTLIST, Cut_action.CHOOSE_CUTLIST]:
-                file_conclusion.cut.cutlist.download(self.config.get('general', 'server'),
-                                                                    file_conclusion.uncut_video)
+                file_conclusion.cut.cutlist.download(self.config.get('general', 'server'), file_conclusion.uncut_video)
 
             cut_video, ac3_file, error = self.cut_file_by_cutlist(file_conclusion.uncut_video,
                                                                   file_conclusion.cut.cutlist, None)
