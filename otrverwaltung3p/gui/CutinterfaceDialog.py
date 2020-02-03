@@ -65,7 +65,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         # Create bus to get events from GStreamer player
         self.bus = self.player.get_bus()
         self.bus.add_signal_watch()
-        self.bus_conn = self.bus.connect("message", self.on_message)
+        self.bus.connect('message::error', self.on_error)
+        self.bus.connect('message::eos', self.on_eos)
+        self.bus.connect("message::state-changed", self.on_state_changed)
+        self.bus.connect("message", self.on_message)
 
         self.hide_cuts = self.builder.get_object('checkbutton_hide_cuts').get_active()
 
@@ -569,26 +572,26 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.player.set_state(Gst.State.NULL)
         self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
 
-    # ~ def on_eos(self, bus, msg):
-        # ~ self.player.set_state(Gst.State.NULL)
-        # ~ self.state = Gst.State.NULL
-        # ~ self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
+    def on_eos(self, bus, msg):
+        self.player.set_state(Gst.State.NULL)
+        self.state = Gst.State.NULL
+        self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
 
-    # ~ def on_state_changed(self, bus, msg):
-        # ~ old, new, pending = msg.parse_state_changed()
-        # ~ if not msg.src == self.player:
-            # ~ # not from the player, ignore
-            # ~ return
-        # ~ self.state = new
+    def on_state_changed(self, bus, msg):
+        old, new, pending = msg.parse_state_changed()
+        if not msg.src == self.player:
+            # not from the player, ignore
+            return
+        self.state = new
 
-    def on_message(self, bus, msg):
-        t = msg.type
+    def on_message(self, bus, message):
+        t = message.type
         if t == Gst.MessageType.ASYNC_DONE:
             if self.getVideoLength:
                 self.getVideoLength = not self.getVideoLength
                 self.log.debug("Async done")
                 self.videolength = self.player.query_duration(Gst.Format.TIME)[1]
-                self.frames = round(self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND)
+                self.frames = round(self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND)  # ROUND
                 self.slider.set_range(0, self.get_frames())
                 self.timelines = [self.get_cuts_in_frames(self.initial_cutlist, self.initial_cutlist_in_frames)]
                 self.builder.get_object('slider').set_range(0, self.get_frames())
@@ -598,22 +601,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 self.log.debug("framerate_denom: {}".format(self.framerate_denom))
                 self.log.debug("videolength: {}".format(self.videolength))
                 self.log.debug("Number of frames: {}".format(self.frames))
-        elif t == Gst.MessageType.STATE_CHANGED:
-            old, new, pending = msg.parse_state_changed()
-            if not msg.src == self.player:
-                # not from the player, ignore
-                return
-            self.state = new
-        elif t == Gst.MessageType.EOS:
-            self.player.set_state(Gst.State.NULL)
-            self.state = Gst.State.NULL
-            self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
-        elif t == Gst.MessageType.ERROR:
-            self.player.set_state(Gst.State.NULL)
-            err, debug = msg.parse_error()
-            self.log.error(f"Error: {err}, {debug}")
-            self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
-        return True
 
     # signals #
 
