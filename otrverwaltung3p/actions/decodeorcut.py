@@ -514,7 +514,6 @@ class DecodeOrCut(Cut):
             cutlist = ci._run(filename, local_cutlist, self.app)
             ci.destroy()
             # MEMORYLEAK
-            # ~ print(f"dir(Cutinterface): {dir(ci)}")
             del ci
             gc.collect()
 

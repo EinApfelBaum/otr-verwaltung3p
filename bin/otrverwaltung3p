@@ -190,6 +190,7 @@ class App:
                 'passwd_store': 2,  # 0 = Store in conf, 1 = Store in wallet, 2 = Do not store
                 'passwd_store_memory': False,
                 'mpv_vol_max': 150.0,
+                'mpv_screen': '0',
                 'vol_adjust': 'usw,3.0,140',
                 'vol_adjust_on': False
             },
@@ -723,17 +724,6 @@ class App:
 
     def __show(self, cuts, video_filename, edl_subtitles_cb):
         video_filename_dirname = os.path.dirname(video_filename)
-        mpv_vol = 100.0; mpv_vol_max = 130.0
-        if self.config.get('general', 'vol_adjust_on'):
-            mpv_vol_max = self.config.get('general', 'mpv_vol_max')
-            vol_adjust = re.findall("[a-z.0-9,]+", self.config.get('general', 'vol_adjust'))
-            if vol_adjust:
-                # get station name from video filename
-                parts = video_filename.split('_'); parts.reverse(); station = parts[3]
-                for adj in vol_adjust:
-                    if adj.split(",")[0].lower() in station:
-                        mpv_vol = adj.split(",")[2]
-                        break
         f_edl = open(join(video_filename_dirname, ".tmp.edl"), "w")
         f_mpv_edl = open(join(video_filename_dirname, ".tmp_mpv.edl"), "w")
         f_sub = open(join(video_filename_dirname, ".tmp.sub"), "w")
@@ -764,10 +754,10 @@ class App:
                                              stderr=subprocess.STDOUT):
                     plays = True
                 else:
-                    self.log.error("{} failed to start.".format(prog))
+                    self.log.error(f"{prog} failed to start.")
             else:
                 exist = False
-                self.log.error("{} is not installed.".format(prog))
+                self.log.error(f"{prog} is not installed.")
             return cmdfound and plays
 
         def play_with(prog):
@@ -781,11 +771,26 @@ class App:
                         [self.config.get_program('mplayer'), "-geometry", "50%:50%", "-osdlevel", "3", "-edl", f_edl,
                          "-sub", f_sub, video_filename])
             elif prog == 'mpv':
+                mpv_vol = 100.0; mpv_vol_max = 130.0
+                if self.config.get('general', 'vol_adjust_on'):
+                    mpv_vol_max = self.config.get('general', 'mpv_vol_max')
+                    vol_adjust = re.findall("[a-z.0-9,]+", self.config.get('general', 'vol_adjust'))
+                    if vol_adjust:
+                        # get station name from video filename
+                        parts = video_filename.split('_'); parts.reverse(); station = parts[3]
+                        for adj in vol_adjust:
+                            if adj.split(",")[0].lower() in station:
+                                mpv_vol = adj.split(",")[2]
+                                break
                 mpv_args = [self.config.get_program('mpv')]
                 if self.config.get('general', 'mplayer_fullscreen'):
-                    mpv_args.append("-fs")
-                mpv_args.extend(["-geometry", "50%:50%", "--volume-max", str(mpv_vol_max),
-                                "--volume", str(mpv_vol), "-sub-file", f_mpv_sub, f_mpv_edl])
+                    mpv_args.append("--fullscreen")
+                mpv_screen = self.config.get('general', 'mpv_screen')
+                if not mpv_screen:
+                    mpv_screen = "0"
+                mpv_args.append(f"--screen={mpv_screen}")
+                mpv_args.extend([f"--volume-max={str(mpv_vol_max)}", f"--volume={str(mpv_vol)}",
+                                f"-sub-file={f_mpv_sub}", f_mpv_edl])
                 self.p = subprocess.Popen(mpv_args)
 
         if self.config.get('general', 'prefer_mplayer'):

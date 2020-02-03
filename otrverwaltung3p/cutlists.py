@@ -368,9 +368,7 @@ def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq, e
             c.othererrordescription = __read_value(cutlist, "othererrordescription")
             c.downloadcount = __read_value(cutlist, "downloadcount")
             c.autoname = __read_value(cutlist, "autoname")
-            c.filename_original = __read_value(cutlist, "applytofile")
-            print("c.filename_original: {}".format(c.filename_original))
-            # ~ c.filename_original = os.path.splitext(__read_value(cutlist, "name"))[0]
+            c.filename_original = os.path.splitext(__read_value(cutlist, "name"))[0]
             for key, value in qualities.items():
                 if key in c.filename_original:
                     c.quality = value
