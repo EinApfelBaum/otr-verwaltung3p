@@ -94,7 +94,7 @@ else:
     try:
         import otrverwaltung3p
     except ImportError:  # possible on systems where pycentral is not installed
-        sys.path.insert(0, "/usr/share/pyshared")
+        sys.path.insert(0, '/usr/lib/python' + sys.version[:3] + '/site-packages')
 
 import gettext, locale
 log.debug(locale_dir)
