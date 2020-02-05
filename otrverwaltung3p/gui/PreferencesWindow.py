@@ -124,6 +124,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         EntryBinding(self.obj('smkv_workingdir'), self.app.config, 'smartmkvmerge', 'workingdir')
         EntryBinding(self.obj('entry_server'), self.app.config, 'general', 'server')
         EntryBinding(self.obj('entry_vol_adjust'), self.app.config, 'general', 'vol_adjust')
+        EntryBinding(self.obj('entry_cutlist_comment'), self.app.config, 'general', 'cutlist_comment')
 
         SpinbuttonBinding(self.obj('spinbutton_seeker'), self.app.config, 'general', 'seek_distance_default')
         SpinbuttonBinding(self.obj('spinbutton_x'), self.app.config, 'general', 'cutinterface_resolution_x')

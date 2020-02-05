@@ -117,7 +117,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                     cutlist.cuts_frames.append((round(start * cutlist.fps), round(duration * cutlist.fps)))
 
             if cutlist.author != self.app.config.get('general', 'cutlist_username'):
-                cutlist.usercomment = 'OTRV3p; Vorlage von ' + cutlist.author + '; ' + cutlist.usercomment
+                cutlist.usercomment = self.config.get('general', 'cutlist_comment') + '; Vorlage von ' + \
+                                                      cutlist.author + '; ' + cutlist.usercomment
             if cutlist.cuts_frames:
                 self.initial_cutlist = cutlist.cuts_frames
                 self.initial_cutlist_in_frames = True
@@ -126,11 +127,11 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 self.initial_cutlist_in_frames = False
 
         else:
-            cutlist.usercomment = 'OTRV3p'
+            cutlist.usercomment = self.config.get('general', 'cutlist_comment')
             self.initial_cutlist = []
             self.initial_cutlist_in_frames = True
 
-        if self.timer != None:      # Running
+        if self.timer != None:  # Running
             self.timelines.append(self.get_cuts_in_frames(self.initial_cutlist, self.initial_cutlist_in_frames))
 
         if self.slider:
