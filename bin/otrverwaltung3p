@@ -192,7 +192,8 @@ class App:
                 'mpv_vol_max': 150.0,
                 'mpv_screen': '0',
                 'vol_adjust': 'usw,3.0,140',
-                'vol_adjust_on': False
+                'vol_adjust_on': False,
+                'cutlist_comment': 'OTRV3p'
             },
             'downloader': {
                 'resume_on_startup': True,
