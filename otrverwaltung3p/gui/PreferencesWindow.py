@@ -29,6 +29,14 @@ from otrverwaltung3p.gui.config_bindings import EntryBinding, FileChooserFolderB
                         SpinbuttonBinding
 from otrverwaltung3p import path
 
+path_setup = {'folderNewOtrkeys': 'Neue otrkey-Dateien',
+              'folderUncutAvis': 'Ungeschnittene Avis',
+              'folderCutAvis': 'Geschnittene Avis',
+              'folderTrashOtrkeys': 'Müllorder für otrkey-Dateien',
+              'folderTrashAvis': 'Müllorder für Avis',
+              'folderArchive': 'Archiv Ordner'
+             }
+
 
 class PreferencesWindow(Gtk.Window, Gtk.Buildable):
     __gtype_name__ = "PreferencesWindow"
@@ -37,11 +45,13 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         Gtk.Window.__init__(self)
         self.log = logging.getLogger(self.__class__.__name__)
         self.css = b"""
-.font_larger { font-size: larger; }
-.font_smaller { font-size: smaller; }"""
+                    .font_larger { font-size: larger; }
+                    .font_smaller { font-size: smaller; }
+                    .font_bold { font-weight: bold; }
+                    """
         self.css_provider = Gtk.CssProvider()
         self.css_provider.load_from_data(self.css)
-        pass
+        self.last_path = None
 
     def do_parser_finished(self, builder):
         self.builder = builder
@@ -55,16 +65,20 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         self.example_cut_filename = 'James_Bond_007_09.01.06_20-15_ard_120_TVOON_DE.mpg.HQ-cut.avi'
 
         # ~ # preferences fonts (small font for explanations)
-        labels = ['labelDescNewOtrkeys',
-                  'labelDescUncutAvis',
-                  'labelDescCutAvis',
-                  'labelDescTrashOtrkeys',
-                  'labelDescTrashAvis',
-                  'lbl_help_volume']
-        for label in labels:
-            self.obj(label).get_style_context().add_provider(self.css_provider,
-                                                        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-            self.obj(label).get_style_context().add_class("font_smaller")
+        # ~ labels = ['labelDescNewOtrkeys',
+                  # ~ 'labelDescUncutAvis',
+                  # ~ 'labelDescCutAvis',
+                  # ~ 'labelDescTrashOtrkeys',
+                  # ~ 'labelDescTrashAvis',
+                  # ~ 'lbl_help_volume']
+        # ~ for label in labels:
+            # ~ self.obj(label).get_style_context().add_provider(self.css_provider,
+                                                        # ~ Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+            # ~ self.obj(label).get_style_context().add_class("font_smaller")
+
+        for entry, _ in path_setup.items() :
+            self.obj(entry).get_style_context().add_provider(self.css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+            self.obj(entry).get_style_context().add_class("font_bold")
 
         ''' verschoben in die glade Datei
 
@@ -117,6 +131,12 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             self.obj('entry_decoder').set_active(0)
 
         # add bindings here.
+        EntryBinding(self.obj('folderNewOtrkeys'), self.app.config, 'general', 'folder_new_otrkeys')
+        EntryBinding(self.obj('folderTrashOtrkeys'), self.app.config, 'general', 'folder_trash_otrkeys')
+        EntryBinding(self.obj('folderTrashAvis'), self.app.config, 'general', 'folder_trash_avis')
+        EntryBinding(self.obj('folderUncutAvis'), self.app.config, 'general', 'folder_uncut_avis')
+        EntryBinding(self.obj('folderCutAvis'), self.app.config, 'general', 'folder_cut_avis')
+        EntryBinding(self.obj('folderArchive'), self.app.config, 'general','folder_archive')
         EntryBinding(self.obj('entry_username'), self.app.config, 'general', 'cutlist_username')
         EntryBinding(self.obj('entryEMail'), self.app.config, 'general', 'email')
         EntryBinding(self.obj('entryPassword'), self.app.config, 'general', 'password')
@@ -144,12 +164,12 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         # TODO: remove?
         # rename_schema_changed(self.obj('entry_schema').get_text())
 
-        FileChooserFolderBinding(self.obj('folderNewOtrkeys'), self.app.config, 'general', 'folder_new_otrkeys')
-        FileChooserFolderBinding(self.obj('folderTrashOtrkeys'), self.app.config, 'general', 'folder_trash_otrkeys')
-        FileChooserFolderBinding(self.obj('folderTrashAvis'), self.app.config, 'general', 'folder_trash_avis')
-        FileChooserFolderBinding(self.obj('folderUncutAvis'), self.app.config, 'general', 'folder_uncut_avis')
-        FileChooserFolderBinding(self.obj('folderCutAvis'), self.app.config, 'general', 'folder_cut_avis')
-        FileChooserFolderBinding(self.obj('folderArchive'), self.app.config, 'general','folder_archive')
+        # ~ FileChooserFolderBinding(self.obj('folderNewOtrkeys'), self.app.config, 'general', 'folder_new_otrkeys')
+        # ~ FileChooserFolderBinding(self.obj('folderTrashOtrkeys'), self.app.config, 'general', 'folder_trash_otrkeys')
+        # ~ FileChooserFolderBinding(self.obj('folderTrashAvis'), self.app.config, 'general', 'folder_trash_avis')
+        # ~ FileChooserFolderBinding(self.obj('folderUncutAvis'), self.app.config, 'general', 'folder_uncut_avis')
+        # ~ FileChooserFolderBinding(self.obj('folderCutAvis'), self.app.config, 'general', 'folder_cut_avis')
+        # ~ FileChooserFolderBinding(self.obj('folderArchive'), self.app.config, 'general','folder_archive')
 
         for option in ['folder_new_otrkeys', 'folder_trash_otrkeys', 'folder_trash_avis',
                                         'folder_uncut_avis', 'folder_cut_avis', 'folder_archive']:
@@ -257,19 +277,31 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             self.obj('OTRCredentialCheckResponse').set_markup("<span color='red'>🖧 Keine Internetverbindung!</span>")
 
     def _on_button_set_file_clicked(self, entry, data=None):
-        chooser = Gtk.FileChooserDialog(title="Datei auswählen",
-                                        action=Gtk.FileChooserAction.OPEN,
+        try:
+            chooser_title = path_setup[Gtk.Buildable.get_name(entry)] + ":"
+        except KeyError:
+            chooser_title = "Datei auswählen:"
+        chooser = Gtk.FileChooserDialog(title=chooser_title,
+                                        parent=self,
+                                        action=Gtk.FileChooserAction.SELECT_FOLDER,
                                         buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
                                         Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
         chooser.set_transient_for(self)
+        if isinstance(entry, Gtk.Entry):
+            if os.path.exists(entry.get_text()) and self.last_path is None:
+                chooser.set_current_folder(os.path.join(entry.get_text(),'..'))
+            elif self.last_path is not None:
+                chooser.set_current_folder(os.path.join(self.last_path,'..'))
+            else:
+                chooser.set_current_folder(os.path.expanduser("~"))
 
         if chooser.run() == Gtk.ResponseType.OK:
-            # ~ if type(entry) == Gtk.ComboBoxText:
-                # ~ entry.child.set_text(chooser.get_filename())
-            # ~ else:
-            if type(entry) == Gtk.ComboBoxText:
+            if isinstance(entry, Gtk.ComboBoxText):
                 entry.prepend(chooser.get_filename(), chooser.get_filename())
                 entry.set_active(0)
+            elif isinstance(entry, Gtk.Entry):
+                entry.set_text(chooser.get_filename())
+                self.last_path = entry.get_text()
 
         chooser.destroy()
 

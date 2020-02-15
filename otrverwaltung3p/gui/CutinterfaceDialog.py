@@ -7,7 +7,6 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
 gi.require_version('GstPbutils', '1.0')
-gi.require_version('GdkX11', '3.0')
 gi.require_version('GstVideo', '1.0')
 from gi.repository import Gtk, Gdk, GObject, Gst, GstPbutils
 
@@ -227,8 +226,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def ready_callback(self):
         self.log.debug("Function start")
-        self.builder.get_object('label_filename').set_markup(
-                                                    "{}".format(os.path.basename(self.filename)))
+        self.builder.get_object('label_filename').set_markup("{}".format(os.path.basename(self.filename)))
 
         self.update_timeline()
         self.update_listview()

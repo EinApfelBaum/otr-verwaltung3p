@@ -70,6 +70,9 @@
                       <object class="GtkLabel" id="labelTitleUncutAvis">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_markup" translatable="yes">In diesen Ordner werden die dekodierten Dateien verschoben. Dieser Ordner &lt;b&gt;darf nicht&lt;/b&gt; derselbe sein wie der für die neuen otrkey-Dateien.</property>
+                        <property name="halign">start</property>
+                        <property name="margin_top">10</property>
                         <property name="label" translatable="yes">Ungeschnittene Dateien:</property>
                         <property name="xalign">0</property>
                       </object>
@@ -83,6 +86,9 @@
                         <property name="width_request">100</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Dies ist der Ordner für die verschlüsselten otrkey-Dateien.</property>
+                        <property name="halign">start</property>
+                        <property name="margin_top">10</property>
                         <property name="label" translatable="yes">Neue otrkey-Dateien:</property>
                         <property name="ellipsize">start</property>
                         <property name="xalign">0</property>
@@ -109,6 +115,9 @@
                       <object class="GtkLabel" id="labelTitleCutAvis">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">In diesen Ordner werden die Dateien nach dem Schneiden verschoben. Dieser Ordner kann derselbe sein wie der für die ungeschnittenen Dateien.</property>
+                        <property name="halign">start</property>
+                        <property name="margin_top">10</property>
                         <property name="label" translatable="yes">Geschnittene Dateien:</property>
                         <property name="xalign">0</property>
                       </object>
@@ -121,6 +130,10 @@
                       <object class="GtkLabel" id="labelTitleTrashOtrkeys">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Hierhin werden otrkey-Dateien nach dem Dekodieren verschoben.
+Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
+                        <property name="halign">start</property>
+                        <property name="margin_top">10</property>
                         <property name="label" translatable="yes">Müll für otrkeys:</property>
                         <property name="xalign">0</property>
                       </object>
@@ -133,6 +146,9 @@
                       <object class="GtkLabel" id="labelTitleTrashAvis">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Hierhin werden ungeschittene Dateien nach dem Schneiden verschoben. Dieser Ordner kann auch der Müll-Ordner des Systems sein. Beide Müll-Ordner können identisch sein.</property>
+                        <property name="halign">start</property>
+                        <property name="margin_top">10</property>
                         <property name="label" translatable="yes">Müll für avis:</property>
                         <property name="xalign">0</property>
                       </object>
@@ -145,6 +161,9 @@
                       <object class="GtkLabel" id="labelArchiveFolder">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Hierhin werden ungeschittene Dateien nach dem Schneiden verschoben. Dieser Ordner kann auch der Müll-Ordner des Systems sein. Beide Müll-Ordner können identisch sein.</property>
+                        <property name="halign">start</property>
+                        <property name="margin_top">10</property>
                         <property name="label" translatable="yes">Archiv:</property>
                         <property name="xalign">0</property>
                       </object>
@@ -155,7 +174,6 @@
                     </child>
                     <child>
                       <object class="GtkLabel" id="labelDescNewOtrkeys">
-                        <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Dies ist der Ordner für die verschlüsselten otrkey-Dateien.</property>
                         <property name="use_markup">True</property>
@@ -169,30 +187,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkFileChooserButton" id="folderArchive">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="action">select-folder</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">11</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkFileChooserButton" id="folderNewOtrkeys">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="action">select-folder</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkLabel" id="labelDescCutAvis">
-                        <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">In diesen Ordner werden die Dateien nach dem Schneiden verschoben. Dieser Ordner kann derselbe sein wie der für die ungeschnittenen Dateien.</property>
                         <property name="wrap">True</property>
@@ -205,31 +200,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkFileChooserButton" id="folderUncutAvis">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="action">select-folder</property>
-                        <property name="title" translatable="yes">Ordner wählen</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">3</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkFileChooserButton" id="folderCutAvis">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="action">select-folder</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">5</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkLabel" id="labelDescUncutAvis">
-                        <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">In diesen Ordner werden die dekodierten Dateien verschoben. Dieser Ordner &lt;b&gt;darf nicht&lt;/b&gt; derselbe sein wie der für die neuen otrkey-Dateien.</property>
                         <property name="use_markup">True</property>
@@ -243,22 +214,9 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkFileChooserButton" id="folderTrashOtrkeys">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="action">select-folder</property>
-                        <property name="title" translatable="yes">Ordner wählen</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">7</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkLabel" id="labelDescTrashOtrkeys">
-                        <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Hierhin werden dekodierte otrkey-Dateien verschoben. Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
+                        <property name="label" translatable="yes">Hierhin werden otrkey-Dateien nach dem Dekodieren verschoben. Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
                         <property name="wrap">True</property>
                         <property name="max_width_chars">60</property>
                         <property name="xalign">0</property>
@@ -269,20 +227,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkFileChooserButton" id="folderTrashAvis">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="action">select-folder</property>
-                        <property name="title" translatable="yes">Ordner wählen</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">9</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkLabel" id="labelDescTrashAvis">
-                        <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Hierhin werden ungeschittene Dateien nach dem Schneiden verschoben. Dieser Ordner kann auch der Müll-Ordner des Systems sein. Beide Müll-Ordner können identisch sein.</property>
                         <property name="wrap">True</property>
@@ -293,6 +238,188 @@
                         <property name="left_attach">1</property>
                         <property name="top_attach">10</property>
                       </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="button_folderNewOtrkeys">
+                        <property name="label" translatable="yes">...</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="margin_top">10</property>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="folderNewOtrkeys" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="folderNewOtrkeys">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="tooltip_text" translatable="yes">Dies ist der Ordner für die verschlüsselten otrkey-Dateien.</property>
+                        <property name="margin_top">10</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="button_folderUncutAvis">
+                        <property name="label" translatable="yes">...</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="margin_top">10</property>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="folderUncutAvis" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="folderUncutAvis">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="tooltip_markup" translatable="yes">In diesen Ordner werden die dekodierten Dateien verschoben. Dieser Ordner &lt;b&gt;darf nicht&lt;/b&gt; derselbe sein wie der für die neuen otrkey-Dateien.</property>
+                        <property name="margin_top">10</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="folderCutAvis">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="tooltip_text" translatable="yes">In diesen Ordner werden die Dateien nach dem Schneiden verschoben. Dieser Ordner kann derselbe sein wie der für die ungeschnittenen Dateien.</property>
+                        <property name="margin_top">10</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="button_folderCutAvis">
+                        <property name="label" translatable="yes">...</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="margin_top">10</property>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="folderCutAvis" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="button_folderTrashOtrkeys">
+                        <property name="label" translatable="yes">...</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="margin_top">10</property>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="folderTrashOtrkeys" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">7</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="button_folderTrashAvis">
+                        <property name="label" translatable="yes">...</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="margin_top">10</property>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="folderTrashAvis" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">9</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="button_folderArchive">
+                        <property name="label" translatable="yes">...</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="margin_top">10</property>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="folderArchive" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">11</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="folderTrashOtrkeys">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="tooltip_text" translatable="yes">Hierhin werden otrkey-Dateien nach dem Dekodieren verschoben.
+Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
+                        <property name="margin_top">10</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">7</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="folderTrashAvis">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="tooltip_text" translatable="yes">Hierhin werden ungeschittene Dateien nach dem Schneiden verschoben. Dieser Ordner kann auch der Müll-Ordner des Systems sein. Beide Müll-Ordner können identisch sein.</property>
+                        <property name="margin_top">10</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">9</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="folderArchive">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="tooltip_text" translatable="yes">Ordner für zu archivierende geschnittene Dateien.
+Hier muss auch dann ein bestehender Ordner angegeben werden,  wenn die Archivieren-Funktion nicht genutzt wird.</property>
+                        <property name="margin_top">10</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">11</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>
@@ -2267,6 +2394,12 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                       <object class="GtkEntry" id="entry_vol_adjust">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="tooltip_text" translatable="yes">Aufbau: &lt;Sender Suchstring&gt;,&lt;Lautstärke Cutinterface&gt;,&lt;Lautstärke mpv (Schnitte anspielen/Abspielen)&gt;
+Beispiel: "usw,3.0,140" (ohne Anführungszeichen)
+D.h. Wenn im Sendernamen "usw" vorkommt setze die Lautstärke im Cutinterface auf "3" (Standard isr "1") und die Lautstärke von mpv (Schnitte anspielen/Abspielen) auf 140 (Standard ist 100).
+Dies hebt die Wiedergabelautstärke für alle US-Sender an. Dies ist die Voreinstellung.
+Es dürfen nur die Zeichen a-z, 0-9 sowie Komma und Punkt vorkommen.
+Mehrere Anpassungen werden durch Unterstriche(e) getrennt.</property>
                         <property name="hexpand">True</property>
                       </object>
                       <packing>
@@ -2279,9 +2412,6 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
-                        <property name="label" translatable="yes">Aufbau: &lt;Sender Suchstring&gt;,&lt;Lautstärke Cutinterface&gt;,&lt;Lautstärke mpv (Schnitte anspielen)&gt;
-Beispiel: usw,3.0,140
-Dies hebt die Wiedergabelautstärke für alle US-Sender an. Dies ist die Voreinstellung.</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
