@@ -17,7 +17,7 @@
 
 import sys
 import os
-from os.path import join, isdir, exists, splitext
+from os.path import join, isdir, splitext
 import re
 import subprocess
 import time
@@ -25,8 +25,10 @@ import hashlib
 import optparse
 import logging
 import shutil
-from dbus.mainloop.glib import DBusGMainLoop
-import dbus, dbus.service
+from pathlib import Path
+import tempfile
+# ~ from dbus.mainloop.glib import DBusGMainLoop
+# ~ import dbus, dbus.service
 from base64 import b64encode
 
 try:
@@ -37,8 +39,7 @@ except ImportError:
 try:
     import gi
     gi.require_version('Gtk', '3.0')
-    from gi.repository import Gtk, GdkPixbuf, GObject
-
+    from gi.repository import Gtk, Gdk
 except:
     print("PyGTK/GTK is missing.")
     sys.exit(-1)
@@ -61,9 +62,8 @@ def parse_opts():
                       help="Debug messages", default=False)
     oparse.add_option("-l", "--link", help="Add a link")
 
-    opts, rest = oparse.parse_args()
+    opts, _ = oparse.parse_args()
     return opts
-
 
 opts = parse_opts()
 
@@ -85,25 +85,25 @@ if os.path.exists(os.path.join(source_tree, "path.py")):
     local = True
     log.info("Running from source tree; adjusting path")
     sys.path.insert(0, os.path.realpath(os.path.dirname(source_tree)))
-    locale_dir = os.path.join(launch_dir, "..", "locale")
+    # ~ locale_dir = os.path.join(launch_dir, "..", "locale")
 else:
     local = False
     logging.debug("Assuming path is correct")
-    locale_dir = "/usr/share/locale"
+    # ~ locale_dir = "/usr/share/locale"
 
     try:
         import otrverwaltung3p
     except ImportError:  # possible on systems where pycentral is not installed
         sys.path.insert(0, '/usr/lib/python' + sys.version[:3] + '/site-packages')
 
-import gettext, locale
-log.debug(locale_dir)
-gettext.install('otrverwaltung3p', locale_dir, True)
+# ~ import gettext, locale
+# ~ log.debug(locale_dir)
+# ~ gettext.install('otrverwaltung3p', locale_dir, True)
 
-locale.setlocale(locale.LC_ALL, 'C')
-#for module in gettext, Gtk.Gla glade:
-#    module.bindtextdomain('otrverwaltung3p', locale_dir)
-#    module.textdomain('otrverwaltung3p')
+# ~ locale.setlocale(locale.LC_ALL, 'C')
+# ~ for module in gettext, Gtk.Gla glade:
+# ~     module.bindtextdomain('otrverwaltung3p', locale_dir)
+# ~     module.textdomain('otrverwaltung3p')
 
 # intern
 from otrverwaltung3p.gui import gui
@@ -193,7 +193,8 @@ class App:
                 'mpv_screen': '0',
                 'vol_adjust': 'usw,3.0,140',
                 'vol_adjust_on': False,
-                'cutlist_comment': 'OTRV3p'
+                'cutlist_comment': 'OTRV3p',
+                'ask_if_all': True
             },
             'downloader': {
                 'resume_on_startup': True,
@@ -233,7 +234,7 @@ class App:
                 'ffmpeg_mp4_x264_options': 'crf=23:force-cfr=1:trellis=0',
                 'ffmpeg_avi_mpeg4_options': '-c:v mpeg4 -vtag DX50 -qscale:v 5 -g 300 -f avi',
                 'encoder_engine': 'ffmpeg',  # 'x264' or 'ffmpeg' possible
-                'workingdir': '/tmp',
+                'workingdir': '',
                 'first_audio_stream': 'originale MP3 Spur kopieren',
                 'second_audio_stream': 'originale AC3 Spur kopieren',
                 'normalize_audio': False,
@@ -249,7 +250,6 @@ class App:
         version = open(path.getdatapath("VERSION"), 'r').read().strip()
         print("{0}, version {1}".format(self.app_name, version))
 
-
         if local:
             self.config = Config(os.path.join(launch_dir, "..", "conf"), configuration)
         else:
@@ -259,15 +259,15 @@ class App:
         self.locked = False
 
         # regex
-        regex_uncut_video = '.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])' + \
-                            '*_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|mp4|mkv|HQ\.mkv|HD\.mkv|' + \
-                            'mp4\.mkv|HQ\.mp4|HD\.mp4)$'
+        regex_uncut_video = (r'.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])'
+                             r'*_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|mp4|mkv|HQ\.mkv|HD\.mkv|'
+                             r'mp4\.mkv|HQ\.mp4|HD\.mp4)$')
         self.uncut_video = re.compile(regex_uncut_video)
         # regex for the name schema should use cut videos just in case it has been muxed
         # into an mkv because of an ac3-track
-        regex_rename_video = '.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])*' + \
-                             '_TVOON_DE.mpg(-cut\.avi|\.HQ-cut\.avi|\.HD-cut\.avi|-cut\.mp4|' + \
-                             '\.HQ-cut\.mp4|\.HD-cut\.mp4|\.HD-cut\.mkv|\.HQ-cut\.mkv|-cut\.mkv)$'
+        regex_rename_video = (r'.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])*'
+                              r'_TVOON_DE.mpg(-cut\.avi|\.HQ-cut\.avi|\.HD-cut\.avi|-cut\.mp4|'
+                              r'\.HQ-cut\.mp4|\.HD-cut\.mp4|\.HD-cut\.mkv|\.HQ-cut\.mkv|-cut\.mkv)$')
         self.rename_video = re.compile(regex_rename_video)
         self.cut_video = re.compile('.*(avi|mp4|mkv|wmv|ac3)$')
 
@@ -289,9 +289,8 @@ class App:
         try:
             file = open(path.get_storage_dir("data"), 'r')
             downloads = json.loads(file.read())['downloads']
-        except (IOError, ValueError) as message:
+        except (IOError, ValueError):
             pass
-            #self.log.warning("Can't read downloads: %s" % message)
 
         for json_download in downloads:
             download = Download(self, self.config)
@@ -318,59 +317,14 @@ class App:
         if os.path.exists(os.path.join(path.get_config_dir("conf"))):
             if os.path.exists(self.config.get('general', 'folder_uncut_avis')):
                 self.show_section(Section.VIDEO_UNCUT)
-                self.gui.main_window.treeview_files()
+                self.gui.main_window.treeview_files_grab()
 
         self.planned_broadcasts = Planning()
         self.planned_broadcasts.read_config(self.config.get('general', 'planned_items'))
         for broadcast in self.planned_broadcasts:
             self.gui.main_window.append_row_planning(broadcast)
 
-        self.gui.main_window.broadcasts_badge()
-
-    """def import_old_config(self, configuration):
-        # TODO: Remove after one release
-
-        # try to move plugins
-        import shutil
-        src = join(os.environ.get('HOME'), '.otr-verwaltung', 'plugins')
-        dst = path.get_storage_dir("plugins")
-        try:
-            shutil.copytree(src, dst)
-        except:
-            pass
-
-        try:
-            config = join(os.environ.get('HOME'), '.otr-verwaltung', 'conf')
-            config = open(config, 'r')
-        except:
-            return configuration
-
-        # read file
-        for line in config:
-            if not '=' in line:
-                continue
-            key, value = line.split('=', 1)
-            key, value = key.strip(), value.strip()
-
-            if key in configuration['general'].keys():
-                datatype = type(configuration['general'][key])
-
-                # print "%5s: %15s=%15s" % (datatype, key.strip(), value)
-                if datatype == bool:
-                    value = bool(int(value))
-                else:
-                    value = datatype(value)
-
-                self.info("IMPORT: %s of %s" % (key, datatype))
-                configuration['general'][key] = value
-
-            elif key == "enabled_plugins":
-                configuration['plugins']['enabled'] = value
-
-        os.rename(join(os.environ.get('HOME'), '.otr-verwaltung'), join(os.environ.get('HOME'), '.otr-verwaltung_ALT'))
-
-        return configuration"""
-
+            self.gui.main_window.broadcasts_badge()
 
     ### Show sections
     ###
@@ -587,8 +541,9 @@ class App:
             return filename
 
     def __append_row_treeview_files(self, parent, filename):
+        # gcurse:LOCK
         iter = self.gui.main_window.append_row_files(parent, filename, fileoperations.get_size(filename),
-                                                       fileoperations.get_date(filename), isdir(filename))
+                                                     fileoperations.get_date(filename), isdir(filename), locked=False)
         return iter
 
     ###
@@ -648,10 +603,10 @@ class App:
     ### Actions
     ###
 
-    def perform_action(self, chosen_action, cut_action=None):
+    def perform_action(self, chosen_action, cut_action=None, treepath=None):
 
         action = actions.get_action(chosen_action, self, self.gui)
-
+        """
         if chosen_action in [Action.PLAN_EDIT, Action.PLAN_SEARCH, Action.PLAN_REMOVE]:
             model, selected_rows = self.gui.main_window.builder.get_object(
                 'treeview_planning').get_selection().get_selected_rows()
@@ -670,21 +625,24 @@ class App:
             selected_rows = [model.get_iter(path) for path in selected_rows]
             self.locked = True
             action.do(selected_rows)
+        """
 
-        elif chosen_action in [Action.DECODE, Action.CUT, Action.DECODEANDCUT, Action.RENAME, Action.REAL_DELETE,
+        if chosen_action in [Action.DECODE, Action.CUT, Action.DECODEANDCUT, Action.RENAME, Action.REAL_DELETE,
                                Action.RESTORE, Action.DELETE, Action.ARCHIVE]:
             filenames = self.gui.main_window.get_selected_filenames()
 
-            if len(filenames) == 0:
-                model = self.gui.main_window.builder.get_object('treeview_files').get_model()
+            if self.config.get('general', 'ask_if_all'):
+                if len(filenames) == 0:
+                    model = self.gui.main_window.builder.get_object('treeview_files').get_model()
 
-                if len(model) != 0 and self.gui.question_box(
-                        "Es ist keine Datei markiert! Sollen alle Dateien verarbeitet werden?"):
-                    filenames = [row[0] for row in model]
-                else:
-                    return
+                    if len(model) != 0 and self.gui.question_box(
+                            "Es ist keine Datei markiert! Sollen alle Dateien verarbeitet werden?"):
+                        filenames = [row[0] for row in model]
+                    else:
+                        return
 
             self.locked = True
+
             if chosen_action in [Action.DECODE, Action.CUT, Action.DECODEANDCUT]:
                 action.do(chosen_action, filenames, cut_action)
             else:
@@ -719,16 +677,15 @@ class App:
             self.show_section(self.section)
 
     def play_file(self, filename):
-        """ #FIXME """
-
-        subprocess.Popen(['xdg-open', filename])
+        uri = Path(filename).as_uri()
+        Gtk.show_uri_on_window(self.gui.main_window, uri, Gdk.CURRENT_TIME)
 
     def __show(self, cuts, video_filename, edl_subtitles_cb):
-        video_filename_dirname = os.path.dirname(video_filename)
-        f_edl = open(join(video_filename_dirname, ".tmp.edl"), "w")
-        f_mpv_edl = open(join(video_filename_dirname, ".tmp_mpv.edl"), "w")
-        f_sub = open(join(video_filename_dirname, ".tmp.sub"), "w")
-        f_mpv_sub = open(join(video_filename_dirname, ".tmp_mpv.sub"), "w")
+        video_filename_dirname = Path(video_filename).parent
+        f_edl = open(Path.joinpath(video_filename_dirname, ".tmp.edl"), "w", newline="\n")
+        f_mpv_edl = open(Path.joinpath(video_filename_dirname, ".tmp_mpv.edl"), "w", newline="\n")
+        f_sub = open(Path.joinpath(video_filename_dirname, ".tmp.sub"), "w", newline="\n")
+        f_mpv_sub = open(Path.joinpath(video_filename_dirname, ".tmp_mpv.sub"), "w", newline="\n")
 
         # get cuts in seconds
 
@@ -739,10 +696,10 @@ class App:
         f_sub.close()
         f_mpv_sub.close()
 
-        f_edl = join(video_filename_dirname, ".tmp.edl")
-        f_mpv_edl = join(video_filename_dirname, ".tmp_mpv.edl")
-        f_sub = join(video_filename_dirname, ".tmp.sub")
-        f_mpv_sub = join(video_filename_dirname, ".tmp_mpv.sub")
+        f_edl = Path.joinpath(video_filename_dirname, ".tmp.edl")
+        f_mpv_edl = Path.joinpath(video_filename_dirname, ".tmp_mpv.edl")
+        f_sub = Path.joinpath(video_filename_dirname, ".tmp.sub")
+        f_mpv_sub = Path.joinpath(video_filename_dirname, ".tmp_mpv.sub")
 
         def check_prog(prog):
             cmdfound = False
@@ -804,7 +761,8 @@ class App:
         elif check_prog(self.playprog[1]):
             play_with(self.playprog[1])
         else:
-            self.gui.message_error_box("Zum Anzeigen der Schnitte sind weder mpv noch mplayer installiert bzw. funktionieren nicht.")
+            self.gui.message_error_box("Zum Anzeigen der Schnitte sind weder mpv noch mplayer installiert bzw."
+                                       " funktionieren nicht.")
             return
 
         # wait
@@ -951,9 +909,10 @@ class App:
         self.gui.main_window.show()
         if not os.path.exists(self.config.get_config_file_path()):
             self.gui.message_info_box(
-                "Dies ist offenbar das erste Mal, dass OTR-Verwaltung gestartet wird." + \
-                "\n\nEs müssen zunächst einige wichtige Einstellungen vorgenommen werden." + \
+                "Dies ist offenbar das erste Mal, dass OTR-Verwaltung gestartet wird."
+                "\n\nEs müssen zunächst einige wichtige Einstellungen vorgenommen werden."
                 "\n\nKlicken Sie dazu auf OK.")
+            self.config.set('smartmkvmerge', 'workingdir', tempfile.gettempdir())
             self.gui.preferences_window.show()
         else:
             errstr = ''
@@ -1022,32 +981,32 @@ class App:
         action.do(link)
 
 
-class OTRVerwaltungService(dbus.service.Object):
-    def __init__(self, app):
-        self.app = app
-        bus_name = dbus.service.BusName('elbersb.otrverwaltung3p', bus=dbus.SessionBus())
-        dbus.service.Object.__init__(self, bus_name, '/elbersb/otrverwaltung3p')
+# ~ class OTRVerwaltungService(dbus.service.Object):
+    # ~ def __init__(self, app):
+        # ~ self.app = app
+        # ~ bus_name = dbus.service.BusName('elbersb.otrverwaltung3p', bus=dbus.SessionBus())
+        # ~ dbus.service.Object.__init__(self, bus_name, '/elbersb/otrverwaltung3p')
 
-    @dbus.service.method(dbus_interface='elbersb.otrverwaltung3p')
-    def show_window(self):
-        self.app.gui.main_window.present()
+    # ~ @dbus.service.method(dbus_interface='elbersb.otrverwaltung3p')
+    # ~ def show_window(self):
+        # ~ self.app.gui.main_window.present()
 
-    @dbus.service.method(dbus_interface='elbersb.otrverwaltung3p')
-    def add_link(self, link):
-        self.app.add_download_link(link)
+    # ~ @dbus.service.method(dbus_interface='elbersb.otrverwaltung3p')
+    # ~ def add_link(self, link):
+        # ~ self.app.add_download_link(link)
 
 
 if __name__ == "__main__":
     # Set up a dbus mainloop
-    dbus_loop = DBusGMainLoop(set_as_default=True)
-    if dbus.SessionBus().request_name("elbersb.otrverwaltung3p") != dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER:
-        log.warning("OTR-Verwaltung läuft bereits. Zeige Fenster.")
-        dbus.SessionBus().get_object("elbersb.otrverwaltung3p", "/elbersb/otrverwaltung3p").get_dbus_method("show_window")()
-        if link:
-            dbus.SessionBus().get_object("elbersb.otrverwaltung3p", "/elbersb/otrverwaltung3p").get_dbus_method("add_link")(
-                link)
-    else:
-        app = App()
-        service = OTRVerwaltungService(app)
-        app.run(link)
-        app.config.save()
+    # ~ dbus_loop = DBusGMainLoop(set_as_default=True)
+    # ~ if dbus.SessionBus().request_name("elbersb.otrverwaltung3p") != dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER:
+        # ~ log.warning("OTR-Verwaltung läuft bereits. Zeige Fenster.")
+        # ~ dbus.SessionBus().get_object("elbersb.otrverwaltung3p", "/elbersb/otrverwaltung3p").get_dbus_method("show_window")()
+        # ~ if link:
+            # ~ dbus.SessionBus().get_object("elbersb.otrverwaltung3p", "/elbersb/otrverwaltung3p").get_dbus_method("add_link")(
+                # ~ link)
+    # ~ else:
+    app = App()
+    # ~ service = OTRVerwaltungService(app)
+    app.run(link)
+    app.config.save()

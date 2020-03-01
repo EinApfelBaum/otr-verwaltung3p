@@ -23,6 +23,7 @@ import base64
 import subprocess
 import os, re, shutil
 import logging
+import sys
 import gc
 
 from otrverwaltung3p import fileoperations
@@ -511,8 +512,10 @@ class DecodeOrCut(Cut):
             ci = CutinterfaceDialog.NewCutinterfaceDialog(self.gui)
             ci.set_transient_for(self.gui.main_window)
             ci.set_modal(True)
+            self.gui.main_window.get_window().set_cursor(self.gui.main_window.cursor_wait)
             cutlist = ci._run(filename, local_cutlist, self.app)
             ci.destroy()
+            self.gui.main_window.get_window().set_cursor(None)
             # MEMORYLEAK
             del ci
             gc.collect()
@@ -572,14 +575,18 @@ class DecodeOrCut(Cut):
                 return self.mux_ac3(filename, cut_video, ac3file, cutlist)
 
         elif program == Program.SMART_MKVMERGE:
+            self.gui.main_window.get_window().set_cursor(self.gui.main_window.cursor_wait)
             cutter = CutSmartMkvmerge(self.app, self.gui)
             cut_video, error = cutter.cut_file_by_cutlist(filename, cutlist)
+            self.gui.main_window.get_window().set_cursor(None)
             if not error and ac3file is not None:
                 return cut_video, ac3file, None
 
         elif program == Program.VIRTUALDUB:  # VIRTUALDUB
+            self.gui.main_window.get_window().set_cursor(self.gui.main_window.cursor_wait)
             cutter = CutVirtualdub(self.app, self.gui)
             cut_video, error = cutter.cut_file_by_cutlist(filename, cutlist, program_config_value)
+            self.gui.main_window.get_window().set_cursor(None)
             if not error and ac3file is not None and self.config.get('general', 'merge_ac3s'):
                 return self.mux_ac3(filename, cut_video, ac3file, cutlist)
 

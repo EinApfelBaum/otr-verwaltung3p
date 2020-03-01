@@ -22,8 +22,6 @@ import shutil
 
 data_dir = '../data'
 
-
-
 def getdatapath(*args):
     """Retrieve otrverwaltung data path
 
@@ -65,7 +63,10 @@ def get_tools_path(filename=""):
 
 
 def get_internal_virtualdub_path(filename=""):
+    if sys.platform == 'win32':
+        return None
     vdub_path = getdatapath("tools/intern-VirtualDub", filename)
+    vdub_path_installed = "otrverwaltung3p/intern-VirtualDub"
     if os.path.expanduser("~") in os.path.abspath(sys.path[0]):
         # started from home dir
         if os.path.exists(vdub_path):
@@ -75,17 +76,17 @@ def get_internal_virtualdub_path(filename=""):
     else:
         # started from the system
         if os.path.exists(vdub_path):
-            if os.path.exists(os.path.join(BaseDirectory.xdg_data_home, "otrverwaltung3p/intern-VirtualDub", 'VERSION')):
+            if os.path.exists(os.path.join(BaseDirectory.xdg_data_home, vdub_path_installed, 'VERSION')):
                 if not filecmp.cmp(getdatapath("tools/intern-VirtualDub", 'VERSION'),
-                                   os.path.join(BaseDirectory.xdg_data_home, "otrverwaltung3p/intern-VirtualDub", 'VERSION')):
+                                   os.path.join(BaseDirectory.xdg_data_home, vdub_path_installed, 'VERSION')):
                     # Version ist nicht aktuell
-                    shutil.rmtree(os.path.join(BaseDirectory.xdg_data_home, "otrverwaltung3p/intern-VirtualDub"), ignore_errors=True)
+                    shutil.rmtree(os.path.join(BaseDirectory.xdg_data_home, vdub_path_installed), ignore_errors=True)
                     shutil.copytree(getdatapath('tools/intern-VirtualDub'),
-                             os.path.join(BaseDirectory.xdg_data_home, "otrverwaltung3p/intern-VirtualDub"), symlinks=True)
+                             os.path.join(BaseDirectory.xdg_data_home, vdub_path_installed), symlinks=True)
             else:
                 shutil.copytree(getdatapath('tools/intern-VirtualDub'),
-                         os.path.join(BaseDirectory.xdg_data_home, "otrverwaltung3p/intern-VirtualDub"), symlinks=True)
+                         os.path.join(BaseDirectory.xdg_data_home, vdub_path_installed), symlinks=True)
 
-            return os.path.join(BaseDirectory.xdg_data_home, "otrverwaltung3p/intern-VirtualDub", filename)
+            return os.path.join(BaseDirectory.xdg_data_home, vdub_path_installed, filename)
         else:
             return None

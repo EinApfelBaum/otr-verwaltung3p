@@ -10,7 +10,10 @@ gi.require_version('GstPbutils', '1.0')
 gi.require_version('GstVideo', '1.0')
 from gi.repository import Gtk, Gdk, GObject, Gst, GstPbutils
 
+import cairo
+
 import os, time, logging, json, re
+from pathlib import Path
 
 GObject.threads_init()
 Gst.init(None)
@@ -154,7 +157,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.log.debug("function start")
         self.app = app
         self.config = app.config
-        self.filename = filename
+        self.fileuri = Path(filename).as_uri()
+        self.filename = str(Path(filename))
         self.seek_distance_default = self.config.get('general', 'seek_distance_default')
         self.seek_distance = self.seek_distance_default
         self.atfc = self.config.get('general', 'alt_time_frame_conv')
@@ -181,7 +185,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.log.debug("Discoverer start")
         # Discoverer timeout set to 5 * Gst.SECOND
         self.discoverer = GstPbutils.Discoverer.new(5 * Gst.SECOND)
-        self.d = self.discoverer.discover_uri("file://" + self.filename)
+        self.d = self.discoverer.discover_uri(self.fileuri)
         for vinfo in self.d.get_video_streams():
             self.framerate_num = vinfo.get_framerate_num()
             self.framerate_denom = vinfo.get_framerate_denom()
@@ -196,8 +200,12 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.timelines = [self.get_cuts_in_frames(self.initial_cutlist,
                                                   self.initial_cutlist_in_frames)]
 
+        # MENORYLEAK
+        del self.d
+        del self.discoverer
+
         # Set player uri only after discoverer is done
-        self.player.set_property('uri', "file://" + self.filename)
+        self.player.set_property('uri', self.fileuri)
         if self.app.config.get('general', 'vol_adjust_on'):
             vol_adjust = re.findall("[a-z.0-9,]+", self.app.config.get('general', 'vol_adjust'))
             if vol_adjust:
@@ -212,6 +220,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.ready_callback()
 
         self.timer2 = GObject.timeout_add(600, self.update_listview)
+        # Reset cursor MainWindow
+        self.gui.main_window.get_window().set_cursor(None)
 
         if Gtk.ResponseType.OK == self.run():
             self.set_cuts(self.cutlist, self.timelines[-1])
@@ -691,6 +701,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 elif keyname == 'B':
                     self.select_cut('prev')
                     return True
+                elif keyname == 'ESCAPE':
+                    return True
                 else:
                     self.log.debug("keyname: {}".format(keyname))
 
@@ -1006,10 +1018,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.callback(self.cutlist)
         self.close()
 
-    def on_slider_draw_event(self, widget, cr):
-        self.redraw(cr)
+    def on_slider_draw_event(self, widget, cairo_context):
+        self.redraw(cairo_context)
 
-    def redraw(self, cr):
+    def redraw(self, cairo_context):
         slider = self.builder.get_object('slider')
 
         border = 11
@@ -1024,9 +1036,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                     marker_a = border + int(round(self.marker_a * one_frame_in_pixels))
                     marker_b = border + int(round(self.marker_b * one_frame_in_pixels))
 
-                    cr.set_source_rgb(1.0, 0.0, 0.0)  # red
-                    cr.rectangle(marker_a, 0, marker_b - marker_a, 5)
-                    cr.fill()
+                    cairo_context.set_source_rgb(1.0, 0.0, 0.0)  # red
+                    cairo_context.rectangle(marker_a, 0, marker_b - marker_a, 5)
+                    cairo_context.fill()
 
                 if not self.hide_cuts:
                     inverted = self.invert_simple(self.timelines[-1])
@@ -1037,28 +1049,28 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                         # draw keyframe cuts that don't need reencoding in a different color
 
                         if round(start) in self.keyframes and (round(start + duration) in self.keyframes or round(start + duration) == self.frames):
-                            cr.set_source_rgb(0.0, 0.6, 0.0)  # green
-                            cr.rectangle(pixel_start, slider.get_allocation().height - 5, pixel_duration, 5)
-                            cr.fill()
+                            cairo_context.set_source_rgb(0.0, 0.6, 0.0)  # green
+                            cairo_context.rectangle(pixel_start, slider.get_allocation().height - 5, pixel_duration, 5)
+                            cairo_context.fill()
                         else:
                             if round(start) in self.keyframes:
-                                cr.set_source_rgb(0.0, 0.6, 0.0)  # green
+                                cairo_context.set_source_rgb(0.0, 0.6, 0.0)  # green
                             else:
-                                cr.set_source_rgb(1.0, 0.6, 0.0)  # orange
-                            cr.rectangle(pixel_start, slider.get_allocation().height - 5, pixel_duration/10, 5)
-                            cr.fill()
+                                cairo_context.set_source_rgb(1.0, 0.6, 0.0)  # orange
+                            cairo_context.rectangle(pixel_start, slider.get_allocation().height - 5, pixel_duration/10, 5)
+                            cairo_context.fill()
 
                             if round(start + duration) in self.keyframes or round(start + duration) == self.frames:
-                                cr.set_source_rgb(0.0, 0.6, 0.0)  # green
+                                cairo_context.set_source_rgb(0.0, 0.6, 0.0)  # green
                             else:
-                                cr.set_source_rgb(1.0, 0.6, 0.0)  # orange
+                                cairo_context.set_source_rgb(1.0, 0.6, 0.0)  # orange
 
-                            cr.rectangle(pixel_start + pixel_duration/10*9, slider.get_allocation().height - 5, pixel_duration/10, 5)
-                            cr.fill()
+                            cairo_context.rectangle(pixel_start + pixel_duration/10*9, slider.get_allocation().height - 5, pixel_duration/10, 5)
+                            cairo_context.fill()
 
-                            cr.set_source_rgb(1.0, 0.6, 0.0)  # orange
-                            cr.rectangle(pixel_start + pixel_duration/10, slider.get_allocation().height - 5, pixel_duration/10*8, 5)
-                            cr.fill()
+                            cairo_context.set_source_rgb(1.0, 0.6, 0.0)  # orange
+                            cairo_context.rectangle(pixel_start + pixel_duration/10, slider.get_allocation().height - 5, pixel_duration/10*8, 5)
+                            cairo_context.fill()
 
                 # slider.queue_draw()
             except AttributeError as ex:

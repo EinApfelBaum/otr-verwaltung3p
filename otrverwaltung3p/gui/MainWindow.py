@@ -45,23 +45,24 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.svn_version_url = ''
         self.conclusion_eventbox = None
         self.conclusion_css = b"""
-* {
-    transition-property: color, background-color;
-    transition-duration: 2.5s;
-}
-.conclusion {
-    background-image: none;
-    background-color: rgb(255,180,0);
-    color: black;
-}
-.conclusion2 {
-    background-image: none;
-    background-color: rgb(255,225,0);
-    color: black;
-}
-        """
+                                * {
+                                    transition-property: color, background-color;
+                                    transition-duration: 2.5s;
+                                }
+                                .conclusion {
+                                    background-image: none;
+                                    background-color: rgb(255,180,0);
+                                    color: black;
+                                }
+                                .conclusion2 {
+                                    background-image: none;
+                                    background-color: rgb(255,225,0);
+                                    color: black;
+                                }
+                            """
         self.css_provider = Gtk.CssProvider()
         self.css_provider.load_from_data(self.conclusion_css)
+        self.cursor_wait = Gdk.Cursor(Gdk.CursorType.WATCH)
 
     def do_parser_finished(self, builder):
         self.builder = builder
@@ -147,7 +148,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                 image = Gtk.Image.new_from_file(path.get_image_path(image_name))
             else:
                 # Gtk.IconSize.LARGE_TOOLBAR
-                if type(image_name) == type([]):  # It's a list so we create an emblemed icon
+                if type(image_name) is list:  # It's a list so we create an emblemed icon
                     try:
                         image = Gtk.Image.new_from_gicon(Gio.EmblemedIcon.new(
                                                 Gio.ThemedIcon.new(image_name[0]),
@@ -264,8 +265,12 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
     def __setup_treeview_files(self):
         treeview = self.builder.get_object('treeview_files')
-        treeview.connect('button_press_event', self._on_treeview_files_button_pressed)
-        store = Gtk.TreeStore(str, float, float, bool)  # filename, size, date, locked
+        treeview.connect('button_press_event', self._on_treeview_context_menu)
+        treeview.connect('popup-menu', self._on_treeview_context_menu)
+        treeview.connect('row-activated', self._on_treeview_doubleclick)
+        # TreeStore fields filename, size, date, isdir, locked
+        #                      |       |    |      |     |
+        store = Gtk.TreeStore(str, float, float, bool, bool)  # gcurse:LOCK
         treeview.set_model(store)
 
         # constants for model and columns
@@ -273,6 +278,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.__SIZE = 1
         self.__DATE = 2
         self.__ISDIR = 3
+        self.__LOCKED = 4  # gcurse:LOCK
 
         # create the TreeViewColumns to display the data
         column_names = ['Dateiname', 'Größe', 'Geändert']
@@ -382,7 +388,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         conclusion_eventbox = self.builder.get_object('box_conclusion')
         eventbox = self.builder.get_object('box_conclusion')
         conclusion_button.get_style_context().add_provider(self.css_provider,
-                                                        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+                                                           Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         # cmap = eventbox.get_colormap()
         # colour = cmap.alloc_color("#E8E7B6")
         conclusion_button.get_style_context().add_class("conclusion")
@@ -406,13 +412,12 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     # treeview_files
     #
 
-    def _on_treeview_files_button_pressed(self, widget, data=None):
-        pass
-
-    def treeview_files(self):
-        # ~ self.builder.get_object('treeview_files').set_cursor(Gtk.TreePath(0))
-        # ~ self.builder.get_object('treeview_files').row_activated(Gtk.TreePath(0), Gtk.TreeViewColumn(None))
-        self.builder.get_object('treeview_files').grab_focus()
+    def treeview_files_grab(self):
+        ## Set the focus on treeview and select first entry
+        treeview_files = self.builder.get_object('treeview_files')
+        treeview_files.grab_focus()
+        treeview_files_selection = treeview_files.get_selection()
+        treeview_files_selection.select_path(Gtk.TreePath.new_first())
 
     def clear_files(self):
         """ Entfernt alle Einträge aus den Treeviews treeview_files."""
@@ -428,16 +433,20 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
         return [model.get_value(model.get_iter(row), self.__FILENAME) for row in selected_rows]
 
-    def append_row_files(self, parent, filename, size, date, isdir=False):
+    def append_row_files(self, parent, filename, size, date, isdir=False, locked=False):
+        # gcurse:LOCK ---- Only caller is bin/otrverwaltung3p ----
         """ Fügt eine neue Datei zu treeview_files hinzu.
-              parent Für Archiv, ansonsten None: der übergeordnete iter des Ordners
-              filename Dateiname
-              size Dateigröße in Bytes
-              date Änderungsdatum der Datei
-              isdir
-          """
+            * parent    für Archiv, ansonsten None: der übergeordnete iter des Ordners
+            * filename  Dateiname
+            * size      Dateigröße in Bytes
+            * date      Änderungsdatum der Datei
+            * isdir     if it is a directory
+            * locked    if the file (row) is in processing  # gcurse:LOCK
+        """
 
-        data = [filename, size, date, isdir]
+        #                                   locked
+        #                                      |
+        data = [filename, size, date, isdir, False]  # gcurse:LOCK
 
         # TODO implement liststore into glade ?
         # http://fo2adzz.blogspot.de/2012/09/gtktreeview-glade-with-python-tutorial.html
@@ -463,7 +472,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         return size
 
     def __tv_files_sort(self, model, iter1, iter2, data=None):
-        # -1 if the iter1 row should precede the iter2 row; 0, if the rows are equal; and, 1 if the iter2 row should precede the iter1 row
+        # -1 if the iter1 row should precede the iter2 row; 0, if the rows are equal;
+        # and, 1 if the iter2 row should precede the iter1 row
 
         filename_iter1 = model.get_value(iter1, self.__FILENAME)
         filename_iter2 = model.get_value(iter2, self.__FILENAME)
@@ -585,6 +595,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             self.__toolbar_buttons[button].set_sensitive(not state)
 
     def on_button_show_conclusion_clicked(self, widget, data=None):
+        self.get_window().set_cursor(self.cursor_wait)
         self.app.conclusions_manager.show_conclusions()
         self.app.show_section(self.app.section)
 
@@ -644,6 +655,59 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     #
     #  Signal handlers
     #
+
+    def _on_treeview_doubleclick(self, treeview, tree_path, column, data=None):
+        if self.app.section == Section.OTRKEY:
+            self.app.perform_action(Action.DECODE)
+        elif self.app.section == Section.VIDEO_UNCUT:
+            self.app.perform_action(Action.CUT)
+        elif self.app.section == Section.VIDEO_CUT:
+            self._cmenu_play_file()
+
+    def _on_treeview_context_menu(self, treeview, event=None, *args):
+        if event:
+            if event.type == Gdk.EventType.BUTTON_PRESS and event.button is Gdk.BUTTON_SECONDARY:  # right-click
+                treeview_files_selection = treeview.get_selection()
+                # Select row if no row is selected or only one other row is selected
+                if treeview_files_selection.count_selected_rows() <= 1:
+                    tree_path = treeview.get_path_at_pos(event.x, event.y)[0]
+                    treeview_files_selection.unselect_all()
+                    treeview_files_selection.select_path(tree_path)
+                    self._contextmenu_treeview_files()
+                    return True
+        else:
+            self._contextmenu_treeview_files()
+            return True
+
+    def _contextmenu_treeview_files(self, *args):
+        menu = self._cmenu_build()
+        if menu is not None:
+            menu.show_all()
+            menu.popup(None, None, None, None, 0, Gtk.get_current_event_time())
+
+    def _cmenu_build(self):
+        menu = None
+        selected_files = self.get_selected_filenames()
+        multiple = True if len(selected_files) > 1 else False
+        if not multiple:
+            if "otrkey" not in selected_files[0]:
+                menu = Gtk.Menu()
+                if self.app.section == Section.VIDEO_UNCUT:
+                    m_cut = Gtk.MenuItem("Schneiden")
+                    menu.append(m_cut)
+                    m_cut.connect("activate", self._cmenu_cut)
+                m_play = Gtk.MenuItem("Abspielen")
+                menu.append(m_play)
+                m_play.connect("activate", self._cmenu_play_file)
+                
+        return menu
+
+    def _cmenu_play_file(self, *args):
+        fname = self.get_selected_filenames()[0]
+        self.app.play_file(fname)
+
+    def _cmenu_cut(self, *args):
+        self.app.perform_action(Action.CUT)
 
     def on_treeview_download_row_activated(self, treeview, path, view_colum, data=None):
         iter = treeview.get_model().get_iter(path)

@@ -106,8 +106,8 @@ class Mkv(Plugin):
 
         # checkbutton remove other audio streams than ac3_stream
         checkbutton_remove_other_audio_streams_than_ac3 = Gtk.CheckButton(
-            "Falls AC3 gefunden wurde, alle Audiospuren außer AC3 entfernen? \n" + \
-            "Die AC3 wird somit erste Spur und wird gegebenenfalls nach AAC konvertiert " +\
+            "Falls AC3 gefunden wurde, alle Audiospuren außer AC3 entfernen? \n"
+            "Die AC3 wird somit erste Spur und wird gegebenenfalls nach AAC konvertiert "
             "und downgemixt, wenn oben angewählt.")
         dialog.vbox.pack_start(checkbutton_remove_other_audio_streams_than_ac3, expand=False, fill=False, padding=0)
         checkbutton_remove_other_audio_streams_than_ac3.connect('toggled', on_checkbutton_toggled,

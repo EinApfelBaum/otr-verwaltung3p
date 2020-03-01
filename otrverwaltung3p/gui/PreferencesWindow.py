@@ -66,59 +66,19 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
 
         # ~ # preferences fonts (small font for explanations)
         # ~ labels = ['labelDescNewOtrkeys',
-                  # ~ 'labelDescUncutAvis',
-                  # ~ 'labelDescCutAvis',
-                  # ~ 'labelDescTrashOtrkeys',
-                  # ~ 'labelDescTrashAvis',
-                  # ~ 'lbl_help_volume']
+        # ~           'labelDescUncutAvis',
+        # ~           'labelDescCutAvis',
+        # ~           'labelDescTrashOtrkeys',
+        # ~           'labelDescTrashAvis',
+        # ~           'lbl_help_volume']
         # ~ for label in labels:
-            # ~ self.obj(label).get_style_context().add_provider(self.css_provider,
-                                                        # ~ Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-            # ~ self.obj(label).get_style_context().add_class("font_smaller")
+        # ~     self.obj(label).get_style_context().add_provider(self.css_provider,
+        # ~                                                      Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        # ~     self.obj(label).get_style_context().add_class("font_smaller")
 
-        for entry, _ in path_setup.items() :
+        for entry, _ in path_setup.items():
             self.obj(entry).get_style_context().add_provider(self.css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
             self.obj(entry).get_style_context().add_class("font_bold")
-
-        ''' verschoben in die glade Datei
-
-        # cut options - cut via cutlist
-        # avi + hq + mp4
-        avidemux = ["avidemux", "avidemux2_cli"]
-        virtualdub = [r"intern-vdub", r"/pfad/zu/vdub.exe"]
-        smartmkvmerge = [r"SmartMKVmerge"]
-        #self.gui.set_model_from_list(self.obj('combobox_avi'), avidemux + virtualdub + smartmkvmerge)
-        #self.gui.set_model_from_list(self.obj(''), virtualdub + smartmkvmerge)
-        #self.gui.set_model_from_list(self.obj('combobox_mp4'), virtualdub)
-
-        # manually
-        avidemux_man = [r"avidemux3_qt4",r"avidemux2_qt4",r"avidemux2_gtk"]
-        virtualdub_man = [r"intern-VirtualDub", r"/pfad/zu/VirtualDub.exe"]
-        cut_interface = [r"CutInterface"]
-        #self.gui.set_model_from_list(self.obj('combobox_man_avi'), cut_interface + avidemux_man + virtualdub_man)
-        #self.gui.set_model_from_list(self.obj('combobox_man_hq'), cut_interface + avidemux_man + virtualdub_man)
-        #self.gui.set_model_from_list(self.obj('combobox_man_mp4'), cut_interface + avidemux_man + virtualdub_man)
-
-        #self.gui.set_model_from_list(self.obj('comboboxServer'), ["http://cutlist.at/"])
-        #self.gui.set_model_from_list(self.obj('entry_decoder'), ['intern-otrdecoder','intern-easydecoder'])
-
-        #self.gui.set_model_from_list(self.obj(''), ["ffdshow", "x264vfw", "komisar"])
-
-        # mkvmerge for ac3
-        mkvmerge = ["mkvmerge", "/pfad/zu/mkvmerge"]
-        #self.gui.set_model_from_list(self.obj('combobox_ac3'), mkvmerge)
-
-        # smartmkvmerge
-        smkv_first_audio = [ 'MP3 Spur kopieren',
-                                        'MP3 nach AAC konvertieren',
-                                        'nach 2-Kanal AAC konvertieren - von AC3 wenn vorhanden',
-                                        'nach Mehr-Kanal AAC konvertieren - von AC3 wenn vorhanden']
-        #self.gui.set_model_from_list(self.obj('smkv_first_audio'), smkv_first_audio)
-        smkv_second_audio = [   'AC3 Spur kopieren',
-                                                'AC3 Spur nach AAC konvertieren',
-                                                'AC3 Spur entfernen']
-        #self.gui.set_model_from_list(self.obj('smkv_second_audio'), smkv_second_audio)
-        '''
 
         # If stored decoder is not in the standard list (see PreferenceWindow.glade)
         # it will be prepended and set as active entry.
@@ -171,10 +131,9 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         # ~ FileChooserFolderBinding(self.obj('folderCutAvis'), self.app.config, 'general', 'folder_cut_avis')
         # ~ FileChooserFolderBinding(self.obj('folderArchive'), self.app.config, 'general','folder_archive')
 
-        for option in ['folder_new_otrkeys', 'folder_trash_otrkeys', 'folder_trash_avis',
-                                        'folder_uncut_avis', 'folder_cut_avis', 'folder_archive']:
-            self.app.config.connect('general', option,
-                                            lambda value: self.app.show_section(self.app.section))
+        for option in ['folder_new_otrkeys', 'folder_trash_otrkeys', 'folder_trash_avis', 'folder_uncut_avis',
+                       'folder_cut_avis', 'folder_archive']:
+            self.app.config.connect('general', option, lambda value: self.app.show_section(self.app.section))
 
         CheckButtonBinding(self.obj('checkPasswdStoreMemory'), self.app.config, 'general', 'passwd_store_memory')
         CheckButtonBinding(self.obj('checkCorrect'), self.app.config, 'general', 'verify_decoded')
@@ -208,8 +167,8 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
 
         # Delete combobox entries for intern-vdub/intern-virtualdub if they are not installed
         if path.get_internal_virtualdub_path('vdub.exe') is None:
-            for widget_name in ['combobox_avi', 'combobox_hq', 'combobox_mp4',
-                                        'combobox_man_avi', 'combobox_man_hq', 'combobox_man_mp4']:
+            for widget_name in ['combobox_avi', 'combobox_hq', 'combobox_mp4', 'combobox_man_avi', 'combobox_man_hq',
+                                'combobox_man_mp4']:
                 self.obj(widget_name).remove(1)
 
         ComboBoxEntryBinding(self.obj('combobox_avi'), self.app.config, 'general', 'cut_avis_by')
@@ -227,8 +186,8 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
 
         RadioButtonsBinding([self.obj(widget) for widget in ['radio_size', 'radio_filename']],
                             self.app.config, 'general', 'choose_cutlists_by')
-        RadioButtonsBinding([self.obj(widget) for widget in ['radioPasswdStoreConf', 'radioPasswdStoreWallet','radioPasswdStoreNot']],
-                            self.app.config, 'general', 'passwd_store')
+        RadioButtonsBinding([self.obj(widget) for widget in ['radioPasswdStoreConf', 'radioPasswdStoreWallet',
+                            'radioPasswdStoreNot']], self.app.config, 'general', 'passwd_store')
 
         # Initializing
         self.obj('entryPassword').set_visibility(False)
@@ -263,7 +222,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                 'email': self.app.config.get('general', 'email'),
                 'pass': hashlib.md5(self.app.config.get('general', 'password').encode('utf-8')).hexdigest()
             }
-            r = requests.get(url = URL, params = PARAMS)
+            r = requests.get(url=URL, params=PARAMS)
             request_answer = r.text;
         if internet_on():
             if 'yes' in request_answer:
@@ -281,6 +240,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             chooser_title = path_setup[Gtk.Buildable.get_name(entry)] + ":"
         except KeyError:
             chooser_title = "Datei auswählen:"
+
         chooser = Gtk.FileChooserDialog(title=chooser_title,
                                         parent=self,
                                         action=Gtk.FileChooserAction.SELECT_FOLDER,

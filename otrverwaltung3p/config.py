@@ -20,6 +20,7 @@ import os.path
 import logging
 import shutil
 import re
+import sys
 from base64 import b64decode, b64encode
 try:
     import keyring
@@ -43,7 +44,6 @@ class Config:
         self.__callbacks = {}
         self.log = logging.getLogger(self.__class__.__name__)
         self.keyring_available = keyring_available
-
         self.log.debug(f"Keyring available: {self.keyring_available}")
 
     def connect(self, category, option, callback):
@@ -51,13 +51,8 @@ class Config:
         self.__callbacks[category].setdefault(option, []).append(callback)
 
     def set(self, category, option, value):
-        if option in ['email', 'password']:
-            self.log.debug("[%(category)s][%(option)s] to *****" % {"category": category,
-                                                                                "option": option})
-        else:
-            self.log.debug("[%(category)s][%(option)s] to %(value)s" % {"category": category,
-                                                                "option": option, "value": value})
-            pass
+        printed_value = "*****" if option in ['email', 'password', 'aes_key', 'server'] else value
+        self.log.debug(f"Set [{category}].[{option}] to {printed_value}")
 
         try:
             for callback in self.__callbacks[category][option]:
@@ -83,12 +78,9 @@ class Config:
             value = 'ffdshow'
         else:
             value = self.__fields[category][option]
-        if option in ['email', 'password']:
-            self.log.debug("[%(category)s][%(option)s]: *****" % \
-                                                        {"category": category, "option": option})
-        else:
-            self.log.debug("[%(category)s][%(option)s]: %(value)s" % \
-                                        {"category": category, "option": option, "value": value})
+
+        printed_value = "*****" if option in ['email', 'password', 'aes_key', 'server'] else value
+        self.log.debug(f"Get [{category}].[{option}]: {printed_value}")
 
         return value
 

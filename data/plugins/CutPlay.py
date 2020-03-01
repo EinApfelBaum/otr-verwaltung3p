@@ -31,8 +31,8 @@ from otrverwaltung3p.constants import Section
 
 class CutPlay(Plugin):
     Name = "Geschnittenes Abspielen"
-    Desc = "Spielt Video-Dateien mit Hilfe von Cutlisten geschnitten ab, ohne jedoch die " + \
-           "Datei zu schneiden. Es werden die Server-Einstellungen von OTR-Verwaltung benutzt."
+    Desc = ("Spielt Video-Dateien mit Hilfe von Cutlisten geschnitten ab, ohne jedoch die "
+            "Datei zu schneiden. Es werden die Server-Einstellungen von OTR-Verwaltung benutzt.")
     Author = "Benjamin Elbers, gCurse"
     Configurable = False
 
@@ -128,7 +128,7 @@ class CutPlay(Plugin):
         elif check_prog(self.playprog[1]):
             play_with(self.playprog[1])
         else:
-            self.gui.message_error_box("Zum Anzeigen der Schnitte sind weder mpv noch mplayer " + \
+            self.gui.message_error_box("Zum Anzeigen der Schnitte sind weder mpv noch mplayer "
                                        "installiert bzw. funktionieren nicht.")
             return
 

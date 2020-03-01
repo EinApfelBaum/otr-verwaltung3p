@@ -19,10 +19,14 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
 from gi.repository import Gtk, Gst
 import os
+import sys
 import re
 import subprocess
 import bisect
 import logging
+import tempfile
+import psutil
+import gc
 
 from otrverwaltung3p.libs.pymediainfo import MediaInfo
 
@@ -43,13 +47,6 @@ class Cut(BaseAction):
         self.config = app.config
         self.gui = gui
         self.media_info = None
-        if not os.path.isdir(self.config.get('smartmkvmerge', 'workingdir')):
-            self.gui.message_info_box('Das in Einstellungen:Schneiden:SmartMKVmerge ' + \
-                                      'angegebene Arbeitsverzeichnis ist nicht gültig.\n' + \
-                                      'Es wird "/tmp" benutzt.')
-            self.config.set('smartmkvmerge', 'workingdir', '/tmp')
-        self.workingdir = self.config.get('smartmkvmerge', 'workingdir')
-
         self.format_dict = {"High@L4": Format.HD, "High@L3.2": Format.HD, "High@L3.1": Format.HQ,
                             "High@L3.0": Format.HQ, "High@L3": Format.HQ, "Simple@L1": Format.AVI,
                             "Baseline@L1.3": Format.MP4}
@@ -84,22 +81,11 @@ class Cut(BaseAction):
         global bframe_delay
         root, extension = os.path.splitext(filename)
 
-        mi_version = subprocess.getoutput(self.app.config.get_program('mediainfo') + ' --version'
-                                           ).split(' ')[-1].replace('v', '').split('.')
-        self.log.debug("Mediainfo version: {0}.{1}".format(mi_version[0], mi_version[1]))
-        if int(mi_version[0] + mi_version[1]) >= 1710:
-            self.media_info = MediaInfo.parse(filename)
+        if sys.platform == 'win32':
+            lib_file = self.app.config.get_program('mediainfo').replace('.exe', '.dll')
+            self.media_info = MediaInfo.parse(filename, library_file=lib_file)
         else:
-            outfile = self.workingdir + '/mediainfo.xml'
-            subprocess.call([self.app.config.get_program('mediainfo'),
-                                            '--Output=XML', '--LogFile=' + outfile, filename],
-                                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            with open(outfile) as f:
-                self.media_info = MediaInfo(f.read())
-                print(self.media_info)
-
-            if os.path.isfile(outfile):
-                os.remove(outfile)
+            self.media_info = MediaInfo.parse(filename)
 
         codec_core = self.get_codeccore()
 
@@ -298,9 +284,9 @@ class Cut(BaseAction):
 
         log = process.communicate()[0]
 
-        regex_video_infos = r".*(Duration).*(\d{1,}):(\d{1,}):(\d{1,}.\d{1,}).*|.*(SAR) " + \
-                            "(\d{1,}:\d{1,}) DAR (\d{1,}:\d{1,}).*\, (\d{2,}\.{0,}\d{0,}) " + \
-                            "tbr.*|.*(Stream).*(\d{1,}:\d{1,}).*Audio.*ac3.*"
+        regex_video_infos = (r".*(Duration).*(\d{1,}):(\d{1,}):(\d{1,}.\d{1,}).*|.*(SAR) "
+                             r"(\d{1,}:\d{1,}) DAR (\d{1,}:\d{1,}).*\, (\d{2,}\.{0,}\d{0,}) "
+                             r"tbr.*|.*(Stream).*(\d{1,}:\d{1,}).*Audio.*ac3.*")
         video_infos_match = re.compile(regex_video_infos)
         seconds = 0
         ac3_stream = fps = dar = sar = None
@@ -373,14 +359,16 @@ class Cut(BaseAction):
             index = open(filename_keyframes, 'r')
         except (IOError, TypeError) as e:
             return None, "Keyframe File von ffmsindex konnte nicht geöffnet werden."
-        index.readline()
-        index.readline()
+
+        index.readline()  # Skip the first line, it is a comment
+        index.readline()  # Skip the second line, it is 'fps 0'
         try:
             list = [int(i) for i in index.read().splitlines()]
         except ValueError:
-            index.close()
             return None, "Keyframes konnten nicht ermittelt werden."
-        index.close()
+        finally:
+            index.close()
+            gc.collect()  # MEMORYLEAK
         if os.path.isfile(filename + '.ffindex'):
             fileoperations.remove_file(filename + '.ffindex')
 
@@ -417,16 +405,18 @@ class Cut(BaseAction):
             for line_num, line in enumerate(index, start=0):
                 frame_timecode[line_num] = int(round(float(line.replace('\n', '').strip()), 2) / 1000 * Gst.SECOND)
         except ValueError:
-            index.close()
             return None, None, "Timecodes konnten nicht ermittelt werden."
+        finally:
+            index.close()
+            gc.collect()  # MEMORYLEAK
 
-        index.close()
         # Generate reverse dict
         timecode_frame = {v: k for k, v in frame_timecode.items()}
+
         if os.path.isfile(filename + '.ffindex'):
             fileoperations.remove_file(filename + '.ffindex')
 
-        self.log.debug("Number of frames (frame_timecode dict): {}".format(list(frame_timecode.keys())[-1] + 1))
+        self.log.debug(f"Number of frames (frame_timecode dict): {list(frame_timecode.keys())[-1] + 1}")
         return frame_timecode, timecode_frame, None
 
     def show_indexing_progress(self, process):
@@ -794,7 +784,6 @@ class Cut(BaseAction):
         user/real as output by time(1) when called with an optimally scaling
         userspace-only program"""
 
-        # cpuset
         # cpuset may restrict the number of *available* processors
         try:
             m = re.search(r'(?m)^Cpus_allowed:\s*(.*)$',
@@ -806,107 +795,12 @@ class Cut(BaseAction):
         except IOError:
             pass
 
-        # Python 2.6+
         try:
-            import multiprocessing
-            return multiprocessing.cpu_count()
-        except (ImportError, NotImplementedError):
-            pass
-
-        # http://code.google.com/p/psutil/
-        try:
-            import psutil
-            return psutil.NUM_CPUS
-        except (ImportError, AttributeError):
-            pass
-
-        # POSIX
-        try:
-            res = int(os.sysconf('SC_NPROCESSORS_ONLN'))
-
-            if res > 0:
-                return res
-        except (AttributeError, ValueError):
-            pass
-
-        # Windows
-        try:
-            res = int(os.environ['NUMBER_OF_PROCESSORS'])
-
-            if res > 0:
-                return res
-        except (KeyError, ValueError):
-            pass
-
-        # jython
-        try:
-            from java.lang import Runtime
-            runtime = Runtime.getRuntime()
-            res = runtime.availableProcessors()
-            if res > 0:
-                return res
-        except ImportError:
-            pass
-
-        # BSD
-        try:
-            sysctl = subprocess.Popen(['sysctl', '-n', 'hw.ncpu'],
-                                      stdout=subprocess.PIPE)
-            scStdout = sysctl.communicate()[0]
-            res = int(scStdout)
-
-            if res > 0:
-                return res
-        except (OSError, ValueError):
-            pass
-
-        # Linux
-        try:
-            res = open('/proc/cpuinfo').read().count('processor\t:')
-
-            if res > 0:
-                return res
-        except IOError:
-            pass
-
-        # Solaris
-        try:
-            pseudoDevices = os.listdir('/devices/pseudo/')
-            res = 0
-            for pd in pseudoDevices:
-                if re.match(r'^cpuid@[0-9]+$', pd):
-                    res += 1
-
-            if res > 0:
-                return res
-        except OSError:
-            pass
-
-        # Other UNIXes (heuristic)
-        try:
-            try:
-                dmesg = open('/var/run/dmesg.boot').read()
-            except IOError:
-                dmesgProcess = subprocess.Popen(['dmesg'], stdout=subprocess.PIPE)
-                dmesg = dmesgProcess.communicate()[0]
-
-            res = 0
-            while '\ncpu' + str(res) + ':' in dmesg:
-                res += 1
-
-            if res > 0:
-                return res
-        except OSError:
-            pass
-
-        raise Exception('Can not determine number of CPUs on this system')
+            return psutil.cpu_count()
+        except AttributeError:
+            return 1
 
     def meminfo(self):
         """ return meminfo dict """
 
-        meminfo = dict()
-        with os.popen('cat /proc/meminfo') as f:
-            for l in f:
-                x = l.split()
-                meminfo[x[0][:-1]] = int(x[1])
-        return meminfo
+        return psutil.virtual_memory()

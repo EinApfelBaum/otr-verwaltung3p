@@ -87,7 +87,7 @@ class MP4(Plugin):
                                                                     'EncodeOnlyFirstAudioToAAC')
 
         # checkbutton down mix first audio stream
-        checkbutton_downmix_stereo = Gtk.CheckButton("AAC: erste Audiospur automatisch auf " +\
+        checkbutton_downmix_stereo = Gtk.CheckButton("AAC: erste Audiospur automatisch auf "
                                                      "Stereo downmixen?")
         checkbutton_downmix_stereo.set_margin_left(margin)
         dialog.vbox.pack_start(checkbutton_downmix_stereo, expand=False, fill=False, padding=0)
@@ -102,7 +102,7 @@ class MP4(Plugin):
 
         # checkbutton remove other audio streams than ac3_stream
         checkbutton_remove_other_audio_streams_than_ac3 = Gtk.CheckButton(
-            " Falls AC3 gefunden wurde, alle Audiospuren außer AC3 entfernen? \n " + \
+            " Falls AC3 gefunden wurde, alle Audiospuren außer AC3 entfernen? \n "
             " Dadurch wird die AC3 Spur automatisch zur ersten Audiospur.")
         dialog.vbox.pack_start(checkbutton_remove_other_audio_streams_than_ac3, expand=False,
                                                                             fill=False, padding=0)
