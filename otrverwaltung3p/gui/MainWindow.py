@@ -59,10 +59,11 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                                     background-color: rgb(255,225,0);
                                     color: black;
                                 }
-                            """
+                               """
         self.css_provider = Gtk.CssProvider()
         self.css_provider.load_from_data(self.conclusion_css)
         self.cursor_wait = Gdk.Cursor(Gdk.CursorType.WATCH)
+        self.treeview_files = None
 
     def do_parser_finished(self, builder):
         self.builder = builder
@@ -94,7 +95,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                 # ~ self.set_title('OTR-Verwaltung3p' + ' ' + current_version + '  -  aktuelle Version: ' + str(svn_version))
                 # ~ self._on_menu_check_update_activate(self)
 
-        # ~ self.treeview_files = self.builder.get_object('treeview_files')
+        # ~ self.treeview_files = self.treeview_files
 
     def __get_cut_menu(self, action):
         # menu for cut/decodeandcut
@@ -222,8 +223,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         return toolbutton
 
     def remove_toolbutton(self, toolbutton):
-        """ Entfernt den angegebenen toolbutton.
-              toolbutton"""
+        """ Entfernt den angegebenen toolbutton. """
         for section in self.__sets_of_toolbars.keys():
             if toolbutton in self.__sets_of_toolbars[section]:
                 self.__sets_of_toolbars[section].remove(toolbutton)
@@ -268,7 +268,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         treeview.connect('button_press_event', self._on_treeview_context_menu)
         treeview.connect('popup-menu', self._on_treeview_context_menu)
         treeview.connect('row-activated', self._on_treeview_doubleclick)
-        # TreeStore fields filename, size, date, isdir, locked
+        # TreeStore fields filename, size, date, isdir, unlocked
         #                      |       |    |      |     |
         store = Gtk.TreeStore(str, float, float, bool, bool)  # gcurse:LOCK
         treeview.set_model(store)
@@ -311,6 +311,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         # allow multiple selection
         treeselection = treeview.get_selection()
         treeselection.set_mode(Gtk.SelectionMode.MULTIPLE)
+        treeselection.set_select_function(self.__treeview_files_select_function)  # gcurse:LOCK
 
         # sorting
         treeview.get_model().set_sort_func(0, self.__tv_files_sort)
@@ -332,6 +333,16 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                 self.__pix_folder = Gtk.IconTheme.get_default().load_icon(
                                          'folder', self.app.config.get('general', 'icon_size'), 0)
             except: pass
+
+        # gcurse:LOCK cellrenderer's property "sensitive" is set to the value of the model column "unlocked"
+        treeview.get_column(0).add_attribute(cell_renderer_text_name, 'sensitive', 4)
+        treeview.get_column(1).add_attribute(cell_renderer_text_size, 'sensitive', 4)
+        treeview.get_column(2).add_attribute(cell_renderer_text_date, 'sensitive', 4)
+
+        self.treeview_files = treeview
+
+    def __treeview_files_select_function(self, treeselection, model, path, current):
+        return model[path][4]
 
     def __setup_widgets(self):
         self.builder.get_object('menu_bottom').set_active(self.app.config.get('general', 'show_bottom'))
@@ -387,8 +398,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         # https://stackoverflow.com/q/11927785
         conclusion_eventbox = self.builder.get_object('box_conclusion')
         eventbox = self.builder.get_object('box_conclusion')
-        conclusion_button.get_style_context().add_provider(self.css_provider,
-                                                           Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        conclusion_button.get_style_context().add_provider(self.css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         # cmap = eventbox.get_colormap()
         # colour = cmap.alloc_color("#E8E7B6")
         conclusion_button.get_style_context().add_class("conclusion")
@@ -414,27 +424,24 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
     def treeview_files_grab(self):
         ## Set the focus on treeview and select first entry
-        treeview_files = self.builder.get_object('treeview_files')
-        treeview_files.grab_focus()
-        treeview_files_selection = treeview_files.get_selection()
-        treeview_files_selection.select_path(Gtk.TreePath.new_first())
+        self.treeview_files.grab_focus()
+        treeview_files_selection = self.treeview_files.get_selection().select_path(Gtk.TreePath.new_first())
 
     def clear_files(self):
         """ Entfernt alle Einträge aus den Treeviews treeview_files."""
-        self.builder.get_object('treeview_files').get_model().clear()
+        self.treeview_files.get_model().clear()
 
     def show_treeview(self, visible_treeview):
         for treeview in ["scrolledwindow_planning", "scrolledwindow_download", "scrolledwindow_files"]:
             self.builder.get_object(treeview).props.visible = (treeview == visible_treeview)
 
     def get_selected_filenames(self):
-        """ Gibt die ausgewählten Dateinamen zurück. """
-        model, selected_rows = self.builder.get_object('treeview_files').get_selection().get_selected_rows()
+        """ Returns the selected filenames. """
+        model, selected_rows = self.treeview_files.get_selection().get_selected_rows()
 
         return [model.get_value(model.get_iter(row), self.__FILENAME) for row in selected_rows]
 
-    def append_row_files(self, parent, filename, size, date, isdir=False, locked=False):
-        # gcurse:LOCK ---- Only caller is bin/otrverwaltung3p ----
+    def append_row_files(self, parent, filename, size, date, isdir=False, unlocked=True):
         """ Fügt eine neue Datei zu treeview_files hinzu.
             * parent    für Archiv, ansonsten None: der übergeordnete iter des Ordners
             * filename  Dateiname
@@ -444,13 +451,11 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             * locked    if the file (row) is in processing  # gcurse:LOCK
         """
 
-        #                                   locked
-        #                                      |
-        data = [filename, size, date, isdir, False]  # gcurse:LOCK
+        data = [filename, size, date, isdir, unlocked]  # gcurse:LOCK add column "unlocked"
 
         # TODO implement liststore into glade ?
         # http://fo2adzz.blogspot.de/2012/09/gtktreeview-glade-with-python-tutorial.html
-        iter = self.builder.get_object('treeview_files').get_model().append(parent, data)
+        iter = self.treeview_files.get_model().append(parent, data)
         return iter
 
     def humanize_size(self, bytes):
@@ -699,7 +704,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                 m_play = Gtk.MenuItem("Abspielen")
                 menu.append(m_play)
                 m_play.connect("activate", self._cmenu_play_file)
-                
+
         return menu
 
     def _cmenu_play_file(self, *args):

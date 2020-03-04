@@ -15,7 +15,6 @@
 # END LICENSE
 
 import gi
-
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Pango, Gdk
 # import os.path
@@ -78,14 +77,20 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     # Convenience
 
     def _run(self, file_conclusions, rename_by_schema, archive_directory):
+        self.app.filenames_locked = []
         self.rename_by_schema = rename_by_schema
         self.__file_conclusions = file_conclusions
-        self.forward_clicks = 0
+        # TODO gcurse:WARN_NOT_ALL_SEEN
+        self.__file_conclusions_count = len(file_conclusions)
+        self.forward_clicks = 1
+        self.all_file_conclusions_seen = False
+        # <<<<<
 
         if len(file_conclusions) == 1:
             self.obj('button_back').hide()
             self.obj('button_forward').hide()
             self.obj('label_count').hide()
+            self.all_file_conclusions_seen = True  # TODO gcurse:WARN_NOT_ALL_SEEN
 
         self.combobox_archive.fill(archive_directory)
         self.combobox_archive.connect('changed', self._on_combobox_archive_changed)
@@ -116,10 +121,10 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
 
     def set_entry_suggested_on_close(self):
         """ Called by '_on_button_abort_clicked', '_on_buttonConclusionClose_clicked',
-            _on_button_back_clicked and _on_button_forward_clicked.
+              _on_button_back_clicked and _on_button_forward_clicked.
             Set 'entry_suggested' (the suggested movie name) to the value of 'comboboxentry_rename'
-            if 'Cutlist erstellen' is true. 'self.file_conclusion.cut.rename' holds the value of
-            'comboboxentry_rename' (auto-updated by '_on_comboboxentry_rename_changed')
+              if 'Cutlist erstellen' is true. 'self.file_conclusion.cut.rename' holds the value of
+              'comboboxentry_rename' (auto-updated by '_on_comboboxentry_rename_changed')
         """
         if self.obj('check_create_cutlist').get_active():
             if self.obj('entry_suggested').get_text() == "":
@@ -139,11 +144,16 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     def _on_button_back_clicked(self, widget, data=None):
         self.set_entry_suggested_on_close()
         self.show_conclusion(self.conclusion_iter - 1)
+        self.forward_clicks -= 1  # TODO gcurse:WARN_NOT_ALL_SEEN
 
     def _on_button_forward_clicked(self, widget, data=None):
         self.set_entry_suggested_on_close()
         self.show_conclusion(self.conclusion_iter + 1)
+        # TODO gcurse:WARN_NOT_ALL_SEEN
         self.forward_clicks += 1
+        if self.forward_clicks == self.__file_conclusions_count:
+            self.all_file_conclusions_seen = True
+        # <<<<<
 
     def _on_button_abort_clicked(self, widget, data=None):
         self.set_entry_suggested_on_close()
@@ -162,7 +172,19 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
             os.remove(self.file_conclusion.cut_video)
 
     def _on_buttonConclusionClose_clicked(self, widget, data=None):
-        self.set_entry_suggested_on_close()
+        # TODO gcurse:WARN_NOT_ALL_SEEN
+        if self.all_file_conclusions_seen:
+            self.set_entry_suggested_on_close()
+            self.close()
+        elif self.app.gui.question_box("Es wurden nicht alle Dateien geprüft!\n"
+                                       "Soll der Dialog trotzdem geschlossen werden?\n\n"
+                                       "Auch alle nicht geprüften Dateien werden dann geschnitten!"):
+            self.set_entry_suggested_on_close()
+            self.close()
+        else:
+            # not closing the dialog
+            pass
+        # <<<<<
 
     def show_conclusion(self, new_iter):
         self.conclusion_iter = new_iter
@@ -354,6 +376,9 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
             else:
                 ret_val = False
         return ret_val
+
+    def _on_conclusion_dialog_response(self, widget, response_id, *args):
+        pass
 
     def _on_button_play_clicked(self, widget, data=None):
         if self.file_conclusion.action == Action.DECODE or (self.file_conclusion.action == Action.DECODEANDCUT

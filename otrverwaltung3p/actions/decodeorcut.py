@@ -121,7 +121,7 @@ class DecodeOrCut(Cut):
         otrtool = shutil.which("otrtool")
         # no decoder
         # --> otrtool
-        if not "decode" and not "otrtool" in self.config.get('programs', 'decoder'):
+        if not any(i in self.config.get('programs', 'decoder') for i in ["decode", "otrtool"]):
             # no decoder specified
             self.gui.message_error_box("Es ist kein korrekter Dekoder angegeben!")
             return False
@@ -416,6 +416,7 @@ class DecodeOrCut(Cut):
         for count, file_conclusion in enumerate(file_conclusions):
 
             if file_conclusion.cut.status in [Status.NOT_DONE, Status.ERROR]:
+                self.app.filenames_locked.remove(file_conclusion.uncut_video)
                 continue
 
             self.log.info("[Decodeandcut] Datei %s wird geschnitten" % file_conclusion.uncut_video)
@@ -519,7 +520,6 @@ class DecodeOrCut(Cut):
             # MEMORYLEAK
             del ci
             gc.collect()
-
 
             if cutlist.cuts_frames is None or len(cutlist.cuts_frames) == 0:
                 cutlist_error = "Keine Schnitte angegeben"

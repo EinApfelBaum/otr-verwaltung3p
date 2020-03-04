@@ -39,7 +39,7 @@ except ImportError:
 try:
     import gi
     gi.require_version('Gtk', '3.0')
-    from gi.repository import Gtk, Gdk
+    from gi.repository import Gtk, Gdk, GLib
 except:
     print("PyGTK/GTK is missing.")
     sys.exit(-1)
@@ -130,6 +130,8 @@ class App:
     def __init__(self):
 
         self.log = logging.getLogger(self.__class__.__name__)
+        self.last_marked_row = None
+        self.filenames_locked = []
 
         configuration = {
             'general': {
@@ -248,7 +250,7 @@ class App:
         self.app_name = 'otr-verwaltung3p'
 
         version = open(path.getdatapath("VERSION"), 'r').read().strip()
-        print("{0}, version {1}".format(self.app_name, version))
+        print(f"{self.app_name}, version {version}")
 
         if local:
             self.config = Config(os.path.join(launch_dir, "..", "conf"), configuration)
@@ -262,14 +264,18 @@ class App:
         regex_uncut_video = (r'.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])'
                              r'*_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|mp4|mkv|HQ\.mkv|HD\.mkv|'
                              r'mp4\.mkv|HQ\.mp4|HD\.mp4)$')
-        self.uncut_video = re.compile(regex_uncut_video)
+        self.regex_uncut_video = re.compile(regex_uncut_video)
         # regex for the name schema should use cut videos just in case it has been muxed
         # into an mkv because of an ac3-track
         regex_rename_video = (r'.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])*'
                               r'_TVOON_DE.mpg(-cut\.avi|\.HQ-cut\.avi|\.HD-cut\.avi|-cut\.mp4|'
                               r'\.HQ-cut\.mp4|\.HD-cut\.mp4|\.HD-cut\.mkv|\.HQ-cut\.mkv|-cut\.mkv)$')
-        self.rename_video = re.compile(regex_rename_video)
-        self.cut_video = re.compile('.*(avi|mp4|mkv|wmv|ac3)$')
+        self.regex_rename_video = re.compile(regex_rename_video)
+        self.regex_cut_video = re.compile('.*(avi|mp4|mkv|wmv|ac3)$')
+
+        ## only for DirectoryMonitor
+        regex_otrkey = (r".*\.otrkey$")
+        self.regex_otrkey =re.compile(regex_otrkey)
 
         self.config.load()
         # load gui
@@ -398,12 +404,13 @@ class App:
             return []
 
         files = [join(path, f) for f in os.listdir(path) if f.endswith(".otrkey") and self.search(f)]
+        # ~ otrkeys = re.compile(r"\.otrkey")  # gcurse:DELETE_THIS
 
         return files
 
     def __section_video_uncut(self):
         path = self.config.get('general', 'folder_uncut_avis')
-        files = [join(path, f) for f in os.listdir(path) if self.uncut_video.match(f) and self.search(f)]
+        files = [join(path, f) for f in os.listdir(path) if self.regex_uncut_video.match(f) and self.search(f)]
 
         return files
 
@@ -412,8 +419,8 @@ class App:
 
         files = []
         for f in os.listdir(path):
-            if not self.uncut_video.match(f):
-                if self.cut_video.match(f):
+            if not self.regex_uncut_video.match(f):
+                if self.regex_cut_video.match(f):
                     if self.search(f):
                         files += [join(path, f)]
 
@@ -424,14 +431,14 @@ class App:
         path_avis = self.config.get('general', 'folder_trash_avis')
 
         files = [join(path_otrkeys, f) for f in os.listdir(path_otrkeys) if f.endswith('.otrkey') and self.search(f)]
-        files += [join(path_avis, f) for f in os.listdir(path_avis) if self.cut_video.match(f) and self.search(f)]
+        files += [join(path_avis, f) for f in os.listdir(path_avis) if self.regex_cut_video.match(f) and self.search(f)]
 
         return files
 
     def __section_trash_avi(self):
         path_avis = self.config.get('general', 'folder_trash_avis')
 
-        files = [join(path_avis, f) for f in os.listdir(path_avis) if self.cut_video.match(f) and self.search(f)]
+        files = [join(path_avis, f) for f in os.listdir(path_avis) if self.regex_cut_video.match(f) and self.search(f)]
 
         return files
 
@@ -450,7 +457,7 @@ class App:
     # recursive function for archive to add folders and files with a tree structure
     def __tree(self, parent=None, path=None):
         if parent != None:
-            dir = self.gui.main_window.builder.get_object('treeview_files').get_model().get_value(parent, 0)
+            dir = self.gui.main_window.treeview_files.get_model().get_value(parent, 0)
         else:  # base path (archive directory)
             dir = path
 
@@ -464,7 +471,7 @@ class App:
                 iter = self.__append_row_treeview_files(parent, full_path)
                 self.__tree(iter)
             else:
-                if self.cut_video.match(file):
+                if self.regex_cut_video.match(file):
                     if self.search(file):
                         self.__append_row_treeview_files(parent, full_path)
 
@@ -473,12 +480,13 @@ class App:
     ###
 
     def rename_by_schema(self, filename, schema=""):
-        """ Gibt den nach dem angegebenen Schema umbenannten Dateinamen zurück. Wird `schema` leer gelassen, so wird das eingestellte Schema verwendet. """
+        """ Gibt den nach dem angegebenen Schema umbenannten Dateinamen zurück.
+            Wird 'schema' leer gelassen, so wird das eingestellte Schema verwendet. """
 
         if schema == "":
             schema = self.config.get('general', 'rename_schema')
 
-        if self.rename_video.match(filename):
+        if self.regex_rename_video.match(filename):
             filename, extension = splitext(filename)  # preserve file extension (avi or mkv)
 
             parts = filename.split('_')
@@ -542,8 +550,11 @@ class App:
 
     def __append_row_treeview_files(self, parent, filename):
         # gcurse:LOCK
+        unlocked = True
+        if filename in self.filenames_locked:
+            unlocked = False
         iter = self.gui.main_window.append_row_files(parent, filename, fileoperations.get_size(filename),
-                                                     fileoperations.get_date(filename), isdir(filename), locked=False)
+                                                     fileoperations.get_date(filename), isdir(filename), unlocked)
         return iter
 
     ###
@@ -572,7 +583,7 @@ class App:
         files = []
         for root, dirs, wfiles in os.walk(self.config.get('general', 'folder_archive')):
             for f in wfiles:
-                if self.cut_video.match(f) and self.search(f):
+                if self.regex_cut_video.match(f) and self.search(f):
                     files += [join(root, f)]
 
         count = len(files)
@@ -627,21 +638,32 @@ class App:
             action.do(selected_rows)
         """
 
-        if chosen_action in [Action.DECODE, Action.CUT, Action.DECODEANDCUT, Action.RENAME, Action.REAL_DELETE,
-                               Action.RESTORE, Action.DELETE, Action.ARCHIVE]:
-            filenames = self.gui.main_window.get_selected_filenames()
+        if chosen_action in [Action.DECODE, Action.CUT, Action.DECODEANDCUT, Action.RENAME,
+                             Action.REAL_DELETE, Action.RESTORE, Action.DELETE, Action.ARCHIVE]:
+            filenames = self.filenames_locked = self.gui.main_window.get_selected_filenames()
 
-            if self.config.get('general', 'ask_if_all'):
-                if len(filenames) == 0:
-                    model = self.gui.main_window.builder.get_object('treeview_files').get_model()
-
+            if len(filenames) == 0:
+                if self.config.get('general', 'ask_if_all'):
+                    model = self.gui.main_window.treeview_files.get_model()
                     if len(model) != 0 and self.gui.question_box(
                             "Es ist keine Datei markiert! Sollen alle Dateien verarbeitet werden?"):
                         filenames = [row[0] for row in model]
                     else:
                         return
+                else:
+                    self.gui.message_info_box("Es ist keine Datei ausgewählt!")
+                    return
+            else:
+                # at least one file is selected, so we remember the position of the first of the selected files
+                _, selected_rows = self.gui.main_window.treeview_files.get_selection().get_selected_rows()
+                try:
+                    self.last_marked_row = selected_rows[0][0]
+                except IndexError:
+                    self.last_marked_row = None
 
             self.locked = True
+            # Update section
+            self.show_section(self.section)
 
             if chosen_action in [Action.DECODE, Action.CUT, Action.DECODEANDCUT]:
                 action.do(chosen_action, filenames, cut_action)
@@ -670,11 +692,13 @@ class App:
             action.do()
 
         self.locked = False
-
         # update view?
         if action.update_list:
             self.gui.main_window.do_search(self.__search_text)
             self.show_section(self.section)
+
+        if self.last_marked_row is not None:
+            self.gui.main_window.treeview_files.get_selection().select_path(Gtk.TreePath(self.last_marked_row))
 
     def play_file(self, filename):
         uri = Path(filename).as_uri()
@@ -957,7 +981,6 @@ class App:
             file.close()
         except IOError as message:
             pass
-            #self.log.warning("Can't write downloads: " + str(message))
 
         # kill downloads
         for row in self.gui.main_window.treeview_download.liststore:
@@ -975,6 +998,7 @@ class App:
 
         settings = ','.join([maximized, width, height])
         self.config.set('general', 'window_settings', settings)
+
 
     def add_download_link(self, link):
         action = actions.get_action(Action.DOWNLOAD_ADD_LINK, self, self.gui)

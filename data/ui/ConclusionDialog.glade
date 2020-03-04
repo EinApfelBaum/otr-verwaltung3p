@@ -1016,8 +1016,5 @@
         </child>
       </object>
     </child>
-    <action-widgets>
-      <action-widget response="-5">buttonConclusionClose</action-widget>
-    </action-widgets>
   </object>
 </interface>
