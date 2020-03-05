@@ -40,8 +40,9 @@ try:
     import gi
     gi.require_version('Gtk', '3.0')
     from gi.repository import Gtk, Gdk, GLib
-except:
-    print("PyGTK/GTK is missing.")
+except Exception as e:
+    print("Gtk, Gdk or GLib is missing.")
+    print(f"Exception: {e}")
     sys.exit(-1)
 
 sys.modules["gi.overrides.Gst"] = None
@@ -119,7 +120,7 @@ from otrverwaltung3p.conclusions import ConclusionsManager
 from otrverwaltung3p import path
 
 
-class App:
+class App():
     """ Hauptklasse des Programms."""
 
     section = Section.OTRKEY

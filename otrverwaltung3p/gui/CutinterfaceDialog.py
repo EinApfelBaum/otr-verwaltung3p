@@ -8,14 +8,13 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
 gi.require_version('GstPbutils', '1.0')
 gi.require_version('GstVideo', '1.0')
-from gi.repository import Gtk, Gdk, GObject, Gst, GstPbutils
+from gi.repository import Gtk, Gdk, GLib, Gst, GstPbutils
 
 import cairo
 
 import os, time, logging, json, re
 from pathlib import Path
 
-GObject.threads_init()
 Gst.init(None)
 
 #from otrverwaltung3p.elements import KeySeekElement
@@ -219,7 +218,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         self.ready_callback()
 
-        self.timer2 = GObject.timeout_add(600, self.update_listview)
+        self.timer2 = GLib.timeout_add(600, self.update_listview)
         # Reset cursor MainWindow
         self.gui.main_window.get_window().set_cursor(None)
 
@@ -241,7 +240,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.update_timeline()
         self.update_listview()
 
-        self.timer = GObject.timeout_add(200, self.tick)
+        self.timer = GLib.timeout_add(200, self.tick)
 
     def tick(self):
         self.update_frames_and_time()
