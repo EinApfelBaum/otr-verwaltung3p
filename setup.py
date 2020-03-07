@@ -1,17 +1,17 @@
-### BEGIN LICENSE
+# ---BEGIN LICENSE---
 # Copyright (C) 2020 Dirk Lorenzen
-#This program is free software: you can redistribute it and/or modify it
-#under the terms of the GNU General Public License version 3, as published
-#by the Free Software Foundation.
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
+# by the Free Software Foundation.
 #
-#This program is distributed in the hope that it will be useful, but
-#WITHOUT ANY WARRANTY; without even the implied warranties of
-#MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
-#PURPOSE.  See the GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
+# PURPOSE.  See the GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public License along
-#with this program.  If not, see <http://www.gnu.org/licenses/>.
-### END LICENSE
+# You should have received a copy of the GNU General Public License along
+# with this program.  If not, see <http://www.gnu.org/licenses/>.
+# ---END LICENSE---
 
 import sys
 import os
@@ -22,10 +22,44 @@ from setuptools import setup
 from setuptools.command.install import install
 from setuptools import Distribution
 
+
+def update_data_path(path=None, oldvalue=None):
+    try:
+        with fileinput.input('otrverwaltung3p/path.py', inplace=True) as f:
+            for line in f:
+                if 'data_dir =' in line:
+                    if not oldvalue:  # update to prefix, store oldvalue
+                        oldvalue = line
+                        line = f"data_dir = '{path}'\n"
+                    else:  # restore oldvalue
+                        line = f"{oldvalue}"
+                print(line, end='')
+
+    except (OSError, IOError) as e:
+        print(f"ERROR: {e}")
+        sys.exit(1)
+
+    return oldvalue
+
+def create_desktop_file(datadir):
+    try:
+        with open('otrverwaltung3p.desktop.in', 'r') as f:
+            filedata = f.readlines()
+        with open('otrverwaltung3p.desktop', 'w') as f:
+            for line in filedata:
+                if 'Icon=' in line:
+                    line = f"Icon={os.path.join(datadir, 'media/icon.png')}\n"
+                f.write(line)
+    except (OSError, IOError) as e:
+        print(f"ERROR: {e}")
+        sys.exit(1)
+
+
 class InstallCommand(install):
     """Pre/Post-installation for installation mode."""
+
     def run(self):
-        dist=Distribution()
+        dist = Distribution()
         dist.parse_command_line()
         try:
             prefix = dist.get_option_dict('install')['prefix'][1]
@@ -33,44 +67,13 @@ class InstallCommand(install):
             prefix = sys.prefix
 
         prefixed_path = os.path.join(prefix, 'share/otrverwaltung3p')
-        previous_datapath = self.update_data_path(path=prefixed_path)
-        self.create_desktop_file(prefixed_path)
+        previous_datapath = update_data_path(path=prefixed_path)
+        create_desktop_file(prefixed_path)
 
         install.run(self)
 
-        _ = self.update_data_path(oldvalue=previous_datapath)
+        _ = update_data_path(oldvalue=previous_datapath)
         os.remove('otrverwaltung3p.desktop')
-
-    def update_data_path(self, path=None, oldvalue=None):
-        try:
-            with fileinput.input('otrverwaltung3p/path.py', inplace=True) as f:
-                for line in f:
-                    if 'data_dir =' in line:
-                        if not oldvalue:  # update to prefix, store oldvalue
-                            oldvalue = line
-                            line = f"data_dir = '{path}'\n"
-                        else:  # restore oldvalue
-                            line = f"{oldvalue}"
-                    print(line, end='')
-
-        except (OSError, IOError) as e:
-            print(f"ERROR: {e}")
-            sys.exit(1)
-
-        return oldvalue
-
-    def create_desktop_file(self, datadir):
-        try:
-            with open('otrverwaltung3p.desktop.in', 'r') as f:
-                filedata = f.readlines()
-            with open('otrverwaltung3p.desktop', 'w') as f:
-                for line in filedata:
-                    if 'Icon=' in line:
-                        line = f"Icon={os.path.join(datadir, 'media/icon.png')}\n"
-                    f.write(line)
-        except (OSError, IOError) as e:
-            print(f"ERROR: {e}")
-            sys.exit(1)
 
     @staticmethod
     def get_version():
@@ -113,4 +116,3 @@ setup(
     packages=['otrverwaltung3p', 'otrverwaltung3p.actions', 'otrverwaltung3p.elements', 'otrverwaltung3p.gui',
               'otrverwaltung3p.gui.widgets', 'otrverwaltung3p.libs.pyaes', 'otrverwaltung3p.libs.pymediainfo'],
     data_files=InstallCommand.get_data_files())
-

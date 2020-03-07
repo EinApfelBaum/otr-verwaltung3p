@@ -13,23 +13,21 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
-
-import gi
-gi.require_version('Gtk', '3.0')
-gi.require_version('Gst', '1.0')
-from gi.repository import Gtk, Gst
 import os
 import sys
 import re
 import subprocess
 import bisect
 import logging
-import tempfile
 import psutil
 import gc
 
-from otrverwaltung3p.libs.pymediainfo import MediaInfo
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('Gst', '1.0')
+from gi.repository import Gtk, Gst
 
+from otrverwaltung3p.libs.pymediainfo import MediaInfo
 from otrverwaltung3p.actions.baseaction import BaseAction
 from otrverwaltung3p.constants import Format, Program
 from otrverwaltung3p import fileoperations
@@ -363,16 +361,15 @@ class Cut(BaseAction):
         index.readline()  # Skip the first line, it is a comment
         index.readline()  # Skip the second line, it is 'fps 0'
         try:
-            list = [int(i) for i in index.read().splitlines()]
+            keyframes_list = [int(i) for i in index.read().splitlines()]
         except ValueError:
             return None, "Keyframes konnten nicht ermittelt werden."
         finally:
             index.close()
-            gc.collect()  # MEMORYLEAK
         if os.path.isfile(filename + '.ffindex'):
             fileoperations.remove_file(filename + '.ffindex')
 
-        return list, None
+        return keyframes_list, None
 
     def get_timecodes_from_file(self, filename):  # TESTING
         """ returns frame->timecode and timecode->frame dict"""

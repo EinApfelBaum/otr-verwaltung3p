@@ -510,15 +510,15 @@ class DecodeOrCut(Cut):
                         res_num = number
                         local_cutlist = p + "/" + match.group()
 
-            ci = CutinterfaceDialog.NewCutinterfaceDialog(self.gui)
-            ci.set_transient_for(self.gui.main_window)
-            ci.set_modal(True)
+            ci_instance = CutinterfaceDialog.NewCutinterfaceDialog(self.gui)
+            ci_instance.set_transient_for(self.gui.main_window)
+            ci_instance.set_modal(True)
             self.gui.main_window.get_window().set_cursor(self.gui.main_window.cursor_wait)
-            cutlist = ci._run(filename, local_cutlist, self.app)
-            ci.destroy()
+            cutlist = ci_instance._run(filename, local_cutlist, self.app)
+            ci_instance.destroy()
             self.gui.main_window.get_window().set_cursor(None)
             # MEMORYLEAK
-            del ci
+            del ci_instance
             gc.collect()
 
             if cutlist.cuts_frames is None or len(cutlist.cuts_frames) == 0:
