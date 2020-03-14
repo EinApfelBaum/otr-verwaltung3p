@@ -31,7 +31,7 @@ from otrverwaltung3p.libs.pymediainfo import MediaInfo
 from otrverwaltung3p.actions.baseaction import BaseAction
 from otrverwaltung3p.constants import Format, Program
 from otrverwaltung3p import fileoperations
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 
 Gst.init(None)
 
@@ -80,7 +80,7 @@ class Cut(BaseAction):
         root, extension = os.path.splitext(filename)
 
         if sys.platform == 'win32':
-            lib_file = self.app.config.get_program('mediainfo').replace('.exe', '.dll')
+            lib_file = self.config.get_program('mediainfo').replace('.exe', '.dll')
             self.media_info = MediaInfo.parse(filename, library_file=lib_file)
         else:
             self.media_info = MediaInfo.parse(filename)
@@ -155,14 +155,14 @@ class Cut(BaseAction):
         config_value = programs[format]
 
         _, _, _, codec_core = self.get_format(filename)
-        vdub = path.get_internal_virtualdub_path('vdub.exe')
+        vdub = otrvpath.get_internal_virtualdub_path('vdub.exe')
         x264_codec = self.config.get('general', 'h264_codec')
         if 'avidemux' in config_value:
             return Program.AVIDEMUX, config_value, ac3
         elif 'intern-VirtualDub' in config_value:
-            return Program.VIRTUALDUB, path.get_internal_virtualdub_path('VirtualDub.exe'), ac3
+            return Program.VIRTUALDUB, otrvpath.get_internal_virtualdub_path('VirtualDub.exe'), ac3
         elif 'intern-vdub' in config_value:
-            return Program.VIRTUALDUB, path.get_internal_virtualdub_path('vdub.exe'), ac3
+            return Program.VIRTUALDUB, otrvpath.get_internal_virtualdub_path('vdub.exe'), ac3
         elif 'vdub' in config_value or 'VirtualDub' in config_value:
             return Program.VIRTUALDUB, config_value, ac3
         elif 'CutInterface' in config_value and manually:
@@ -435,12 +435,12 @@ class Cut(BaseAction):
             try:
                 if first_run and "Indexing" in l:
                     first_run = False
-                    self.gui.main_window.set_tasks_text("Datei wird indiziert")
+                    self.app.gui.main_window.set_tasks_text("Datei wird indiziert")
 
                 if len(l) > 25 and l[25].isdigit():
                     progress = int(l[25:].replace('%', ''))
                     # update progress
-                    self.gui.main_window.set_tasks_progress(progress)
+                    self.app.gui.main_window.set_tasks_progress(progress)
 
                 while Gtk.events_pending():
                     Gtk.main_iteration()
@@ -695,8 +695,8 @@ class Cut(BaseAction):
                 if line == '':
                     break
                 elif 'x264 [info]: started' in line:
-                    self.gui.main_window.set_tasks_text('Kodiere Video')
-                    self.gui.main_window.set_tasks_progress(0)
+                    self.app.gui.main_window.set_tasks_text('Kodiere Video')
+                    self.app.gui.main_window.set_tasks_progress(0)
                 elif 'x264 [info]' in line:
                     continue
                 elif 'time=' in line:
@@ -704,37 +704,37 @@ class Cut(BaseAction):
                     if m:
                         sec = float(m.group(1)) * 3600 + float(m.group(2)) * 60 + float(m.group(3))
                         if max_sec >= 1.0:
-                            self.gui.main_window.set_tasks_progress(int(sec / max_sec * 100))
+                            self.app.gui.main_window.set_tasks_progress(int(sec / max_sec * 100))
                 elif '%' in line:
                     m = re.search(progress_match, line)
                     if m:
-                        self.gui.main_window.set_tasks_progress(int(m.group(1)))
+                        self.app.gui.main_window.set_tasks_progress(int(m.group(1)))
                 elif 'Importing' in line:
                     m = re.search(mp4box_match, line)
                     if m:
-                        self.gui.main_window.set_tasks_text('Importiere Stream')
-                        self.gui.main_window.set_tasks_progress(int(m.group(1)))
+                        self.app.gui.main_window.set_tasks_text('Importiere Stream')
+                        self.app.gui.main_window.set_tasks_progress(int(m.group(1)))
                 elif 'ISO File Writing' in line:
                     m = re.search(mp4box_match, line)
                     if m:
-                        self.gui.main_window.set_tasks_text('Schreibe MP4')
-                        self.gui.main_window.set_tasks_progress(int(m.group(1)))
+                        self.app.gui.main_window.set_tasks_text('Schreibe MP4')
+                        self.app.gui.main_window.set_tasks_progress(int(m.group(1)))
                 elif 'Duration' in line:
                     m = re.search(time_match, line)
                     if m:
                         max_sec = float(m.group(1)) * 3600 + float(m.group(2)) * 60 + float(m.group(3))
                 elif 'video_copy' in line and '.mkv\' has been opened for writing' in line:
-                    self.gui.main_window.set_tasks_text('Splitte Video')
-                    self.gui.main_window.set_tasks_progress(0)
+                    self.app.gui.main_window.set_tasks_text('Splitte Video')
+                    self.app.gui.main_window.set_tasks_progress(0)
                 elif 'audio_copy' in line and '.mkv\' has been opened for writing' in line:
-                    self.gui.main_window.set_tasks_text('Schneide Audio')
-                    self.gui.main_window.set_tasks_progress(0)
+                    self.app.gui.main_window.set_tasks_text('Schneide Audio')
+                    self.app.gui.main_window.set_tasks_progress(0)
                 elif '.mkv\' has been opened for writing.' in line:
-                    self.gui.main_window.set_tasks_text('Muxe MKV')
-                    self.gui.main_window.set_tasks_progress(0)
+                    self.app.gui.main_window.set_tasks_text('Muxe MKV')
+                    self.app.gui.main_window.set_tasks_progress(0)
                 elif 'ffmpeg version' in line:
-                    self.gui.main_window.set_tasks_text('Kodiere Audio')
-                    self.gui.main_window.set_tasks_progress(0)
+                    self.app.gui.main_window.set_tasks_text('Kodiere Audio')
+                    self.app.gui.main_window.set_tasks_progress(0)
                 else:
                     continue
 
@@ -752,11 +752,11 @@ class Cut(BaseAction):
                         1.0, error_message """
 
         global adjust
-        self.gui.main_window.set_tasks_text('Berechne den Normalisierungswert')
-        self.gui.main_window.set_tasks_progress(0)
+        self.app.gui.main_window.set_tasks_text('Berechne den Normalisierungswert')
+        self.app.gui.main_window.set_tasks_progress(0)
         try:
             process1 = subprocess.Popen(
-                [path.get_tools_path('intern-ffprobe'), '-v', 'error', '-of', 'compact=p=0:nk=1', '-drc_scale', '1.0',
+                [otrvpath.get_tools_path('intern-ffprobe'), '-v', 'error', '-of', 'compact=p=0:nk=1', '-drc_scale', '1.0',
                  '-show_entries', 'frame_tags=lavfi.r128.I', '-f', 'lavfi',
                  'amovie=' + filename + ':si=' + stream + ',ebur128=metadata=1'], stdout=subprocess.PIPE)
         except OSError:
@@ -770,7 +770,7 @@ class Cut(BaseAction):
             if sline:
                 loudness = sline
                 adjust = ref - float(loudness)
-        self.gui.main_window.set_tasks_progress(100)
+        self.app.gui.main_window.set_tasks_progress(100)
         if adjust:
             return str(adjust) + 'dB', None
         else:

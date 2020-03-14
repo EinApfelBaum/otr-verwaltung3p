@@ -14,26 +14,25 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-from os.path import basename
-
+import datetime
+import logging
+import os
+import sys
 import time
-# ~ import urllib.request
-from urllib.request import Request, urlopen
 import webbrowser
-#import git
-import sys, os, datetime, logging
+from os.path import basename
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GdkPixbuf, Gdk, Gio, GLib
+from gi.repository import GLib, Gdk, GdkPixbuf, Gio, Gtk
 
-from otrverwaltung3p import path
-from otrverwaltung3p.constants import Action, Section, Cut_action, DownloadStatus
-from otrverwaltung3p.gui.widgets.DownloadsTreeView import DownloadsTreeView
-from otrverwaltung3p.gui.widgets.Sidebar import Sidebar
-from otrverwaltung3p.gui.widgets.EntrySearchToolItem import EntrySearchToolItem
-from otrverwaltung3p.gui import DownloadPropertiesDialog
+from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p.GeneratorTask import GeneratorTask
+from otrverwaltung3p.constants import Action, Cut_action, DownloadStatus, Section
+from otrverwaltung3p.gui import DownloadPropertiesDialog
+from otrverwaltung3p.gui.widgets.DownloadsTreeView import DownloadsTreeView
+from otrverwaltung3p.gui.widgets.EntrySearchToolItem import EntrySearchToolItem
+from otrverwaltung3p.gui.widgets.Sidebar import Sidebar
 
 
 class MainWindow(Gtk.Window, Gtk.Buildable):
@@ -42,7 +41,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     def __init__(self):
         Gtk.Window.__init__(self)
         self.log = logging.getLogger(self.__class__.__name__)
-        self.svn_version_url = ''
+
+        self.builder = None
         self.conclusion_eventbox = None
         self.conclusion_css = b"""
                                 * {
@@ -63,14 +63,15 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.css_provider = Gtk.CssProvider()
         self.css_provider.load_from_data(self.conclusion_css)
         self.cursor_wait = Gdk.Cursor(Gdk.CursorType.WATCH)
+        self.svn_version_url = ''  # gcurse: Delete this later
         self.treeview_files = None
 
     def do_parser_finished(self, builder):
         self.builder = builder
         self.builder.connect_signals(self)
 
-    def pre_init(self):
-        pass
+    def conf_g(self, option_str):
+        self.app.config.get('general', option_str)
 
     # TODO: only workaround. try to remove.
     def post_init(self):
@@ -79,23 +80,6 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.__setup_treeview_download()
         self.__setup_treeview_files()
         self.__setup_widgets()
-
-        # set window title
-        # ~ current_version = open(path.getdatapath("VERSION"), 'r').read().strip()
-        # ~ self.svn_version_url = "https://raw.githubusercontent.com/einapfelbaum/otr-verwaltung3p/master/data/VERSION"
-
-        # ~ try:
-           # ~ svn_version = urlopen(self.svn_version_url).read().strip().decode('utf-8')
-        # ~ except IOError:
-           # ~ self.set_title('OTR-Verwaltung3p' + ' ' + current_version)
-        # ~ else:
-            # ~ if current_version in str(svn_version):
-                # ~ self.set_title('OTR-Verwaltung3p' + ' ' + current_version + '  -  Aktuell!')
-            # ~ else:
-                # ~ self.set_title('OTR-Verwaltung3p' + ' ' + current_version + '  -  aktuelle Version: ' + str(svn_version))
-                # ~ self._on_menu_check_update_activate(self)
-
-        # ~ self.treeview_files = self.treeview_files
 
     def __get_cut_menu(self, action):
         # menu for cut/decodeandcut
@@ -128,11 +112,11 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                 ('rename', 'rename.png', "Umbenennen", Action.RENAME),
                 ('new_folder', 'new_folder.png', "Neuer Ordner", Action.NEW_FOLDER),
                 ('real_delete', 'delete.png', "Löschen", Action.REAL_DELETE)
-                ]
+            ]
         else:
             toolbar_buttons = [
                 ('decodeandcut', ['dialog-password', 'edit-cut-symbolic'],
-                                                "Dekodieren und Schneiden", Action.DECODEANDCUT),
+                 "Dekodieren und Schneiden", Action.DECODEANDCUT),
                 ('decode', 'dialog-password', 'Dekodieren', Action.DECODE),
                 ('delete', 'user-trash', "In den Müll verschieben", Action.DELETE),
                 ('archive', 'system-file-manager', "Archivieren", Action.ARCHIVE),
@@ -146,7 +130,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.__toolbar_buttons = {}
         for key, image_name, text, action in toolbar_buttons:
             if self.app.config.get('general', 'use_internal_icons'):
-                image = Gtk.Image.new_from_file(path.get_image_path(image_name))
+                image = Gtk.Image.new_from_file(otrvpath.get_image_path(image_name))
             else:
                 # Gtk.IconSize.LARGE_TOOLBAR
                 if type(image_name) is list:  # It's a list so we create an emblemed icon
@@ -155,13 +139,14 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                                                 Gio.ThemedIcon.new(image_name[0]),
                                                 Gio.Emblem.new(Gio.ThemedIcon.new(image_name[1]))),
                                                 self.app.config.get('general', 'icon_size'))
-                    except: pass
+                    except:
+                        pass
                 else:
                     try:
-                        image = Gtk.Image.new_from_pixbuf(
-                                                Gtk.IconTheme.get_default().load_icon(image_name,
-                                                self.app.config.get('general', 'icon_size'), 0))
-                    except: pass
+                        image = Gtk.Image.new_from_pixbuf(Gtk.IconTheme.get_default().load_icon(image_name,
+                                                          self.app.config.get('general', 'icon_size'), 0))
+                    except:
+                        pass
 
             image.show()
 
@@ -201,8 +186,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
         # toolbar_search
         self.search_tool_item = EntrySearchToolItem("Durchsuchen")
+        self.search_tool_item.entry.set_can_focus(True)
         self.builder.get_object('toolbar_search').insert(self.search_tool_item, -1)
-
         self.search_tool_item.connect('search', lambda w, search: self.do_search(search))
         self.search_tool_item.connect('clear', self.on_search_clear)
 
@@ -268,20 +253,20 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         treeview.connect('button_press_event', self._on_treeview_context_menu)
         treeview.connect('popup-menu', self._on_treeview_context_menu)
         treeview.connect('row-activated', self._on_treeview_doubleclick)
-        # TreeStore fields filename, size, date, isdir, unlocked
-        #                      |       |    |      |     |
-        store = Gtk.TreeStore(str, float, float, bool, bool)  # gcurse:LOCK
+        # TreeStore fields: filename, recording_date, size, date_modified, isdir, unlocked
+        store = Gtk.TreeStore(str, str, float, float, bool, bool)  # gcurse:LOCK
         treeview.set_model(store)
 
         # constants for model and columns
         self.__FILENAME = 0
-        self.__SIZE = 1
-        self.__DATE = 2
-        self.__ISDIR = 3
-        self.__LOCKED = 4  # gcurse:LOCK
+        self.__REC_DATE = 1
+        self.__SIZE = 2
+        self.__DATE = 3
+        self.__ISDIR = 4
+        self.__LOCKED = 5  # gcurse:LOCK
 
         # create the TreeViewColumns to display the data
-        column_names = ['Dateiname', 'Größe', 'Geändert']
+        column_names = ['Dateiname', 'Aufnahmedatum', 'Größe', 'Geändert']
         tvcolumns = [None] * len(column_names)
 
         # pixbuf and filename
@@ -291,6 +276,11 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         tvcolumns[self.__FILENAME].pack_start(cell_renderer_text_name, False)
         tvcolumns[self.__FILENAME].set_cell_data_func(cell_renderer_pixbuf, self.__tv_files_pixbuf)
         tvcolumns[self.__FILENAME].set_cell_data_func(cell_renderer_text_name, self.__tv_files_name)
+
+        # recording date
+        cell_renderer_text_record = Gtk.CellRendererText()
+        tvcolumns[self.__REC_DATE] = Gtk.TreeViewColumn(column_names[self.__REC_DATE], cell_renderer_text_record)
+        tvcolumns[self.__REC_DATE].set_cell_data_func(cell_renderer_text_record, self.__tv_files_record)
 
         # size
         cell_renderer_text_size = Gtk.CellRendererText()
@@ -316,14 +306,15 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         # sorting
         treeview.get_model().set_sort_func(0, self.__tv_files_sort)
         tvcolumns[self.__FILENAME].set_sort_column_id(0)
-        tvcolumns[self.__SIZE].set_sort_column_id(1)
-        tvcolumns[self.__DATE].set_sort_column_id(2)
+        tvcolumns[self.__REC_DATE].set_sort_column_id(1)
+        tvcolumns[self.__SIZE].set_sort_column_id(2)
+        tvcolumns[self.__DATE].set_sort_column_id(3)
 
         # load pixbufs for treeview
         if self.app.config.get('general', 'use_internal_icons'):
-            self.__pix_avi = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('avi.png'))
-            self.__pix_otrkey = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('decode.png'))
-            self.__pix_folder = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('folder.png'))
+            self.__pix_avi = GdkPixbuf.Pixbuf.new_from_file(otrvpath.get_image_path('avi.png'))
+            self.__pix_otrkey = GdkPixbuf.Pixbuf.new_from_file(otrvpath.get_image_path('decode.png'))
+            self.__pix_folder = GdkPixbuf.Pixbuf.new_from_file(otrvpath.get_image_path('folder.png'))
         else:
             try:
                 self.__pix_avi = Gtk.IconTheme.get_default().load_icon(
@@ -335,21 +326,23 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             except: pass
 
         # gcurse:LOCK cellrenderer's property "sensitive" is set to the value of the model column "unlocked"
-        treeview.get_column(0).add_attribute(cell_renderer_text_name, 'sensitive', 4)
-        treeview.get_column(1).add_attribute(cell_renderer_text_size, 'sensitive', 4)
-        treeview.get_column(2).add_attribute(cell_renderer_text_date, 'sensitive', 4)
+        treeview.get_column(0).add_attribute(cell_renderer_text_name, 'sensitive', self.__LOCKED)
+        treeview.get_column(1).add_attribute(cell_renderer_text_record, 'sensitive', self.__LOCKED)
+        treeview.get_column(2).add_attribute(cell_renderer_text_size, 'sensitive', self.__LOCKED)
+        treeview.get_column(3).add_attribute(cell_renderer_text_date, 'sensitive', self.__LOCKED)
+        treeview.props.enable_search = False
 
         self.treeview_files = treeview
 
     def __treeview_files_select_function(self, treeselection, model, path, current):
-        return model[path][4]
+        return model[path][self.__LOCKED]
 
     def __setup_widgets(self):
         self.builder.get_object('menu_bottom').set_active(self.app.config.get('general', 'show_bottom'))
 
         self.builder.get_object('image_status').clear()
 
-        ## sidebar ##
+        # sidebar ##
         self.sidebar = Sidebar()
 
         # ~ planned = self.sidebar.add_element(Section.PLANNING, '', False)  # TAG:Geplante Sendungen
@@ -384,14 +377,16 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.eventbox_planning.set_size_request(30, 15)
 
         style = self.eventbox_planning.get_style().copy()
-        # pixmap, mask = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('badge.png')).render_pixmap_and_mask()
+        # pixmap, mask = GdkPixbuf.Pixbuf.new_from_file(otrvpath.get_image_path('badge.png')).render_pixmap_and_mask()
         # style.bg_pixmap[Gtk.StateFlags.NORMAL] = pixmap
         # self.eventbox_planning.shape_combine_mask(mask, 0, 0)
         # self.eventbox_planning.set_style(style)
         # ~ planned.add_widget(self.eventbox_planning)  # TAG:Geplante Sendungen
 
         self.sidebar.show_all()
-        ## sidebar end ##
+        self.sidebar.set_size_request(int(self.sidebar.size_request().width * 1.05),
+                                      int(self.sidebar.size_request().height * 1.0))
+        # sidebar end ##
 
         # change background of conclusion button
         conclusion_button = self.builder.get_object('button_show_conclusion')
@@ -423,7 +418,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     #
 
     def treeview_files_grab(self):
-        ## Set the focus on treeview and select first entry
+        # Set the focus on treeview and select first entry
         self.treeview_files.grab_focus()
         treeview_files_selection = self.treeview_files.get_selection().select_path(Gtk.TreePath.new_first())
 
@@ -441,22 +436,23 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
         return [model.get_value(model.get_iter(row), self.__FILENAME) for row in selected_rows]
 
-    def append_row_files(self, parent, filename, size, date, isdir=False, unlocked=True):
+    def append_row_files(self, parent, filename, rec_date, size, date, isdir=False, unlocked=True):
         """ Fügt eine neue Datei zu treeview_files hinzu.
-            * parent    für Archiv, ansonsten None: der übergeordnete iter des Ordners
-            * filename  Dateiname
-            * size      Dateigröße in Bytes
-            * date      Änderungsdatum der Datei
-            * isdir     if it is a directory
-            * locked    if the file (row) is in processing  # gcurse:LOCK
+            * parent            For 'Archiv': the folder's parent iter, else None
+            * filename          Filename
+            * record_datetime   Recording date and time taken from filename (for sorting)
+            * size              Filesize in bytes
+            * date              File modified date and time
+            * isdir             if it is a directory
+            * locked            if the file (row) is in processing  # gcurse:LOCK
         """
 
-        data = [filename, size, date, isdir, unlocked]  # gcurse:LOCK add column "unlocked"
+        data = [filename, rec_date, size, date, isdir, unlocked]  # gcurse:LOCK add column "unlocked"
 
         # TODO implement liststore into glade ?
         # http://fo2adzz.blogspot.de/2012/09/gtktreeview-glade-with-python-tutorial.html
-        iter = self.treeview_files.get_model().append(parent, data)
-        return iter
+        iter_files = self.treeview_files.get_model().append(parent, data)
+        return iter_files
 
     def humanize_size(self, bytes):
         bytes = float(bytes)
@@ -484,7 +480,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         filename_iter2 = model.get_value(iter2, self.__FILENAME)
 
         # why?
-        if filename_iter2 == None:
+        if filename_iter2 is None:
             return -1
 
         iter1_isdir = model.get_value(iter1, self.__ISDIR)
@@ -521,6 +517,9 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
     def __tv_files_name(self, column, cell, model, iter, data=None):
         cell.set_property('text', basename(model.get_value(iter, self.__FILENAME)))
+
+    def __tv_files_record(self, column, cell, model, iter, data=None):
+        cell.set_property('text', model.get_value(iter, self.__REC_DATE))
 
     def __tv_files_pixbuf(self, column, cell, model, iter, data=None):
         filename = model.get_value(iter, self.__FILENAME)
@@ -570,7 +569,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         return iter
 
     def __tv_planning_sort(self, model, iter1, iter2, data):
-        # -1 if the iter1 row should precede the iter2 row; 0, if the rows are equal; and, 1 if the iter2 row should precede the iter1 row
+        """ -1 if the iter1 row should precede the iter2 row; 0, if the rows are equal;
+            and 1 if the iter2 row should precede the iter1 row """
         time1 = model.get_value(iter1, 0).datetime
         time2 = model.get_value(iter2, 0).datetime
 
@@ -627,7 +627,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.builder.get_object('label_statusbar').set_text(message)
 
         if message_type == 0:
-            self.builder.get_object('image_status').set_from_file(path.get_image_path("information.png"))
+            self.builder.get_object('image_status').set_from_file(otrvpath.get_image_path("information.png"))
 
         if not permanent:
             def wait():
@@ -721,21 +721,21 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         dialog.run(download)
         if dialog.changed:
             download.stop()
-            if self.gui.question_box("Soll der Download wieder gestartet werden?"):
+            if self.app.gui.question_box("Soll der Download wieder gestartet werden?"):
                 download.start()
         dialog.destroy()
 
     def _on_menu_check_update_activate(self, widget, data=None):
         pass
-        # ~ current_version = open(path.getdatapath("VERSION"), 'r').read().strip()
+        # ~ current_version = open(otrvpath.getdatapath("VERSION"), 'r').read().strip()
 
         # ~ try:
             # ~ svn_version = urlopen(self.svn_version_url).read().strip().decode('utf-8')
         # ~ except IOError:
-            # ~ self.gui.message_error_box("Konnte keine Verbindung mit dem Internet herstellen!")
+            # ~ self.app.gui.message_error_box("Konnte keine Verbindung mit dem Internet herstellen!")
             # ~ return
 
-        # ~ self.gui.message_info_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s" % \
+        # ~ self.app.gui.message_info_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s" % \
                                                                     # ~ (current_version, svn_version))
 
     def _on_menuHelpHelp_activate(self, widget, data=None):
@@ -743,7 +743,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
     def _on_menuHelpAbout_activate(self, widget, data=None):
 
-        version = open(path.getdatapath("VERSION"), 'r').read().strip()
+        version = open(otrvpath.getdatapath("VERSION"), 'r').read().strip()
         script_root_dir = script_root_dir = os.path.abspath(os.path.realpath(sys.argv[0])+'/../..')
         authors = ["EinApfelBaum https://github.com/EinApfelBaum",
                     "gCurse https://github.com/gCurse",
@@ -756,7 +756,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
         license = "GPL version 3, see http://www.gnu.org/licenses/gpl-3.0.html#content"
 
-        about_dialog = Gtk.AboutDialog(parent=self.gui.main_window,
+        about_dialog = Gtk.AboutDialog(parent=self.app.gui.main_window,
                 program_name=self.app.app_name,
                 version=version,
                 copyright='\xa9 2010 - ' + str(datetime.datetime.now().year) +' B. Elbers and others',
@@ -764,9 +764,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                 website='https://github.com/EinApfelBaum/otr-verwaltung3p/wiki',
                 comments='Verwalten und Schneiden der Dateien von onlinetvrecorder.com',
                 authors=authors,
-                logo=GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('icon.png'))
+                logo=GdkPixbuf.Pixbuf.new_from_file(otrvpath.get_image_path('icon.png'))
                 )
-                # ~ title='About {}'.format(self.app.app_name))
 
         about_dialog.set_destroy_with_parent(True)
         about_dialog.set_size_request(500, 300)
@@ -774,17 +773,17 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         about_dialog.destroy()
 
     def _on_menuEditPlugins_activate(self, widget, data=None):
-        self.gui.dialog_plugins._run()
+        self.app.gui.dialog_plugins.run_()
 
     def _on_menuEditPreferences_activate(self, widget, data=None):
-        self.gui.preferences_window.show()
+        self.app.gui.preferences_window.show()
 
     def _on_main_window_configure_event(self, widget, event, data=None):
         self.size = self.get_size()
 
     def _on_main_window_window_state_event(self, widget, event, data=None):
         state = event.new_window_state
-        if (state & Gdk.WindowState.MAXIMIZED):
+        if state & Gdk.WindowState.MAXIMIZED:
             self.maximized = True
         else:
             self.maximized = False
@@ -794,13 +793,13 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
     def _on_main_window_delete_event(self, widget, data=None):
         if self.app.locked:
-            if not self.gui.question_box("Das Programm arbeitet noch. \
+            if not self.app.gui.question_box("Das Programm arbeitet noch. \
                                           Soll wirklich abgebrochen werden?"):
                 return True  # won't be destroyed
 
         for row in self.treeview_download.liststore:
             if row[0].information['status'] in [DownloadStatus.RUNNING, DownloadStatus.SEEDING]:
-                if not self.gui.question_box("Es gibt noch laufende Downloads. \
+                if not self.app.gui.question_box("Es gibt noch laufende Downloads. \
                                               Soll wirklich abgebrochen werden?"):
                     return True  # won't be destroyed
                 break
@@ -835,6 +834,20 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                 if row[0].datetime < now:
                     selection.select_iter(row.iter)
 
+    def _on_window_key_press_event(self, widget, event, *args):
+        """ Ctrl-f will focus the search entry """
+        keyname = Gdk.keyval_name(event.keyval).upper()
+        mod_ctrl = (event.state & Gdk.ModifierType.CONTROL_MASK)
+        mod_shift = (event.state & Gdk.ModifierType.SHIFT_MASK)
+        mod_alt = (event.state & Gdk.ModifierType.MOD1_MASK)
+
+        if event.type == Gdk.EventType.KEY_PRESS:
+            if not mod_shift and not mod_alt and mod_ctrl:  # CTRL
+                if keyname == 'F':
+                    if not self.search_tool_item.entry.has_focus():
+                        self.search_tool_item.entry.grab_focus()
+        return False
+
     def do_search(self, search):
         if not search:
             return
@@ -855,10 +868,10 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.builder.get_object('menu_bottom').set_active(False)
 
 
-def NewMainWindow(app, gui):
+def new(app):
     logger = logging.getLogger(__name__)
-    glade_filename = path.getdatapath('ui', 'MainWindow.glade')
-    version = open(path.getdatapath("VERSION"), 'r').read().strip()
+    glade_filename = otrvpath.getdatapath('ui', 'MainWindow.glade')
+    version = open(otrvpath.getdatapath("VERSION"), 'r').read().strip()
     logger.info("Version: " + version)
 
     builder = Gtk.Builder()
@@ -866,5 +879,5 @@ def NewMainWindow(app, gui):
     window = builder.get_object("main_window")
 
     window.app = app
-    window.gui = gui
+    # window.gui = gui
     return window

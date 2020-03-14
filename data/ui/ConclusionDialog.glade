@@ -167,13 +167,13 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="buttonConclusionClose">
+              <object class="GtkButton" id="button_conclusion_close_clicked">
                 <property name="label">gtk-close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="_on_buttonConclusionClose_clicked" swapped="no"/>
+                <signal name="clicked" handler="_on_button_conclusion_close_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -437,6 +437,7 @@
                         <property name="margin_left">5</property>
                         <property name="label" translatable="yes">&lt;i&gt;Wertung:&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
+                        <property name="width_chars">9</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -487,6 +488,7 @@
                         <property name="margin_left">5</property>
                         <property name="label" translatable="yes">&lt;i&gt;Archivieren:&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
+                        <property name="width_chars">9</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -517,6 +519,7 @@
                         <property name="margin_left">5</property>
                         <property name="label" translatable="yes">&lt;i&gt;Ersetze:&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
+                        <property name="width_chars">9</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -738,6 +741,71 @@
                           </packing>
                         </child>
                         <child>
+                          <object class="GtkBox" id="hbox_comment_prepend">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <child>
+                              <object class="GtkLabel" id="lbl_prepend_comment">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="margin_right">10</property>
+                                <property name="label" translatable="yes">Dem Kommentar hinzufügen:</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="btn_prepend">
+                                <property name="label" translatable="yes">Vorn</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <signal name="clicked" handler="_on_btn_prepend_clicked" object="entry_comment" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="btn_append">
+                                <property name="label" translatable="yes">Hinten</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <signal name="clicked" handler="_on_btn_append_clicked" object="entry_comment" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkComboBoxText" id="cboxtext_snippets">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="margin_left">10</property>
+                                <property name="hexpand">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">5</property>
+                          </packing>
+                        </child>
+                        <child>
                           <object class="GtkLabel" id="label47">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
@@ -747,7 +815,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">5</property>
+                            <property name="position">6</property>
                           </packing>
                         </child>
                         <child>
@@ -762,7 +830,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">6</property>
+                            <property name="position">7</property>
                           </packing>
                         </child>
                       </object>

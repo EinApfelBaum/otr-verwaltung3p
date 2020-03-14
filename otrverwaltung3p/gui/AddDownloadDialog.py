@@ -20,7 +20,7 @@ import os
 
 from otrverwaltung3p.GeneratorTask import GeneratorTask
 from otrverwaltung3p import cutlists
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p.scraper import scrape
 from otrverwaltung3p.gui.widgets.CutlistsTreeView import CutlistsTreeView
 
@@ -42,7 +42,7 @@ class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
         self.cutlists_treeview.get_selection().connect('changed', self.treeview_cutlists_selection_changed)
         self.builder.get_object('scrolledwindow_cutlists').add(self.cutlists_treeview)
 
-        animation = GdkPixbuf.PixbufAnimation.new_from_file(path.get_image_path("spinner.gif"))
+        animation = GdkPixbuf.PixbufAnimation.new_from_file(otrvpath.get_image_path("spinner.gif"))
         self.builder.get_object('image_spinner').set_from_animation(animation)
         self.builder.get_object('image_spinner_download').set_from_animation(animation)
 
@@ -305,7 +305,7 @@ class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
 
 
 def NewAddDownloadDialog(gui, config, via_link, link=None):
-    glade_filename = path.getdatapath('ui', 'AddDownloadDialog.glade')
+    glade_filename = otrvpath.getdatapath('ui', 'AddDownloadDialog.glade')
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)

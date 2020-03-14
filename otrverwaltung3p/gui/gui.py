@@ -23,7 +23,7 @@ from gi.repository import Gtk, GdkPixbuf
 from otrverwaltung3p.gui import MainWindow, PreferencesWindow, ArchiveDialog, ConclusionDialog, CutDialog, \
     EmailPasswordDialog, RenameDialog, PlanningDialog, PluginsDialog
 
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p.directorymonitor import DirectoryMonitor
 from otrverwaltung3p.constants import Section
 
@@ -37,17 +37,17 @@ class Gui:
             instance.set_modal(True)
 
         # TODO: einheitliches benennungsschema für widgets: MainWindow oder main_window
-        self.main_window = MainWindow.NewMainWindow(app, self)
+        self.main_window = MainWindow.new(app)
         self.main_window.post_init()
 
-        self.preferences_window = PreferencesWindow.NewPreferencesWindow(app, self)
+        self.preferences_window = PreferencesWindow.NewPreferencesWindow(app)
         self.preferences_window.bind_config(app.config)
         set_transient_modal(self, self.preferences_window)
 
         self.dialog_archive = ArchiveDialog.NewArchiveDialog()
         set_transient_modal(self, self.dialog_archive)
 
-        self.dialog_conclusion = ConclusionDialog.NewConclusionDialog(app, self)
+        self.dialog_conclusion = ConclusionDialog.NewConclusionDialog(app)
         set_transient_modal(self, self.dialog_conclusion)
 
         self.dialog_cut = CutDialog.NewCutDialog(app, self)
@@ -66,10 +66,10 @@ class Gui:
         set_transient_modal(self, self.dialog_plugins)
 
         for window in [self.main_window]:
-            window.set_icon(GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('icon.png')))
+            window.set_icon(GdkPixbuf.Pixbuf.new_from_file(otrvpath.get_image_path('icon.png')))
 
     def run(self):
-        ## DirectoryMonitor
+        # DirectoryMonitor
         monitors = []
         monitored = [[self.app.config.get('general', 'folder_uncut_avis'), Section.VIDEO_UNCUT,
                       self.app.regex_uncut_video],
@@ -127,8 +127,10 @@ class Gui:
         return result == Gtk.ResponseType.YES
 
     def __get_dialog(self, message_type, message_buttons, message_text):
-        return Gtk.MessageDialog(self.main_window,
+        dialog = Gtk.MessageDialog(self.main_window,
                                  Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
                                  message_type,
                                  message_buttons,
-                                 message_text)
+                                 )
+        dialog.set_markup(message_text)
+        return dialog

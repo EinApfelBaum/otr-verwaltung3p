@@ -21,7 +21,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 
 
 class RenameDialog(Gtk.Dialog, Gtk.Buildable):
@@ -61,7 +61,7 @@ class RenameDialog(Gtk.Dialog, Gtk.Buildable):
 
 
 def NewRenameDialog():
-    glade_filename = path.getdatapath('ui', 'RenameDialog.glade')
+    glade_filename = otrvpath.getdatapath('ui', 'RenameDialog.glade')
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)

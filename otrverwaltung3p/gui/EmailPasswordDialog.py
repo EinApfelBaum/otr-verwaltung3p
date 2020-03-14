@@ -18,7 +18,7 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 
 
 class EmailPasswordDialog(Gtk.Dialog, Gtk.Buildable):
@@ -51,7 +51,7 @@ class EmailPasswordDialog(Gtk.Dialog, Gtk.Buildable):
 
 
 def NewEmailPasswordDialog(app):
-    glade_filename = path.getdatapath('ui', 'EmailPasswordDialog.glade')
+    glade_filename = otrvpath.getdatapath('ui', 'EmailPasswordDialog.glade')
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)

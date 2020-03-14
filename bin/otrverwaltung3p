@@ -15,31 +15,25 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-import sys
-import os
-from os.path import join, isdir, splitext
-import re
-import subprocess
-import time
 import hashlib
-import optparse
+import json
 import logging
+import optparse
+import os
+import re
 import shutil
-from pathlib import Path
+import subprocess
+import sys
 import tempfile
-# ~ from dbus.mainloop.glib import DBusGMainLoop
-# ~ import dbus, dbus.service
+import time
 from base64 import b64encode
-
-try:
-    import simplejson as json
-except ImportError:
-    import json
+from os.path import isdir, join, splitext
+from pathlib import Path
 
 try:
     import gi
     gi.require_version('Gtk', '3.0')
-    from gi.repository import Gtk, Gdk, GLib
+    from gi.repository import Gtk, Gdk
 except Exception as e:
     print("Gtk, Gdk or GLib is missing.")
     print(f"Exception: {e}")
@@ -48,10 +42,11 @@ except Exception as e:
 sys.modules["gi.overrides.Gst"] = None
 sys.modules["gi.overrides.GstPbutils"] = None
 
-## Logging
+# Logging
 logging.basicConfig(level=logging.WARNING, stream=sys.stdout,
-                format='%(levelname).1s:%(module)s:%(name)s:%(funcName)s:%(lineno)s %(message)s')
+                    format='%(levelname).1s:%(module)s:%(name)s:%(funcName)s:%(lineno)s %(message)s')
 log = logging.getLogger("otrverwaltung3p")
+
 
 # Options and configuration
 def parse_opts():
@@ -63,8 +58,9 @@ def parse_opts():
                       help="Debug messages", default=False)
     oparse.add_option("-l", "--link", help="Add a link")
 
-    opts, _ = oparse.parse_args()
-    return opts
+    opt, _ = oparse.parse_args()
+    return opt
+
 
 opts = parse_opts()
 
@@ -93,7 +89,7 @@ else:
     # ~ locale_dir = "/usr/share/locale"
 
     try:
-        import otrverwaltung3p
+        import otrverwaltung3p  # noqa: F401
     except ImportError:  # possible on systems where pycentral is not installed
         sys.path.insert(0, '/usr/lib/python' + sys.version[:3] + '/site-packages')
 
@@ -107,20 +103,19 @@ else:
 # ~     module.textdomain('otrverwaltung3p')
 
 # intern
-from otrverwaltung3p.gui import gui
-from otrverwaltung3p.pluginsystem import PluginSystem
-from otrverwaltung3p.actions import actions
-from otrverwaltung3p.config import Config
 from otrverwaltung3p import fileoperations
-import otrverwaltung3p.cutlists as cutlists_management
-from otrverwaltung3p.constants import Section, Action, Cut_action, DownloadStatus
-from otrverwaltung3p.planning import Planning
-from otrverwaltung3p.downloader import Download
+from otrverwaltung3p import path as otrvpath
+from otrverwaltung3p.actions import actions
 from otrverwaltung3p.conclusions import ConclusionsManager
-from otrverwaltung3p import path
+from otrverwaltung3p.config import Config
+from otrverwaltung3p.constants import Action, Cut_action, DownloadStatus, Section
+from otrverwaltung3p.downloader import Download
+from otrverwaltung3p.gui import gui
+from otrverwaltung3p.planning import Planning
+from otrverwaltung3p.pluginsystem import PluginSystem
 
 
-class App():
+class App:
     """ Hauptklasse des Programms."""
 
     section = Section.OTRKEY
@@ -131,87 +126,95 @@ class App():
     def __init__(self):
 
         self.log = logging.getLogger(self.__class__.__name__)
-        self.last_marked_row = None
         self.filenames_locked = []
+        self.last_marked_row = None
+        self.section_info = {}
 
         configuration = {
             'general': {
-                'folder_new_otrkeys': '',
-                'folder_uncut_avis': '',
-                'folder_cut_avis': '',
-                'folder_trash_otrkeys': '',
-                'folder_trash_avis': '',
-                'folder_archive': '',
-                'otrkey_search': 'http://otrkeyfinder.com/?search=',
-                'save_email_password': False,
                 'aes_key': b64encode(os.urandom(32)).decode('utf-8'),
-                'email': '',
-                'password': '',
-                'verify_decoded': True,
+                'after_cut_show': 10,
+                'alt_time_frame_conv': True,
+                'ask_if_all': True,
+                'choose_cutlists_by': 1,  # 0=name, 1=size
+                'cut_action': Cut_action.ASK,
                 'cut_avis_by': 'SmartMKVmerge',
-                'cut_hqs_by': 'SmartMKVmerge',
-                'cut_mp4s_by': 'SmartMKVmerge',
                 'cut_avis_man_by': 'CutInterface',
+                'cut_hqs_by': 'SmartMKVmerge',
                 'cut_hqs_man_by': 'CutInterface',
+                'cut_mp4s_by': 'SmartMKVmerge',
                 'cut_mp4s_man_by': 'CutInterface',
+                'cutinterface_hide_cuts': False,
                 'cutinterface_resolution_x': 800,
                 'cutinterface_resolution_y': 450,
-                'seek_distance_default': 2000,
-                'cutinterface_hide_cuts': False,
-                'mplayer_fullscreen': True,
-                'prefer_mplayer': False,
+                'cutlist_comment': 'OTRV3p',
+                'cutlist_hash': hashlib.md5(str(time.time()).encode()).hexdigest(),
+                'cutlist_mp4_as_hq': False,  # for mp4s, when searching cutlist by name, add an HQ --> Name.HQ.mp4
+                'cutlist_username': '',
+                'delete_cutlists': True,
+                'email': '',
+                'folder_archive': '',
+                'folder_cut_avis': '',
+                'folder_new_otrkeys': '',
+                'folder_trash_avis': '',
+                'folder_trash_otrkeys': '',
+                'folder_uncut_avis': '',
+                'h264_codec': 'ffdshow',
+                'hide_archive_buttons': False,
+                'icon_size': 22,
+                'ignore_suggested_filename': False,
+                'komisar_hd_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --weightp 0',
+                'komisar_hq_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --aq-mode 2 --weightp 0',  # noqa: E501
+                'komisar_mp4_string': '--force-cfr --profile baseline --preset medium --trellis 0',
                 'merge_ac3s': True,
                 'merge_ac3s_by': 'mkvmerge',
                 'move_otrkey_to_trash_after_decode': True,
-                'server': 'http://cutlist.at/',
-                'cut_action': Cut_action.ASK,
-                'delete_cutlists': True,
-                'smart': True,
-                'choose_cutlists_by': 1,  # 0=name, 1=size
-                'cutlist_username': '',
-                'planned_items': '',
-                'rename_cut': True,
-                'rename_schema': '{titel} vom {tag}. {MONAT} {jahr}, {stunde}-{minute} ({sender})',
-                'cutlist_mp4_as_hq': False,  # for mp4s, when searching cutlist by name, add an HQ --> Name.HQ.mp4
-                'show_bottom': False,
-                'cutlist_hash': hashlib.md5(str(time.time()).encode()).hexdigest(),
-                'window_settings': '',
-                'h264_codec': 'ffdshow',
-                'komisar_hd_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --weightp 0',
-                'komisar_hq_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --aq-mode 2 --weightp 0',
-                'komisar_mp4_string': '--force-cfr --profile baseline --preset medium --trellis 0',
-                'x264vfw_hd_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --weightp 0',
-                'x264vfw_hq_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --aq-mode 2 --weightp 0',
-                'x264vfw_mp4_string': '--force-cfr --profile baseline --preset medium --trellis 0',
-                'pre_cut_show': 10,
-                'after_cut_show': 10,
-                'alt_time_frame_conv': True,
-                'ignore_suggested_filename': False,
-                'use_internal_icons': False,
-                'icon_size': 22,
-                'hide_archive_buttons': False,
+                'mplayer_fullscreen': True,
+                'mpv_screen': '0',
+                'mpv_vol_max': 150.0,
+                'otrkey_search': 'http://otrkeyfinder.com/?search=',
                 'passwd_store': 2,  # 0 = Store in conf, 1 = Store in wallet, 2 = Do not store
                 'passwd_store_memory': False,
-                'mpv_vol_max': 150.0,
-                'mpv_screen': '0',
-                'vol_adjust': 'usw,3.0,140',
+                'password': '',
+                'planned_items': '',
+                'pre_cut_show': 10,
+                'prefer_mplayer': False,
+                'rename_cut': False,
+                'rename_schema': '{titel} vom {tag}. {MONAT} {jahr}, {stunde}-{minute} ({sender})',
+                'save_email_password': False,
+                'seek_distance_default': 2000,
+                'server': 'http://cutlist.at/',
+                'show_bottom': False,
+                'smart': True,
+                'snippets': '[]',
+                'use_internal_icons': False,
+                'verify_decoded': True,
+                'vol_adjust': 'usw,3.0,140__uk,3.0,140',
                 'vol_adjust_on': False,
-                'cutlist_comment': 'OTRV3p',
-                'ask_if_all': True
+                'window_settings': '',
+                'x264vfw_hd_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --weightp 0',
+                'x264vfw_hq_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --aq-mode 2 --weightp 0',  # noqa: E501
+                'x264vfw_mp4_string': '--force-cfr --profile baseline --preset medium --trellis 0',
+            },
+            'cutinterface': {
+                'seek_distance_default': 80,
+                'seek1': 4,
+                'seek2': 20,
+                'show_tooltips': False,
             },
             'downloader': {
-                'resume_on_startup': True,
-                'preferred_downloader': '',
                 'aria2c_opts': ['--allow-overwrite=true', '--continue', '--max-connection-per-server=1',
                                 '--max-tries=0', '--split=5', '--auto-file-renaming=false', '--allow-overwrite=true',
                                 '--allow-piece-length-change=true', '--always-resume=false',
                                 '--max-resume-failure-tries=0'],
+                'aria2c_opts_torrent': ["--check-integrity=true", "--continue"],
+                'preferred_downloader': '',
+                'resume_on_startup': True,
                 'wget_opts': ['-v'],
-                'aria2c_opts_torrent': ["--check-integrity=true", "--continue"]
             },
             'plugins': {
-                'enabled': 'Play:Mkv:MP4',
-                'config': {}  # used as plugin config storage
+                'config': {},  # used as plugin config storage
+                'enabled': 'Play:Mkv',
             },
             'programs': {
                 'aria2c': 'intern-aria2c',
@@ -219,71 +222,71 @@ class App():
                 'ffmpeg': 'ffmpeg',
                 'ffmsindex': 'ffmsindex',
                 'ffprobe': 'ffprobe',
-                'mkvmerge': 'mkvmerge',
                 'mediainfo': 'mediainfo',
+                'mkvmerge': 'mkvmerge',
                 'mp4box': 'intern-mp4box',
                 'mplayer': 'mplayer',
                 'mpv': 'mpv',
                 'sox': 'intern-sox',
                 'wget': 'wget',
-                'x264': 'intern-x264'
+                'x264': 'intern-x264',
             },
             'smartmkvmerge': {
-                'x264_hd_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --weightp 0',
-                'x264_hq_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --aq-mode 2 --weightp 0',
-                'x264_mp4_string': '--force-cfr --trellis 0 --preset veryfast',
-                'ffmpeg_hd_x264_options': 'crf=23:deblock=-1/-1:psy-rd=1/0.15:direct=auto:force-cfr=1:b-adapt=2:rc-lookahead=60:weightp=0:aq-mode=2',
-                'ffmpeg_hq_x264_options': 'crf=23:deblock=-1/-1:psy-rd=1/0.15:direct=auto:force-cfr=1:b-adapt=2:rc-lookahead=60:weightp=0',
-                'ffmpeg_mp4_x264_options': 'crf=23:force-cfr=1:trellis=0',
-                'ffmpeg_avi_mpeg4_options': '-c:v mpeg4 -vtag DX50 -qscale:v 5 -g 300 -f avi',
                 'encoder_engine': 'ffmpeg',  # 'x264' or 'ffmpeg' possible
-                'workingdir': '',
+                'ffmpeg_avi_mpeg4_options': '-c:v mpeg4 -vtag DX50 -qscale:v 5 -g 300 -f avi',
+                'ffmpeg_hd_x264_options': 'crf=23:deblock=-1/-1:psy-rd=1/0.15:direct=auto:force-cfr=1:b-adapt=2:rc-lookahead=60:weightp=0:aq-mode=2',  # noqa: E501
+                'ffmpeg_hq_x264_options': 'crf=23:deblock=-1/-1:psy-rd=1/0.15:direct=auto:force-cfr=1:b-adapt=2:rc-lookahead=60:weightp=0',  # noqa: E501
+                'ffmpeg_mp4_x264_options': 'crf=23:force-cfr=1:trellis=0',
                 'first_audio_stream': 'originale MP3 Spur kopieren',
-                'second_audio_stream': 'originale AC3 Spur kopieren',
                 'normalize_audio': False,
                 'remux_to_mp4': False,
+                'second_audio_stream': 'originale AC3 Spur kopieren',
                 'single_threaded': False,
-                'single_threaded_automatic': True
+                'single_threaded_automatic': True,
+                'workingdir': '',
+                'x264_hd_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --weightp 0',
+                'x264_hq_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --aq-mode 2 --weightp 0',  # noqa: E501
+                'x264_mp4_string': '--force-cfr --trellis 0 --preset veryfast',
             }
         }
         # ~ 'x264_mp4_string': '--force-cfr --profile baseline --preset medium --trellis 0',
 
         self.app_name = 'otr-verwaltung3p'
 
-        version = open(path.getdatapath("VERSION"), 'r').read().strip()
+        version = open(otrvpath.getdatapath("VERSION"), 'r').read().strip()
         print(f"{self.app_name}, version {version}")
 
         if local:
             self.config = Config(os.path.join(launch_dir, "..", "conf"), configuration)
         else:
-            self.config = Config(path.get_config_dir("conf"), configuration)
+            self.config = Config(otrvpath.get_config_dir("conf"), configuration)
 
         self.__search_text = ""
         self.locked = False
 
         # regex
-        regex_uncut_video = (r'.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])'
-                             r'*_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|mp4|mkv|HQ\.mkv|HD\.mkv|'
-                             r'mp4\.mkv|HQ\.mp4|HD\.mp4)$')
-        self.regex_uncut_video = re.compile(regex_uncut_video)
+        self.regex_uncut_video = re.compile(r'.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])'
+                                            r'*_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|mp4|mkv|HQ\.mkv|HD\.mkv|'
+                                            r'mp4\.mkv|HQ\.mp4|HD\.mp4)$')
+
         # regex for the name schema should use cut videos just in case it has been muxed
         # into an mkv because of an ac3-track
-        regex_rename_video = (r'.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])*'
-                              r'_TVOON_DE.mpg(-cut\.avi|\.HQ-cut\.avi|\.HD-cut\.avi|-cut\.mp4|'
-                              r'\.HQ-cut\.mp4|\.HD-cut\.mp4|\.HD-cut\.mkv|\.HQ-cut\.mkv|-cut\.mkv)$')
-        self.regex_rename_video = re.compile(regex_rename_video)
+        self.regex_rename_video = re.compile(r'.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])*'
+                                             r'_TVOON_DE.mpg(-cut\.avi|\.HQ-cut\.avi|\.HD-cut\.avi|-cut\.mp4|'
+                                             r'\.HQ-cut\.mp4|\.HD-cut\.mp4|\.HD-cut\.mkv|\.HQ-cut\.mkv|-cut\.mkv)$')
+
         self.regex_cut_video = re.compile('.*(avi|mp4|mkv|wmv|ac3)$')
 
-        ## only for DirectoryMonitor
-        regex_otrkey = (r".*\.otrkey$")
-        self.regex_otrkey =re.compile(regex_otrkey)
+        self.regex_rec_date = re.compile(r".*(([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}).*")
+
+        # only for DirectoryMonitor
+        regex_otrkey = r".*\.otrkey$"
+        self.regex_otrkey = re.compile(regex_otrkey)
 
         self.config.load()
         # load gui
         self.__gui = gui.Gui(self)  # for backwards compability
         self.gui = self.__gui
-
-        # ~ self.config.load()
 
         if self.config.get('general', 'window_settings'):
             maximize, width, height = self.config.get('general', 'window_settings').split(',')
@@ -294,7 +297,7 @@ class App():
         # load downloads
         downloads = []
         try:
-            file = open(path.get_storage_dir("data"), 'r')
+            file = open(otrvpath.get_storage_dir("data"), 'r')
             downloads = json.loads(file.read())['downloads']
         except (IOError, ValueError):
             pass
@@ -305,7 +308,7 @@ class App():
             self.gui.main_window.treeview_download.add_objects(download)
 
             if self.config.get('downloader', 'resume_on_startup') and download.information['status'] in [
-                DownloadStatus.RUNNING, DownloadStatus.SEEDING]:
+                    DownloadStatus.RUNNING, DownloadStatus.SEEDING]:
                 download.start(force=True)
 
         # conclusions_manager
@@ -313,15 +316,15 @@ class App():
 
         # load plugins
         if local:
-            plugin_paths = [path.getdatapath('plugins')]
+            plugin_paths = [otrvpath.getdatapath('plugins')]
         else:
-            plugin_paths = path.get_plugin_paths()
+            plugin_paths = otrvpath.get_plugin_paths()
 
         self.plugin_system = PluginSystem(self, self.gui, plugin_paths, self.config.get('plugins', 'enabled'),
                                           self.config.get('plugins', 'config'))
 
         # Show Section VIDEO_UNCUT by default if path exists
-        if os.path.exists(os.path.join(path.get_config_dir("conf"))):
+        if os.path.exists(os.path.join(otrvpath.get_config_dir("conf"))):
             if os.path.exists(self.config.get('general', 'folder_uncut_avis')):
                 self.show_section(Section.VIDEO_UNCUT)
                 self.gui.main_window.treeview_files_grab()
@@ -394,36 +397,34 @@ class App():
 
             # put filenames into treestore
             for f in files:
-                # TODO: don't show files if in use
                 self.__append_row_treeview_files(None, f)
 
     # helper for different sections
     def __section_otrkey(self):
-        path = self.config.get('general', 'folder_new_otrkeys')
+        fpath = self.config.get('general', 'folder_new_otrkeys')
 
-        if path == "":
+        if fpath == "":
             return []
 
-        files = [join(path, f) for f in os.listdir(path) if f.endswith(".otrkey") and self.search(f)]
-        # ~ otrkeys = re.compile(r"\.otrkey")  # gcurse:DELETE_THIS
+        files = [join(fpath, f) for f in os.listdir(fpath) if f.endswith(".otrkey") and self.search(f)]
 
         return files
 
     def __section_video_uncut(self):
-        path = self.config.get('general', 'folder_uncut_avis')
-        files = [join(path, f) for f in os.listdir(path) if self.regex_uncut_video.match(f) and self.search(f)]
+        fpath = self.config.get('general', 'folder_uncut_avis')
+        files = [join(fpath, f) for f in os.listdir(fpath) if self.regex_uncut_video.match(f) and self.search(f)]
 
         return files
 
     def __section_video_cut(self):
-        path = self.config.get('general', 'folder_cut_avis')
+        fpath = self.config.get('general', 'folder_cut_avis')
 
         files = []
-        for f in os.listdir(path):
+        for f in os.listdir(fpath):
             if not self.regex_uncut_video.match(f):
                 if self.regex_cut_video.match(f):
                     if self.search(f):
-                        files += [join(path, f)]
+                        files += [join(fpath, f)]
 
         return files
 
@@ -432,7 +433,8 @@ class App():
         path_avis = self.config.get('general', 'folder_trash_avis')
 
         files = [join(path_otrkeys, f) for f in os.listdir(path_otrkeys) if f.endswith('.otrkey') and self.search(f)]
-        files += [join(path_avis, f) for f in os.listdir(path_avis) if self.regex_cut_video.match(f) and self.search(f)]
+        files += [join(path_avis, f) for f in os.listdir(path_avis)
+                  if self.regex_cut_video.match(f) and self.search(f)]
 
         return files
 
@@ -453,11 +455,11 @@ class App():
     def __section_archive(self):
         path = self.config.get('general', 'folder_archive')
 
-        self.__tree(None, path)
+        self.__tree(path=path)
 
     # recursive function for archive to add folders and files with a tree structure
     def __tree(self, parent=None, path=None):
-        if parent != None:
+        if parent is not None:
             dir = self.gui.main_window.treeview_files.get_model().get_value(parent, 0)
         else:  # base path (archive directory)
             dir = path
@@ -469,8 +471,8 @@ class App():
             full_path = join(dir, file)
 
             if isdir(full_path):
-                iter = self.__append_row_treeview_files(parent, full_path)
-                self.__tree(iter)
+                tree_iter = self.__append_row_treeview_files(parent, full_path)
+                self.__tree(tree_iter)
             else:
                 if self.regex_cut_video.match(file):
                     if self.search(file):
@@ -480,7 +482,7 @@ class App():
     ### Helpers
     ###
 
-    def rename_by_schema(self, filename, schema=""):
+    def rename_by_schema(self, filename, schema=''):
         """ Gibt den nach dem angegebenen Schema umbenannten Dateinamen zurück.
             Wird 'schema' leer gelassen, so wird das eingestellte Schema verwendet. """
 
@@ -549,21 +551,34 @@ class App():
         else:
             return filename
 
+    def get_file_record_date(self, filename, separator='_'):
+        f = os.path.basename(filename)
+        match = re.match(self.regex_rec_date, f)
+        if match:
+            if separator == "_":
+                return match.group(1)
+            else:
+                return match.group(1).replace('_', separator)
+        else:
+            return ""
+
     def __append_row_treeview_files(self, parent, filename):
         # gcurse:LOCK
         unlocked = True
         if filename in self.filenames_locked:
             unlocked = False
-        iter = self.gui.main_window.append_row_files(parent, filename, fileoperations.get_size(filename),
-                                                     fileoperations.get_date(filename), isdir(filename), unlocked)
-        return iter
+        iter_f = self.gui.main_window.append_row_files(parent, filename,
+                                                       self.get_file_record_date(os.path.basename(filename), ' '),
+                                                       fileoperations.get_size(filename),
+                                                       fileoperations.get_date(filename), isdir(filename), unlocked)
+        return iter_f
 
     ###
     ### Search
     ###
 
     def start_search(self, search):
-        """ #FIXME """
+        # FIXME doc-string
 
         self.__search_text = search.lower()
 
@@ -595,13 +610,13 @@ class App():
         return counts
 
     def stop_search(self):
-        """ #FIXME """
+        # FIXME doc-string
 
         self.__search_text = ""
         self.show_section(self.section)
 
     def search(self, f):
-        """ #FIXME """
+        # FIXME doc-string
 
         if self.__search_text == "":
             return True
@@ -733,13 +748,11 @@ class App():
             if shutil.which(prog):
                 cmdfound = True
                 if not subprocess.call(prog, stdin=subprocess.PIPE,
-                                             stdout=subprocess.DEVNULL,
-                                             stderr=subprocess.STDOUT):
+                                       stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT):
                     plays = True
                 else:
                     self.log.error(f"{prog} failed to start.")
             else:
-                exist = False
                 self.log.error(f"{prog} is not installed.")
             return cmdfound and plays
 
@@ -754,17 +767,23 @@ class App():
                         [self.config.get_program('mplayer'), "-geometry", "50%:50%", "-osdlevel", "3", "-edl", f_edl,
                          "-sub", f_sub, video_filename])
             elif prog == 'mpv':
-                mpv_vol = 100.0; mpv_vol_max = 130.0
-                if self.config.get('general', 'vol_adjust_on'):
-                    mpv_vol_max = self.config.get('general', 'mpv_vol_max')
-                    vol_adjust = re.findall("[a-z.0-9,]+", self.config.get('general', 'vol_adjust'))
-                    if vol_adjust:
-                        # get station name from video filename
-                        parts = video_filename.split('_'); parts.reverse(); station = parts[3]
-                        for adj in vol_adjust:
-                            if adj.split(",")[0].lower() in station:
-                                mpv_vol = adj.split(",")[2]
-                                break
+                try:
+                    mpv_vol = 100.0
+                    mpv_vol_max = 130.0
+                    if self.config.get('general', 'vol_adjust_on'):
+                        mpv_vol_max = self.config.get('general', 'mpv_vol_max')
+                        vol_adjust = re.findall("[a-z.0-9,]+", self.config.get('general', 'vol_adjust'))
+                        if vol_adjust:
+                            # get station name from video filename
+                            parts = video_filename.split('_')
+                            parts.reverse()
+                            station = parts[3]
+                            for adj in vol_adjust:
+                                if adj.split(",")[0].lower() in station:
+                                    mpv_vol = adj.split(",")[2]
+                                    break
+                except IndexError:
+                    pass
                 mpv_args = [self.config.get_program('mpv')]
                 if self.config.get('general', 'mplayer_fullscreen'):
                     mpv_args.append("--fullscreen")
@@ -791,7 +810,7 @@ class App():
             return
 
         # wait
-        while self.p.poll() == None:
+        while self.p.poll() is None:
             time.sleep(1)
             while Gtk.events_pending():
                 Gtk.main_iteration()
@@ -802,7 +821,7 @@ class App():
         fileoperations.remove_file(f_mpv_sub)
 
     def show_cuts(self, video_filename, cutlist):
-        """ #FIXME """
+        # FIXME doc-string
 
         def edl_subtitles_cb(f_edl, f_mpv_edl, f_sub, f_mpv_sub, cuts):
             diff = self.config.get('general', 'pre_cut_show')
@@ -828,30 +847,30 @@ class App():
                     for second in range(diff):
                         sub_count += 1
                         f_sub.write("%s\n" % sub_count)
-                        f_sub.write("%s --> %s\n" % (
-                        self.format_seconds(start - diff + second), self.format_seconds(start - diff + second + 1)))
+                        f_sub.write("%s --> %s\n" % (self.format_seconds(start - diff + second),
+                                                     self.format_seconds(start - diff + second + 1)))
                         f_sub.write("Sendung beginnt in %s Sekunden...\n\n" % str(diff - second))
                 else:
                     for second in range(diff):
                         sub_count += 1
                         f_sub.write("%s\n" % sub_count)
-                        f_sub.write("%s --> %s\n" % (
-                        self.format_seconds(start - diff + second), self.format_seconds(start - diff + second + 1)))
+                        f_sub.write("%s --> %s\n" % (self.format_seconds(start - diff + second),
+                                                     self.format_seconds(start - diff + second + 1)))
                         f_sub.write("Werbung #%i endet in %s Sekunden...\n\n" % (count, str(diff - second)))
 
                 if count == (len(cuts) - 1):
                     for second in range(diff):
                         sub_count += 1
                         f_sub.write("%s\n" % sub_count)
-                        f_sub.write("%s --> %s\n" % (
-                        self.format_seconds(end - diff + second), self.format_seconds(end - diff + second + 1)))
+                        f_sub.write("%s --> %s\n" % (self.format_seconds(end - diff + second),
+                                                     self.format_seconds(end - diff + second + 1)))
                         f_sub.write("Sendung endet in %s Sekunden...\n\n" % str(diff - second))
                 else:
                     for second in range(diff):
                         sub_count += 1
                         f_sub.write("%s\n" % sub_count)
-                        f_sub.write("%s --> %s\n" % (
-                        self.format_seconds(end - diff + second), self.format_seconds(end - diff + second + 1)))
+                        f_sub.write("%s --> %s\n" % (self.format_seconds(end - diff + second),
+                                                     self.format_seconds(end - diff + second + 1)))
                         f_sub.write("Werbung #%i beginnt in %s Sekunden...\n\n" % (count + 1, str(diff - second)))
 
                 # mpv_sub
@@ -873,7 +892,7 @@ class App():
         self.__show(cutlist.cuts_seconds, video_filename, edl_subtitles_cb)
 
     def show_cuts_after_cut(self, video_filename, cutlist):
-        """ #FIXME """
+        # FIXME doc-string
 
         def edl_subtitles_cb(f_edl, f_mpv_edl, f_sub, f_mpv_sub, cuts):
             diff = self.config.get('general', 'pre_cut_show')
@@ -896,8 +915,8 @@ class App():
                 for second in range(diff):
                     sub_count += 1
                     f_sub.write("%s\n" % sub_count)
-                    f_sub.write("%s --> %s\n" % (
-                    self.format_seconds(length - diff + second), self.format_seconds(length - diff + second + 1)))
+                    f_sub.write("%s --> %s\n" % (self.format_seconds(length - diff + second),
+                                                 self.format_seconds(length - diff + second + 1)))
                     f_mpv_sub.write("%s\n" % sub_count)
                     f_mpv_sub.write("%s --> %s\n" % (self.format_seconds((diff + pre_diff) * count + diff + second),
                                                      self.format_seconds(
@@ -918,7 +937,7 @@ class App():
         self.__show(cutlist.cuts_seconds, video_filename, edl_subtitles_cb)
 
     def format_seconds(self, seconds):
-        """ #FIXME """
+        # FIXME doc-string
 
         hrs = seconds / 3600
         leftover = seconds % 3600
@@ -929,7 +948,7 @@ class App():
         return "%02d:%02d:%02d,%03d" % (hrs, mins, secs, ms)
 
     def run(self, link=None):
-        """ #FIXME """
+        # FIXME doc-string
 
         self.gui.main_window.show()
         if not os.path.exists(self.config.get_config_file_path()):
@@ -944,8 +963,7 @@ class App():
 
             if self.config.get('general', 'email') == "":
                 errstr = errstr + '- setze eine E-Mail-Adresse für den OTR-Account\n'
-            if self.config.get('general', 'password') == "" and not \
-                            self.config.get('general', 'passwd_store') == 2:
+            if self.config.get('general', 'password') == "" and not self.config.get('general', 'passwd_store') == 2:
                 errstr = errstr + '- setze ein Passwort für den OTR-Account (optional)\n'
             if not os.path.exists(self.config.get('general', 'folder_new_otrkeys')):
                 errstr = errstr + '- definiere einen Ordner für .otrkey Dateien\n'
@@ -960,11 +978,18 @@ class App():
             if not os.path.exists(self.config.get('general', 'folder_trash_otrkeys')):
                 errstr = errstr + '- definiere einen "Müll"-Ordner für .otrkey Dateien\n'
 
-            if errstr != '':
-                self.gui.message_info_box('Es müssen noch ein paar wichtige Einstellungen ' + \
-                                'vorgenommen werden.\n\n' + errstr + "\nKlicken Sie dazu auf OK.")
-                self.gui.preferences_window.show()
+            errstr = self.check_program_paths(error_str=errstr)
 
+            if errstr != '':
+                if "Kritisch" in errstr:
+                    self.gui.message_info_box(f"<span color='yellow'>{errstr}</span>\n"
+                                              "Bitte installieren Sie das/die Programm(e).\n\n"
+                                              "OTR-Verwaltung3p muss beendet werden.")
+                    sys.exit(1)
+                else:
+                    self.gui.message_info_box("Es müssen noch ein paar wichtige Einstellungen vorgenommen werden.\n\n"
+                                              f"{errstr}\nKlicken Sie dazu auf OK.")
+                    self.gui.preferences_window.show()
 
         if link:
             self.add_download_link(link)
@@ -977,10 +1002,10 @@ class App():
             downloads.append(row[0].to_json())
 
         try:
-            file = open(path.get_storage_dir("data"), 'w')
+            file = open(otrvpath.get_storage_dir("data"), 'w')
             file.write(json.dumps({'downloads': downloads}))
             file.close()
-        except IOError as message:
+        except IOError:
             pass
 
         # kill downloads
@@ -1000,38 +1025,40 @@ class App():
         settings = ','.join([maximized, width, height])
         self.config.set('general', 'window_settings', settings)
 
-
     def add_download_link(self, link):
         action = actions.get_action(Action.DOWNLOAD_ADD_LINK, self, self.gui)
         action.do(link)
 
-
-# ~ class OTRVerwaltungService(dbus.service.Object):
-    # ~ def __init__(self, app):
-        # ~ self.app = app
-        # ~ bus_name = dbus.service.BusName('elbersb.otrverwaltung3p', bus=dbus.SessionBus())
-        # ~ dbus.service.Object.__init__(self, bus_name, '/elbersb/otrverwaltung3p')
-
-    # ~ @dbus.service.method(dbus_interface='elbersb.otrverwaltung3p')
-    # ~ def show_window(self):
-        # ~ self.app.gui.main_window.present()
-
-    # ~ @dbus.service.method(dbus_interface='elbersb.otrverwaltung3p')
-    # ~ def add_link(self, link):
-        # ~ self.app.add_download_link(link)
+    def check_program_paths(self, error_str=None):
+        progs = ["ffmpeg", "ffprobe", "ffmsindex", "mediainfo", "mkvmerge", "mpv"]
+        fatal = False
+        for prog in progs:
+            if not os.path.exists(self.config.get_program(prog)):
+                prog_path = shutil.which(prog)
+                if prog_path:
+                    self.config.set('programs', prog, prog_path)
+                else:
+                    if isinstance(error_str, str):
+                        if prog in ['mediainfo', 'mkvmerge']:
+                            error_str = error_str + f"- setzen Sie einen gültigen Pfad zu dem Programm {prog}\n"
+                        else:
+                            if fatal:
+                                error_str = error_str + f"Kritischer Fehler: '{prog}' konnte nicht gefunden werden.\n"
+                            else:
+                                error_str = f"Kritischer Fehler: '{prog}' konnte nicht gefunden werden.\n"
+                                fatal = True
+        if isinstance(error_str, str):
+            return error_str
 
 
 if __name__ == "__main__":
-    # Set up a dbus mainloop
-    # ~ dbus_loop = DBusGMainLoop(set_as_default=True)
-    # ~ if dbus.SessionBus().request_name("elbersb.otrverwaltung3p") != dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER:
-        # ~ log.warning("OTR-Verwaltung läuft bereits. Zeige Fenster.")
-        # ~ dbus.SessionBus().get_object("elbersb.otrverwaltung3p", "/elbersb/otrverwaltung3p").get_dbus_method("show_window")()
-        # ~ if link:
-            # ~ dbus.SessionBus().get_object("elbersb.otrverwaltung3p", "/elbersb/otrverwaltung3p").get_dbus_method("add_link")(
-                # ~ link)
-    # ~ else:
-    app = App()
-    # ~ service = OTRVerwaltungService(app)
-    app.run(link)
-    app.config.save()
+    if not sys.stdout.isatty():
+        with open(Path.joinpath(Path(tempfile.gettempdir()), "otr-verwaltung.log"), 'w') as f:
+            sys.stdout = f
+            app = App()
+            app.run(link)
+            app.config.save()
+    else:
+        app = App()
+        app.run(link)
+        app.config.save()

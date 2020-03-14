@@ -18,8 +18,6 @@ import subprocess
 import re
 import time
 import os.path
-import base64
-import hashlib
 import urllib.request as request
 
 from otrverwaltung3p.GeneratorTask import GeneratorTask
@@ -27,7 +25,6 @@ from otrverwaltung3p.cutlists import Cutlist
 from otrverwaltung3p.conclusions import FileConclusion
 from otrverwaltung3p.constants import DownloadStatus, DownloadTypes, Action, Cut_action, Status
 from otrverwaltung3p import fileoperations
-from otrverwaltung3p import path
 
 
 class Download:
@@ -123,22 +120,20 @@ class Download:
     def _check_file_with_torrent(self):
         """ checks file with torrent """
         torrent_url = 'http://81.95.11.2/torrents/' + self.filename + '.torrent'
-        torrent_command = [self._config.get_program('aria2c')] + self._config.get('downloader',
-                                                                                  'aria2c_opts_torrent') + ["-d",
-                                                                                                            self.information[
-                                                                                                                'output'],
-                                                                                                            '--check-integrity=true',
-                                                                                                            '--continue',
-                                                                                                            '--bt-enable-lpd=false',
-                                                                                                            '--bt-exclude-tracker="*"',
-                                                                                                            '--enable-dht=false',
-                                                                                                            '--enable-dht6=false',
-                                                                                                            '--enable-peer-exchange=false',
-                                                                                                            '--bt-hash-check-seed=false',
-                                                                                                            '--bt-stop-timeout=1',
-                                                                                                            '--seed-time=0',
-                                                                                                            '--follow-torrent=mem',
-                                                                                                            torrent_url]
+        torrent_command = [self._config.get_program('aria2c')] + \
+            self._config.get('downloader', 'aria2c_opts_torrent') + ["-d", self.information['output'],
+                                                                     '--check-integrity=true',
+                                                                     '--continue',
+                                                                     '--bt-enable-lpd=false',
+                                                                     '--bt-exclude-tracker="*"',
+                                                                     '--enable-dht=false',
+                                                                     '--enable-dht6=false',
+                                                                     '--enable-peer-exchange=false',
+                                                                     '--bt-hash-check-seed=false',
+                                                                     '--bt-stop-timeout=1',
+                                                                     '--seed-time=0',
+                                                                     '--follow-torrent=mem',
+                                                                     torrent_url]
 
         # Checking
         try:

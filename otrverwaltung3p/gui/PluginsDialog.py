@@ -15,11 +15,10 @@
 # END LICENSE
 
 import gi
-
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf
 
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 
 
 class PluginsDialog(Gtk.Dialog, Gtk.Buildable):
@@ -35,7 +34,7 @@ class PluginsDialog(Gtk.Dialog, Gtk.Buildable):
 
         self.builder.get_object('treeview_plugins').get_selection().connect('changed', self._on_selection_changed)
 
-    def _run(self):
+    def run_(self):
         self.builder.get_object('liststore_plugins').clear()
 
         for name, plugin in self.gui.app.plugin_system.plugins.items():
@@ -77,7 +76,7 @@ class PluginsDialog(Gtk.Dialog, Gtk.Buildable):
         dialog = Gtk.Dialog(store.get_value(iter, 1) + " - Einstellungen", parent=self, flags=Gtk.DialogFlags.MODAL,
                             buttons=(Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE))
         dialog.set_border_width(2)
-        dialog.set_icon(GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('icon.png')))
+        dialog.set_icon(GdkPixbuf.Pixbuf.new_from_file(otrvpath.get_image_path('icon.png')))
 
         dialog = self.gui.app.plugin_system.plugins[name].configurate(dialog)
 
@@ -87,7 +86,7 @@ class PluginsDialog(Gtk.Dialog, Gtk.Buildable):
 
 
 def NewPluginsDialog(gui):
-    glade_filename = path.getdatapath('ui', 'PluginsDialog.glade')
+    glade_filename = otrvpath.getdatapath('ui', 'PluginsDialog.glade')
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)

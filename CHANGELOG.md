@@ -1,6 +1,15 @@
 #### 1.0.0b3, 2020-03-04
 
-* Files that are processed are now locked in the file treeview
+* MainWindow:
+  - New keyboard shortcut Ctrl-f to focus search widget
+* Cutinterface: If there is only one cutlist available, it is automatically
+  chosen
+  - Two new forward/backward seek buttons, seek distance is now based
+    on seconds and can be defined in the settings
+* Text snippets can be stored and appended or prepended to the cutlist comment
+  with one click (Prefernces/ConclusionDialog)
+* New column in treeview: "Aufnahmedatum"
+* Files that are processed are now locked in the file-treeview
 * The file treeviews are automatically updated by directory monitors when
   changes occur
 * User is warned when trying to close the ConclusionDialog and not all cut
@@ -14,7 +23,7 @@
 * Default usercomment is now editable
 * PreferencesWindow:
   - Speicherorte: Paths are manually editable, new FileChooserDialog-Button
-  - Most help texts are tooltips now
+  - Help texts are tooltips now
 
 #### 1.0.0-beta002, 2020-02-03
 

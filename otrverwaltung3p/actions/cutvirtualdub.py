@@ -26,7 +26,6 @@ import time
 
 from otrverwaltung3p.actions.cut import Cut
 from otrverwaltung3p.constants import Action, Cut_action, Status, Format, Program
-from otrverwaltung3p import path
 from otrverwaltung3p import codec
 from otrverwaltung3p import fileoperations
 

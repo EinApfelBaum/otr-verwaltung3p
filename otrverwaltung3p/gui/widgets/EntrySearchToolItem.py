@@ -99,5 +99,5 @@ class EntrySearchToolItem(Gtk.ToolItem):
     def on_entry_key_pressed(self, w, ev):
         """ Clear on escape. """
         if ev.keyval == Gdk.keyval_from_name("Escape") and len(self.entry.get_text()) > 0:
-            self.emit("Gtk")
+            self.emit("clear")
             return True

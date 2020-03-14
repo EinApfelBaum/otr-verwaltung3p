@@ -21,14 +21,13 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 import subprocess
-import time
 import re
 import os
 
 from otrverwaltung3p.GeneratorTask import GeneratorTask
 from otrverwaltung3p.pluginsystem import Plugin
 from otrverwaltung3p import fileoperations
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p.constants import Section
 from otrverwaltung3p.actions.cut import Cut
 
@@ -371,13 +370,13 @@ class Mkv(Plugin):
 
         try:
             process1 = subprocess.Popen(
-                [path.get_tools_path('intern-ffmpeg'), '-loglevel', 'quiet', '-i', filename, '-f', 'sox', '-'],
+                [otrvpath.get_tools_path('intern-ffmpeg'), '-loglevel', 'quiet', '-i', filename, '-f', 'sox', '-'],
                 stdout=subprocess.PIPE)
         except OSError:
             return "1.0", "FFMPEG wurde nicht gefunden!"
 
         try:
-            process2 = subprocess.Popen([path.get_tools_path('intern-sox'), '-p', '--null', 'stat', '-v'],
+            process2 = subprocess.Popen([otrvpath.get_tools_path('intern-sox'), '-p', '--null', 'stat', '-v'],
                                         stdin=process1.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except OSError:
             return "1.0", "SOX wurde nicht gefunden!"

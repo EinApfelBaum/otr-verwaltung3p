@@ -14,20 +14,22 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
+import logging
+import os
+import re
+
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Pango, Gdk
-# import os.path
-import os, re
-import logging
 
+from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p.constants import Action, Status, Cut_action
 from otrverwaltung3p.gui.widgets.FolderChooserComboBox import FolderChooserComboBox
-from otrverwaltung3p import path
 
 replacements = {"Ä": "Ae", "ä": "ae", "Ö": "Oe", "ö": "oe", "Ü": "Ue",
                 "ü": "ue", "ß": "ss"}
 fileextensions = ['.avi', '.mp4', '.mkv']
+
 
 class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     """ The dialog is organized in boxes:
@@ -52,8 +54,18 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     def __init__(self):
         Gtk.Dialog.__init__(self)
         self.log = logging.getLogger(self.__class__.__name__)
-        self.widget_entry_suggested = None
         self.connect('key-press-event', self._do_keypress_event)
+
+        self.__file_conclusions = None
+        self.__file_conclusions_count = 0
+        self.all_file_conclusions_seen = False
+        self.builder = None
+        self.combobox_archive = None
+        self.conclusion_iter = None
+        self.file_conclusion = None
+        self.forward_clicks = 1
+        self.rename_by_schema = False
+        self.widget_entry_suggested = None
 
     def obj(self, obj_name):
         return self.builder.get_object(obj_name)
@@ -76,7 +88,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
 
     # Convenience
 
-    def _run(self, file_conclusions, rename_by_schema, archive_directory):
+    def run_(self, file_conclusions, rename_by_schema, archive_directory):
         self.app.filenames_locked = []
         self.rename_by_schema = rename_by_schema
         self.__file_conclusions = file_conclusions
@@ -114,7 +126,6 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         if message:
             if status == Status.ERROR:
                 message = "<b>%s</b>" % message
-
             string += ": %s" % message
 
         return string
@@ -138,7 +149,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                     self.obj('entry_suggested').set_text(edit_fname)
 
     ###
-    ### Controls
+    # Controls
     ###
 
     def _on_button_back_clicked(self, widget, data=None):
@@ -171,7 +182,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         if os.path.isfile(self.file_conclusion.cut_video):
             os.remove(self.file_conclusion.cut_video)
 
-    def _on_buttonConclusionClose_clicked(self, widget, data=None):
+    def _on_button_conclusion_close_clicked(self, widget, data=None):
         # TODO gcurse:WARN_NOT_ALL_SEEN
         if self.all_file_conclusions_seen:
             self.set_entry_suggested_on_close()
@@ -199,7 +210,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
             self.obj('box_buttons').show()  # hide all except play button
             widgets_hidden = ['image_cut', 'label_cut', 'label_cut_status', 'button_play_cut',
                               'box_rating', 'check_delete_uncut', 'box_rename', 'box_archive',
-                              'hbox_replace']
+                              'hbox_replace', ]
         elif action == Action.CUT:
             widgets_hidden = ['image_decode', 'label_decode', 'label_decode_status']
 
@@ -213,6 +224,13 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         self.obj('button_abort').set_sensitive(action == Action.CUT
                                                or action == Action.DECODEANDCUT
                                                and self.file_conclusion.cut.status == Status.OK)
+
+        # Fill cboxtext_snippets
+        snippets = self.app.config.get('general', 'snippets')
+        self.obj('cboxtext_snippets').remove_all()
+        for snippet in snippets.split('\n'):
+            self.obj('cboxtext_snippets').append_text(snippet)
+        self.obj('cboxtext_snippets').set_active(0)
 
         # status message
         if action != Action.DECODE:
@@ -287,8 +305,8 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                         rename_list_index += 1
                         rename_list_entries['sugg_fname'] = rename_list_index
                         # ~ rename_label = self.obj('label5')
-                        ## set background of label 'Umbenennen' to yellow to indicate there is
-                        ## a suggested filename in cutlist. Set font color to black
+                        # set background of label 'Umbenennen' to yellow to indicate there is
+                        # a suggested filename in cutlist. Set font color to black
                         # ~ rename_label.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(100, 100, 0, 0.8))
                         # ~ rename_label.override_color(Gtk.StateType.NORMAL, Gdk.RGBA(0, 0, 0, 1.0))
 
@@ -300,7 +318,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                     rename_list_entries['edit_fname'] = rename_list_index
 
                 self.obj('comboboxentry_rename').remove_all()
-                self.gui.set_model_from_list(self.obj('comboboxentry_rename'), rename_list)
+                self.app.gui.set_model_from_list(self.obj('comboboxentry_rename'), rename_list)
                 # set active row
                 if 'edit_fname' in rename_list_entries:
                     self.obj('comboboxentry_rename').set_active(rename_list_entries['edit_fname'])
@@ -360,25 +378,19 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
             self.obj('button_play').props.visible = (self.file_conclusion.decode.status == Status.OK)
 
         # Reset cursor of MainWindow
-        self.gui.main_window.get_window().set_cursor(None)
+        self.app.gui.main_window.get_window().set_cursor(None)
 
     ###
-    ### Signals handlers
+    # Signals handlers
     ###
 
-    # box_buttons
-
-    def _do_keypress_event(self, widget, event, *args):
+    @staticmethod
+    def _do_keypress_event(widget, event, *args):
         keyname = Gdk.keyval_name(event.keyval).upper()
         if event.type == Gdk.EventType.KEY_PRESS:
             if keyname == 'ESCAPE':
-                ret_val = True
-            else:
-                ret_val = False
-        return ret_val
-
-    def _on_conclusion_dialog_response(self, widget, response_id, *args):
-        pass
+                return True
+        return False
 
     def _on_button_play_clicked(self, widget, data=None):
         if self.file_conclusion.action == Action.DECODE or (self.file_conclusion.action == Action.DECODEANDCUT
@@ -474,13 +486,26 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         self.log.info("cut.cutlist.usercomment = {}".format(widget.get_text()))
         self.file_conclusion.cut.cutlist.usercomment = widget.get_text()
 
-def NewConclusionDialog(app, gui):
-    glade_filename = path.getdatapath('ui', 'ConclusionDialog.glade')
+    def _on_btn_prepend_clicked(self, entry_comment):
+        text = self.obj('cboxtext_snippets').get_active_text()
+        comment = entry_comment.get_text()
+        comment = text + comment
+        entry_comment.set_text(comment)
+
+    def _on_btn_append_clicked(self, entry_comment):
+        text = self.obj('cboxtext_snippets').get_active_text()
+        comment = entry_comment.get_text()
+        comment = comment + text
+        entry_comment.set_text(comment)
+
+
+def NewConclusionDialog(app):
+    glade_filename = otrvpath.getdatapath('ui', 'ConclusionDialog.glade')
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)
     dialog = builder.get_object("conclusion_dialog")
     dialog.app = app
-    dialog.gui = gui
+    # dialog.gui = gui
 
     return dialog

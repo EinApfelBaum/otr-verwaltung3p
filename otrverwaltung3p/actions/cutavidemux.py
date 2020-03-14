@@ -28,8 +28,7 @@ import time
 import re
 
 from otrverwaltung3p.actions.cut import Cut
-from otrverwaltung3p.constants import Action, Cut_action, Status, Format, Program
-from otrverwaltung3p import path
+from otrverwaltung3p.constants import Format
 from otrverwaltung3p import fileoperations
 
 
@@ -222,7 +221,7 @@ class CutAvidemux(Cut):
 
         self.gui.main_window.set_tasks_progress(50)
 
-        while avidemux.poll() == None:
+        while avidemux.poll() is None:
             time.sleep(1)
             #            TODO: make it happen
             #            line = avidemux.stderr.readline()

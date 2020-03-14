@@ -14,11 +14,10 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##END LICENSE
 
-import gi
-
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
-import re
+# import gi
+# gi.require_version('Gtk', '3.0')
+# from gi.repository import Gtk
+# import re
 import os
 import subprocess
 import logging
@@ -26,7 +25,6 @@ import tempfile
 
 from otrverwaltung3p.actions.cut import Cut
 from otrverwaltung3p.constants import Format
-from otrverwaltung3p import path
 
 
 class CutSmartMkvmerge(Cut):
