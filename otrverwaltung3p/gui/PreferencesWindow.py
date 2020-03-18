@@ -59,7 +59,8 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                                         'entry_prog_ffmsindex': 'Öffne ffmsindex',
                                         'entry_prog_mediainfo': 'Öffne mediainfo',
                                         'entry_prog_mkvmerge': 'Öffne mkvmerge',
-                                        'entry_prog_mpv': 'Öffne mpv'}
+                                        'entry_prog_mpv': 'Öffne mpv',
+                                        'entry_prog_decoder': 'Öffne otrdecoder'}
         self.last_path = None
 
     def do_parser_finished(self, builder):
@@ -73,12 +74,12 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         # If stored decoder is not in the standard list (see PreferenceWindow.glade)
         # it will be prepended and set as active entry.
         entry_list = []
-        for row in self.obj('entry_decoder').get_model():
+        for row in self.obj('entry_prog_decoder').get_model():
             entry_list.append(row[0])
         decoder_value = self.app.config.get('programs', 'decoder')
         if decoder_value not in entry_list:
-            self.obj('entry_decoder').prepend(decoder_value, decoder_value)
-            self.obj('entry_decoder').set_active(0)
+            self.obj('entry_prog_decoder').prepend(decoder_value, decoder_value)
+            self.obj('entry_prog_decoder').set_active(0)
 
         # 1 Speicherorte
         for folder in ['folder_new_otrkeys', 'folder_uncut_avis', 'folder_cut_avis', 'folder_trash_otrkeys',
@@ -86,7 +87,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             EntryBinding(self.obj('entry_' + folder), self.app.config, 'general', folder)
 
         # 2 OTR-Einstellungen
-        ComboBoxEntryBinding(self.obj('entry_decoder'), self.app.config, 'programs', 'decoder')
+        ComboBoxEntryBinding(self.obj('entry_prog_decoder'), self.app.config, 'programs', 'decoder')
         CheckButtonBinding(self.obj('check_verify_decoded'), self.app.config, 'general', 'verify_decoded')
         EntryBinding(self.obj('entry_email'), self.app.config, 'general', 'email')
         EntryBinding(self.obj('entry_password'), self.app.config, 'general', 'password')
@@ -278,8 +279,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
 
         chooser.destroy()
 
-    def _on_entry_decoder_changed(self, widget, data=None):
-        self.log.debug("Function start")
+    def _on_entry_prog_decoder_changed(self, widget, data=None):
         if 'otrtool' in widget.get_active_text():
             self.obj('check_verify_decoded').set_sensitive(False)
         else:

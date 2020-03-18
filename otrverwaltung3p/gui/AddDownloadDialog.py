@@ -8,15 +8,13 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf
 # import urllib, urllib2
-import urllib.request as request
-import requests
-import re
-import subprocess
-import base64
-import os
-## del_libtorrent ->
+# import urllib.request as request
+# import requests
+# import re
+# import subprocess
+# import base64
+# import os
 # ~ import libtorrent as lt
-## <- del_libtorrent
 
 from otrverwaltung3p.GeneratorTask import GeneratorTask
 from otrverwaltung3p import cutlists

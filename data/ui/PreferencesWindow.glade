@@ -503,7 +503,7 @@ Hier muss auch dann ein bestehender Ordner angegeben werden,  wenn die Archivier
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
-                          <object class="GtkComboBoxText" id="entry_decoder">
+                          <object class="GtkComboBoxText" id="entry_prog_decoder">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <items>
@@ -511,7 +511,7 @@ Hier muss auch dann ein bestehender Ordner angegeben werden,  wenn die Archivier
                               <item id="intern-easydecoder" translatable="yes">intern-easydecoder</item>
                               <item id="otrtool" translatable="yes">otrtool</item>
                             </items>
-                            <signal name="changed" handler="_on_entry_decoder_changed" swapped="no"/>
+                            <signal name="changed" handler="_on_entry_prog_decoder_changed" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -525,7 +525,7 @@ Hier muss auch dann ein bestehender Ordner angegeben werden,  wenn die Archivier
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_decoder" swapped="no"/>
+                            <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_prog_decoder" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
