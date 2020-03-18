@@ -14,16 +14,6 @@
     <property name="can_focus">False</property>
     <property name="pixbuf">../media/play.png</property>
   </object>
-  <object class="GtkImage" id="image5">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">../media/play.png</property>
-  </object>
-  <object class="GtkImage" id="image6">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">../media/play.png</property>
-  </object>
   <object class="GtkListStore" id="liststore_ratings">
     <columns>
       <!-- column-name rating_text -->
@@ -94,11 +84,11 @@
                 <property name="can_focus">False</property>
                 <child>
                   <object class="GtkButton" id="button_abort">
-                    <property name="label">Schnitt abbrechen</property>
+                    <property name="label">Schnitt _abbrechen</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_stock">True</property>
+                    <property name="use_underline">True</property>
                     <signal name="clicked" handler="_on_button_abort_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -151,6 +141,7 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="use_stock">True</property>
+                    <property name="image_position">right</property>
                     <signal name="clicked" handler="_on_button_forward_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -353,11 +344,11 @@
                 <property name="can_focus">False</property>
                 <child>
                   <object class="GtkButton" id="button_play_cut">
-                    <property name="label" translatable="yes">Schnitte anspielen</property>
+                    <property name="label" translatable="yes">_Schnitte anspielen</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="image">image6</property>
+                    <property name="use_underline">True</property>
                     <signal name="clicked" handler="_on_button_conclusion_play_cut_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -411,12 +402,12 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="button_play">
-                    <property name="label" translatable="yes">Abspielen</property>
+                    <property name="label" translatable="yes">A_bspielen</property>
                     <property name="width_request">111</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="image">image5</property>
+                    <property name="use_underline">True</property>
                     <signal name="clicked" handler="_on_button_play_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -530,11 +521,12 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="button_spaces">
-                        <property name="label" translatable="yes">Leerzeichen</property>
+                        <property name="label" translatable="yes">_Leerzeichen</property>
                         <property name="name">button_underscore</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="use_underline">True</property>
                         <signal name="clicked" handler="_on_button_spaces_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -545,10 +537,11 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="button_umlauts">
-                        <property name="label" translatable="yes">Umlaute</property>
+                        <property name="label" translatable="yes">U_mlaute</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="use_underline">True</property>
                         <signal name="clicked" handler="_on_button_umlauts_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -578,11 +571,12 @@
             </child>
             <child>
               <object class="GtkCheckButton" id="check_delete_uncut">
-                <property name="label" translatable="yes">Ungeschnittene Datei in den Müll verschieben</property>
+                <property name="label" translatable="yes">_Ungeschnittene Datei in den Müll verschieben</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
                 <property name="halign">start</property>
+                <property name="use_underline">True</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
                 <signal name="toggled" handler="_on_check_delete_uncut_toggled" swapped="no"/>
@@ -615,11 +609,12 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkCheckButton" id="check_create_cutlist">
-                        <property name="label" translatable="yes">Cutlist erstellen</property>
+                        <property name="label" translatable="yes">Cutlist _erstellen</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="halign">start</property>
+                        <property name="use_underline">True</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="_on_check_create_cutlist_toggled" swapped="no"/>
                       </object>
@@ -631,11 +626,12 @@
                     </child>
                     <child>
                       <object class="GtkCheckButton" id="check_upload_cutlist">
-                        <property name="label" translatable="yes">Cutlist hochladen</property>
+                        <property name="label" translatable="yes">Cutlist _hochladen</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="halign">start</property>
+                        <property name="use_underline">True</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="_on_check_upload_cutlist_toggled" swapped="no"/>
                       </object>
@@ -759,10 +755,11 @@
                             </child>
                             <child>
                               <object class="GtkButton" id="btn_prepend">
-                                <property name="label" translatable="yes">Vorn</property>
+                                <property name="label" translatable="yes">_Vorn</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="use_underline">True</property>
                                 <signal name="clicked" handler="_on_btn_prepend_clicked" object="entry_comment" swapped="no"/>
                               </object>
                               <packing>
@@ -773,10 +770,11 @@
                             </child>
                             <child>
                               <object class="GtkButton" id="btn_append">
-                                <property name="label" translatable="yes">Hinten</property>
+                                <property name="label" translatable="yes">H_inten</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <property name="use_underline">True</property>
                                 <signal name="clicked" handler="_on_btn_append_clicked" object="entry_comment" swapped="no"/>
                               </object>
                               <packing>

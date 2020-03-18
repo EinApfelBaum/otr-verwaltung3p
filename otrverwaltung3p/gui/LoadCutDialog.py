@@ -17,7 +17,7 @@
 import gi
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 import os, re, logging
 
 from otrverwaltung3p.constants import Cut_action
@@ -36,18 +36,21 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
     def __init__(self):
         Gtk.Dialog.__init__(self)
         self.log = logging.getLogger(self.__class__.__name__)
-        self.download_error = False
+        self.builder = None
+        self.chosen_cutlist = None
         self.cutlists_list = []
+        self.download_error = False
         self.download_first_try = True
-        self.local_cutlist_avail = False
         self.filename = ''
+        self.local_cutlist_avail = False
+        self.result = None
+        self.treeview_download_cutlists = None
+        self.treeview_local_cutlists = None
 
     def do_parser_finished(self, builder):
         self.log.debug("Function start")
         self.builder = builder
         self.builder.connect_signals(self)
-
-        self.chosen_cutlist = None
 
         self.treeview_local_cutlists = CutlistsTreeView()
         self.treeview_local_cutlists.show()
@@ -68,7 +71,7 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
 
         # looking for local cutlists
         p, filename = os.path.split(video_file)
-        cutregex = re.compile("^" + filename + "\.?(.*).cutlist$")
+        cutregex = re.compile("^" + filename + r"\.?(.*).cutlist$")
         files = os.listdir(p)
         local_cutlists = []
         for f in files:
@@ -142,6 +145,7 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
             self.builder.get_object('label_status').set_markup("")
 
             if len(self.cutlists_list) != 0:
+                self.treeview_download_cutlists.grab_focus()
                 self.treeview_download_cutlists.get_selection().select_path(Gtk.TreePath.new_first())
             # gcurse: ONLY_ONE_CUTLIST
             if len(self.cutlists_list) == 1 and not self.local_cutlist_avail:
@@ -155,6 +159,21 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
     ###
     # Signal handlers
     ###
+
+    def on_load_cut_dialog_key_press_event(self, widget, event, *args):
+        """handle keyboard events"""
+        keyname = Gdk.keyval_name(event.keyval).upper()
+        mod_ctrl = (event.state & Gdk.ModifierType.CONTROL_MASK)
+        mod_shift = (event.state & Gdk.ModifierType.SHIFT_MASK)
+        mod_alt = (event.state & Gdk.ModifierType.MOD1_MASK)
+
+        if event.type == Gdk.EventType.KEY_PRESS:
+            print(keyname)
+            if not mod_ctrl and not mod_shift and not mod_alt:
+                if keyname == 'RETURN':
+                    self.builder.get_object('button_ok').clicked()
+                    print("Button OK")
+                    return True
 
     def _on_local_selection_changed(self, selection, data=None):
         model, paths = selection.get_selected_rows()
@@ -189,10 +208,8 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
 
 def new(app):
     glade_filename = otrvpath.getdatapath('ui', 'LoadCutDialog.glade')
-
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)
     dialog = builder.get_object("load_cut_dialog")
     dialog.app = app
-
     return dialog

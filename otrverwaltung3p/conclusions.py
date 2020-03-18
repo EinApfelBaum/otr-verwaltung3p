@@ -85,8 +85,11 @@ class ConclusionsManager:
         else:
             text = f"{len(self.conclusions)} geschnittene Dateien anzeigen."
 
-        self.app.gui.main_window.builder.get_object('button_show_conclusion').set_label(text)
-        self.app.gui.main_window.builder.get_object('box_conclusion').show()
+        if self.app.config.get('general', 'show_conclusiondialog_after_cutting'):
+            self.show_conclusions()
+        else:
+            self.app.gui.main_window.builder.get_object('button_show_conclusion').set_label(text)
+            self.app.gui.main_window.builder.get_object('box_conclusion').show()
 
     def show_conclusions(self):
         conclusions = self.app.gui.dialog_conclusion.run_(self.conclusions, self.app.rename_by_schema,

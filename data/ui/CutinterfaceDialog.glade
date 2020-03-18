@@ -48,12 +48,13 @@
             </child>
             <child>
               <object class="GtkButton" id="button_cancel">
-                <property name="label" translatable="yes">Abbrechen</property>
+                <property name="label" translatable="yes">_Abbrechen</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Strg-Escape (Ctrl-Escape)	</property>
                 <property name="halign">end</property>
+                <property name="use_underline">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -64,12 +65,13 @@
             </child>
             <child>
               <object class="GtkButton" id="button_ok">
-                <property name="label" translatable="yes">Schneiden</property>
+                <property name="label" translatable="yes">_Schneiden</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Strg-s (Ctrl-s)</property>
                 <property name="halign">end</property>
+                <property name="use_underline">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -87,13 +89,14 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEventBox" id="eventBoxLabelFilename">
+          <object class="GtkBox" id="hbox_label_filename_undo">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkBox" id="hbox_label_filename_undo">
+              <object class="GtkEventBox" id="eventBoxLabelFilename">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <signal name="button-press-event" handler="on_label_filename_button_press_event" swapped="no"/>
                 <child>
                   <object class="GtkLabel" id="label_filename">
                     <property name="visible">True</property>
@@ -103,31 +106,30 @@
                     <property name="ellipsize">end</property>
                     <property name="max_width_chars">100</property>
                     <property name="xalign">0</property>
-                    <signal name="button-press-event" handler="on_label_filename_button_press_event" swapped="no"/>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="button_undo">
-                    <property name="label" translatable="yes">Undo</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="margin_right">10</property>
-                    <signal name="clicked" handler="on_button_undo_clicked" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="pack_type">end</property>
-                    <property name="position">1</property>
-                  </packing>
                 </child>
               </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_undo">
+                <property name="label" translatable="yes">Undo</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="margin_right">10</property>
+                <signal name="clicked" handler="on_button_undo_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="pack_type">end</property>
+                <property name="position">1</property>
+              </packing>
             </child>
           </object>
           <packing>

@@ -133,6 +133,8 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         CheckButtonBinding(self.obj('check_hide_archive_buttons'), self.app.config, 'general', 'hide_archive_buttons')
         ComboBoxEntryBinding(self.obj('entry_cut_default'), self.app.config, 'general', 'cut_action',
                              data='cut_default')
+        CheckButtonBinding(self.obj('check_show_conclusiondialog_after_cutting'), self.app.config, 'general',
+                           'show_conclusiondialog_after_cutting')
 
         # 7 Cutinterface
         SpinbuttonBinding(self.obj('spinbtn_seeker'), self.app.config, 'cutinterface', 'seek_distance_default')

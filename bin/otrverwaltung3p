@@ -184,6 +184,7 @@ class App:
                 'save_email_password': False,
                 'seek_distance_default': 2000,
                 'server': 'http://cutlist.at/',
+                'show_conclusiondialog_after_cutting': False,
                 'show_bottom': False,
                 'smart': True,
                 'snippets': '[]',

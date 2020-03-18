@@ -668,11 +668,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 if keyname == 'RIGHT':
                     self.on_button_seek2_forward_clicked(None)
                     return True
-                if keyname == 'S':
-                    self.builder.get_object('button_ok').clicked()
-                    return True
-                if keyname == 'ESCAPE':
-                    self.builder.get_object('button_cancel').clicked()
+                if keyname == 'DELETE':
+                    self.builder.get_object('button_delete_cut').clicked()
                     return False
             # SHIFT
             if not mod_ctrl and not mod_alt and mod_shift:
@@ -773,7 +770,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def on_label_filename_button_press_event(self, widget, event):
         print(event.type)
-        if event.type == Gdk.EventType.BUTTON_PRESSand and event.button is Gdk.BUTTON_SECONDARY:  # right-click
+        if event.type == Gdk.EventType.BUTTON_PRESS and event.button is Gdk.BUTTON_SECONDARY:  # right-click
             self.contextmenu_label_filename()
 
     def on_slider_value_changed(self, slider):

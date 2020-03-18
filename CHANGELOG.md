@@ -1,35 +1,41 @@
-#### 1.0.0b3, 2020-03-04
+#### 1.0.0b3, 2020-03-18
 
-* MainWindow:
+* Hauptfenster:
+  - New option to show "Zusammenfassung" after cut without clicking the button
+    (Preferences->Haupfenster)
   - New keyboard shortcut Ctrl-f to focus search widget
-* Cutinterface: If there is only one cutlist available, it is automatically
-  chosen
+  - New context menu (Schneiden, Abspielen)
+  - New column in treeview: "Aufnahmedatum"
+  - Files that are processed are now locked in the file view
+  - The file treeviews are automatically updated by directory monitors when
+    changes occur
+  - Implemented a wait-cursor where applicable (eg. Indexing)
+* Cutinterface:
+  - If there is only one cutlist available, it is automatically
+    chosen and downloaded, after the dialog was opened
   - Two new forward/backward seek buttons, seek distance is now based
     on seconds and can be defined in the settings
-* Text snippets can be stored and appended or prepended to the cutlist comment
-  with one click (Prefernces/ConclusionDialog)
-* New column in treeview: "Aufnahmedatum"
-* Files that are processed are now locked in the file-treeview
-* The file treeviews are automatically updated by directory monitors when
-  changes occur
-* User is warned when trying to close the ConclusionDialog and not all cut
-  files have been inspected.
-* New setup.py using Setuptools
-* Changed versioning to be compatible with Setuptools
-* Dbus disabled
-* Disabled ESCAPE-key in CutinterfacDialog and ConclusionDialog
-* Implemented a wait-cursor where applicable (eg. Indexing)
-* MainWindow: New context menu
-* Default usercomment is now editable
+  - ESCAPE-key disabled
+* Zusammenfassung:
+  - Text snippets can be stored (Preferences->Cutlist->Snippets) and appended
+    or prepended to the cutlist comment with one click.
+  - User is warned when trying to close the ConclusionDialog and not all cut
+    files have been inspected.
+  - ESCAPE-key disabled
 * PreferencesWindow:
   - Speicherorte: Paths are manually editable, new FileChooserDialog-Button
   - Help texts are tooltips now
+* New setup.py using Setuptools
+* Changed versioning to be compatible with Setuptools
+* Dbus disabled
+* Default usercomment is now editable
 
 #### 1.0.0-beta002, 2020-02-03
 
 * Fix pythonpath for debianoid systems
 * Adapted mpv parameters to work with version 0.32.0+
-* Dropped option 'geometry' for option 'screen' (works for multi-monitor-setups)
+* Dropped mpv option 'geometry' for option 'screen' (works for
+  multi-monitor-setups)
 * cutlists.py: Fixed error in reading cutlists from xml
 * Fix decoding error
 * config.py: make backup of conf file before overwriting it if content is

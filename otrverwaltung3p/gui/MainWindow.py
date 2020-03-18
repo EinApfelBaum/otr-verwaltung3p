@@ -695,16 +695,18 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         selected_files = self.get_selected_filenames()
         multiple = True if len(selected_files) > 1 else False
         if not multiple:
-            if "otrkey" not in selected_files[0]:
-                menu = Gtk.Menu()
-                if self.app.section == Section.VIDEO_UNCUT:
-                    m_cut = Gtk.MenuItem("Schneiden")
-                    menu.append(m_cut)
-                    m_cut.connect("activate", self._cmenu_cut)
-                m_play = Gtk.MenuItem("Abspielen")
-                menu.append(m_play)
-                m_play.connect("activate", self._cmenu_play_file)
-
+            try:
+                if "otrkey" not in selected_files[0]:
+                    menu = Gtk.Menu()
+                    if self.app.section == Section.VIDEO_UNCUT:
+                        m_cut = Gtk.MenuItem("Schneiden")
+                        menu.append(m_cut)
+                        m_cut.connect("activate", self._cmenu_cut)
+                    m_play = Gtk.MenuItem("Abspielen")
+                    menu.append(m_play)
+                    m_play.connect("activate", self._cmenu_play_file)
+            except IndexError:
+                pass
         return menu
 
     def _cmenu_play_file(self, *args):

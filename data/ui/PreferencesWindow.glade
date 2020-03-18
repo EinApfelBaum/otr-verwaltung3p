@@ -2101,7 +2101,7 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                     </child>
                     <child>
                       <object class="GtkCheckButton" id="check_hide_archive_buttons">
-                        <property name="label" translatable="yes">Archivieren-Buttons ausblenden</property>
+                        <property name="label" translatable="yes"> Archivieren-Buttons ausblenden</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
@@ -2137,8 +2137,8 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="margin_top">25</property>
-                        <property name="margin_bottom">15</property>
-                        <property name="label" translatable="yes">Sektion "Ungeschnitten"</property>
+                        <property name="margin_bottom">10</property>
+                        <property name="label" translatable="yes">Sonstiges</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -2196,6 +2196,26 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                     <property name="fill">True</property>
                     <property name="position">3</property>
                   </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check_show_conclusiondialog_after_cutting">
+                    <property name="label" translatable="yes">  Nach dem Schneiden die Zuammenfassung automatisch öffnen.</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="tooltip_text" translatable="yes">Normalerweise wird nach dem Schneiden links oben ein Button eingeblendet mit dem man die Zusammenfassung (Schnitte prüfen, Dateiname ändern etc.) öffnet.
+Dies kann man hier dahingehend ändern, dass die Zusammenfassung automatisch geöffnet wird.</property>
+                    <property name="margin_top">10</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
                 </child>
               </object>
               <packing>
