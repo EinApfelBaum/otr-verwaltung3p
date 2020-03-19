@@ -89,7 +89,6 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     # Convenience
 
     def run_(self, file_conclusions, rename_by_schema, archive_directory):
-        self.app.filenames_locked = []
         self.rename_by_schema = rename_by_schema
         self.__file_conclusions = file_conclusions
         # TODO gcurse:WARN_NOT_ALL_SEEN

@@ -76,7 +76,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                                  'button_keyfast_forward', 'button_jump_to_marker_a', 'button_jump_to_marker_b',
                                  'load_button']
         self.widgets_tt_obj = []
-        self.xid = 0
 
     def do_parser_finished(self, builder):
         self.log.debug("funtion start")
@@ -123,7 +122,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 duration_frames = int(duration * self.framerate_num / self.framerate_denom)
                 self.log.debug("Startframe = {}".format(start_frame))
                 self.log.debug("Duration = {}".format(duration_frames))
-                res.append((start_frame,duration_frames))
+                res.append((start_frame, duration_frames))
         return res
 
     def load_cutlist(self, filename):
@@ -465,7 +464,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 return
 
             if self.atfc:
-                self.current_frame_position = self.time_to_frame(current_position )
+                self.current_frame_position = self.time_to_frame(current_position)
             else:
                 self.current_frame_position = current_position * self.framerate_num / self.framerate_denom / Gst.SECOND
 
@@ -481,8 +480,11 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             nanosecs = self.player.query_position(Gst.Format.TIME)[1]
             # block seek handler so we don't seek when we set_value()
             self.builder.get_object('slider').handler_block_by_func(self.on_slider_value_changed)
-            frames = nanosecs * self.framerate_num / self.framerate_denom / Gst.SECOND
-            self.builder.get_object('slider').set_value(frames)
+            if self.atfc:
+                frame = self.time_to_frame(nanosecs)
+            else:
+                frame = nanosecs * self.framerate_num / self.framerate_denom / Gst.SECOND
+            self.builder.get_object('slider').set_value(frame)
             self.builder.get_object('slider').handler_unblock_by_func(self.on_slider_value_changed)
         # catch Gst.QueryError
         except TypeError as typeError:
@@ -669,7 +671,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                     self.on_button_seek2_forward_clicked(None)
                     return True
                 if keyname == 'DELETE':
-                    self.builder.get_object('button_delete_cut').clicked()
+                    self.on_button_delete_cut_clicked(None)
                     return False
             # SHIFT
             if not mod_ctrl and not mod_alt and mod_shift:
@@ -853,13 +855,22 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def jump_key(self, direction, playing=None):
         frame = self.current_frame_position
-        if direction == "backward":
-            jumpto = self.get_keyframe_in_front_of_frame(self.keyframes, frame)
+        success, current_position = self.query_position(Gst.Format.TIME)
+        if self.config.get('general', 'new_keyframe_search'):  # gcurse new_keyframe_search
+            if direction == "backward":
+                self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT |
+                                        Gst.SeekFlags.SNAP_BEFORE, current_position + 1)
+            else:
+                self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT |
+                                        Gst.SeekFlags.SNAP_AFTER, current_position + 1)
         else:
-            jumpto = self.get_keyframe_after_frame(self.keyframes, frame)
+            if direction == "backward":
+                jumpto = self.get_keyframe_in_front_of_frame(self.keyframes, frame)
+            else:
+                jumpto = self.get_keyframe_after_frame(self.keyframes, frame)
+            self.log.debug("jumpto = {}".format(jumpto))
+            self.jump_to(frames=jumpto)
 
-        self.log.debug("jumpto = {}".format(jumpto))
-        self.jump_to(frames=jumpto)
         if playing:
             self.player.set_state(Gst.State.PLAYING)
 

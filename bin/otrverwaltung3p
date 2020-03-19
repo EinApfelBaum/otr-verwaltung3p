@@ -35,7 +35,7 @@ try:
     gi.require_version('Gtk', '3.0')
     from gi.repository import Gtk, Gdk
 except Exception as e:
-    print("Gtk, Gdk or GLib is missing.")
+    print("Gtk or Gdk is missing.")
     print(f"Exception: {e}")
     sys.exit(-1)
 
@@ -135,6 +135,7 @@ class App:
                 'aes_key': b64encode(os.urandom(32)).decode('utf-8'),
                 'after_cut_show': 10,
                 'alt_time_frame_conv': True,
+                'new_keyframe_search': True,
                 'ask_if_all': True,
                 'choose_cutlists_by': 1,  # 0=name, 1=size
                 'cut_action': Cut_action.ASK,
@@ -628,7 +629,7 @@ class App:
                 return False
 
     ###
-    ### Actions
+    # Actions
     ###
 
     def perform_action(self, chosen_action, cut_action=None, treepath=None):
@@ -709,10 +710,10 @@ class App:
             action.do()
 
         self.locked = False
-        # update view?
-        if action.update_list:
-            self.gui.main_window.do_search(self.__search_text)
-            self.show_section(self.section)
+        # update view
+        self.filenames_locked = []
+        self.gui.main_window.do_search(self.__search_text)
+        self.show_section(self.section)
 
         if self.last_marked_row is not None:
             self.gui.main_window.treeview_files.get_selection().select_path(Gtk.TreePath(self.last_marked_row))
