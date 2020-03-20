@@ -12,13 +12,14 @@ import time
 import cairo  # gcurse: DO NOT DELETE
 
 from gi import require_version
-require_version('Gtk', '3.0')
+require_version('Gdk', '3.0')
 require_version('Gst', '1.0')
 require_version('GstPbutils', '1.0')
-require_version('GstVideo', '1.0')
-from gi.repository import Gtk, Gdk, GLib, Gst, GstPbutils
+require_version('Gtk', '3.0')
+from gi.repository import GLib, Gdk, Gst, GstPbutils, Gtk
 
 Gst.init(None)
+GstPbutils.init()
 
 # from otrverwaltung3p.elements import KeySeekElement
 # from otrverwaltung3p.elements import DecoderWrapper
@@ -361,54 +362,57 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         # inverts the cuts (between timeline and cut-out list) assuming the list is flawless
         # and should be faster than the full version below
         inverted = []
-        if cuts[0][0] > 0:
-            inverted.append( (0, cuts[0][0]) )
+        try:
+            if cuts[0][0] > 0:
+                inverted.append( (0, cuts[0][0]) )
 
-        next_start = cuts[0][0] + cuts[0][1]
-        for start, duration in cuts[1:]:
-            inverted.append( (next_start, start - next_start) )
-            next_start = start + duration
+            next_start = cuts[0][0] + cuts[0][1]
+            for start, duration in cuts[1:]:
+                inverted.append( (next_start, start - next_start) )
+                next_start = start + duration
 
-        if next_start < self.frames:
-            inverted.append( (next_start, self.frames - next_start) )
-
+            if next_start < self.frames:
+                inverted.append( (next_start, self.frames - next_start) )
+        except IndexError:
+            pass
         return inverted
 
     def invert_full(self, cuts):
         # inverts the cuts (between timeline and cut-out list) removing all kinds of overlaps etc.
         inverted = []
+        sorted_cuts = sorted(cuts, key=lambda c: c[0])  # sort cuts after start frame
+        try:
+            if sorted_cuts[0][0] > 0:
+                inverted.append((0, sorted_cuts[0][0]))
 
-        sorted_cuts = sorted(cuts, key=lambda c:c[0]) # sort cuts after start frame
-        if sorted_cuts[0][0] > 0:
-            inverted.append((0, sorted_cuts[0][0]))
+            next_start = sorted_cuts[0][0] + sorted_cuts[0][1]
+            for start, duration in sorted_cuts[1:]:
+                if duration < 0:                    # correct invalid values
+                    duration = - duration
+                    start = start - duration + 1
 
-        next_start = sorted_cuts[0][0] + sorted_cuts[0][1]
-        for start, duration in sorted_cuts[1:]:
-            if duration < 0:                    # correct invalid values
-                duration = - duration
-                start = start - duration + 1
+                if start < 0:
+                    start = 0
 
-            if start < 0:
-                start = 0
+                if start + duration > self.frames:
+                    duration = self.frames - start
 
-            if start + duration > self.frames:
-                duration = self.frames - start
+                if start < next_start:              # handle overlapping cuts
+                    next_start = max(next_start, start + duration)
+                else:
+                    if start - next_start > 0:      # don't add cuts with zero length
+                        inverted.append( (next_start, start - next_start) )
 
-            if start < next_start:              # handle overlapping cuts
-                next_start = max(next_start, start + duration)
-            else:
-                if start - next_start > 0:      # don't add cuts with zero length
-                    inverted.append( (next_start, start - next_start) )
+                    next_start = start + duration
 
-                next_start = start + duration
-
-        if next_start < self.frames:
-            inverted.append( (next_start, self.frames - next_start) )
-
+            if next_start < self.frames:
+                inverted.append( (next_start, self.frames - next_start) )
+        except IndexError:
+            pass
         return inverted
 
     def remove_segment(self, rel_s, rel_d):
-        self.log.debug("\n\033[1;31m-- Entering remove_segment\033[1;m")
+        self.log.debug("\033[1;31m-- Entering remove_segment\033[1;m")
         self.log.debug("Current timeline is: {}".format(self.timelines[-1]))
 
         abs_start = self.get_absolute_position(rel_s)
@@ -419,7 +423,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.timelines.append(self.invert_full(inverted_timeline))
 
         self.log.debug("Current timeline is: {}".format(self.timelines[-1]))
-        self.log.debug("\033[1;31m-- Leaving remove_segment\033[1;m\n")
+        self.log.debug("\033[1;31m-- Leaving remove_segment\033[1;m")
 
         self.update_timeline()
         self.update_listview()
@@ -811,10 +815,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         nano_seconds += jump_nanoseconds
 
         if nano_seconds < 0:
-            self.log.debug("restrict")
+            self.log.debug("restrict start")
             nano_seconds = 0
         elif nano_seconds > self.videolength:
-            self.log.debug("restrict")
+            self.log.debug("restrict end")
             nano_seconds = self.videolength
         self.jump_to(nanoseconds=nano_seconds, flags=flags)
 
@@ -835,21 +839,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             nano_seconds = self.frame_to_time(self.time_to_frame(nano_seconds) + frames)
         else:
             nano_seconds += frames * (1 * Gst.SECOND * self.framerate_denom / self.framerate_num)
-
-        if self.atfc:
-            cond = (self.time_to_frame(nano_seconds) >= self.get_frames())
-        else:
-            cond = (nano_seconds * self.framerate_num / self.framerate_denom / Gst.SECOND >= self.get_frames())
-
-        if nano_seconds < 0:
-            self.log.debug("restrict")
-            nano_seconds = 0
-        elif cond:
-            self.log.debug("restrict")
-            if self.atfc:
-                nano_seconds = self.frame_to_time(self.get_frames() - 1)
-            else:
-                nano_seconds = (self.get_frames() - 1) * Gst.SECOND * self.framerate_denom / self.framerate_num
 
         self.jump_to(nanoseconds=nano_seconds, flags=flags)
 
@@ -1043,7 +1032,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def on_button_delete_cut_clicked(self, widget):
         self.log.debug("Function start")
-        global marker_a, marker_b, pos, playing
+        # global marker_a, marker_b, pos, playing  gcurse: delete this if no bugs appear
         if self.hide_cuts:
             playing = self.is_playing
             self.is_playing = False

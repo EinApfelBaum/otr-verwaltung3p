@@ -371,7 +371,7 @@ class Cut(BaseAction):
 
         return keyframes_list, None
 
-    def get_timecodes_from_file(self, filename):  # TESTING
+    def get_timecodes_from_file(self, filename):
         """ returns frame->timecode and timecode->frame dict"""
 
         if not os.path.isfile(filename + '.ffindex_track00.tc.txt'):
@@ -449,32 +449,32 @@ class Cut(BaseAction):
 
         return
 
-    def time_to_frame(self, nanoseconds):  # TESTING
-        """
-            Searches in dict self.timecode_frame for the nearest timecode
-            for the variable 'position' (in nanoseconds) and returns the frame number.
+    def time_to_frame(self, nanoseconds):
+        """ Searches in dict self.timecode_frame for the nearest timecode
+        for the variable 'position' (in nanoseconds) and returns the frame number.
         """
         if nanoseconds in self.timecode_frame:
             return self.timecode_frame[nanoseconds]
         else:
             nearest_position = self.find_closest(self.timecode_frame, nanoseconds)
-            # self.log.debug("nearest_position: {}".format(nearest_position))
+            self.log.debug("nearest_position: {}".format(nearest_position))
             return self.timecode_frame[nearest_position]
 
-    def frame_to_time(self, frame_number):  # TESTING
-        """
-            Returns the time (nanoseconds) for frame_number.
-        """
+    def frame_to_time(self, frame_number):
+        """Returns the time (nanoseconds) for frame_number."""
         if frame_number in self.frame_timecode:
             return self.frame_timecode[frame_number]
         else:
-            return self.videolength
+            if frame_number < 0:
+                return 0
+            else:
+                return self.videolength
 
-        return self.timecode_frame[nearest_position]
-
-    def find_closest(self, find_in, position):  # TESTING
+    @staticmethod
+    def find_closest(find_in, position):
         """ Assumes find_in (key_list) is sorted. Returns closest value to position.
-            If two numbers are equally close, return the smaller one."""
+        If two numbers are equally close, return the smaller one.
+        """
         key_list = list(find_in.keys())
         pos = bisect.bisect_left(key_list, position)
         if pos == 0:
@@ -484,9 +484,9 @@ class Cut(BaseAction):
         before = key_list[pos - 1]
         after = key_list[pos]
         if after - position < position - before:
-           return after
+            return after
         else:
-           return before
+            return before
 
     def get_keyframe_in_front_of_frame(self, keyframes, frame):
         """Find keyframe less-than to frame."""
