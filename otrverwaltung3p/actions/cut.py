@@ -457,7 +457,7 @@ class Cut(BaseAction):
             return self.timecode_frame[nanoseconds]
         else:
             nearest_position = self.find_closest(self.timecode_frame, nanoseconds)
-            self.log.debug("nearest_position: {}".format(nearest_position))
+            # ~ self.log.debug("nearest_position: {}".format(nearest_position))
             return self.timecode_frame[nearest_position]
 
     def frame_to_time(self, frame_number):

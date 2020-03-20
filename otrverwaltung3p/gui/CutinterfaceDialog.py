@@ -19,7 +19,6 @@ require_version('Gtk', '3.0')
 from gi.repository import GLib, Gdk, Gst, GstPbutils, Gtk
 
 Gst.init(None)
-GstPbutils.init()
 
 # from otrverwaltung3p.elements import KeySeekElement
 # from otrverwaltung3p.elements import DecoderWrapper
@@ -121,8 +120,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             for start, duration in cuts:
                 start_frame = int(start * self.framerate_num / self.framerate_denom)
                 duration_frames = int(duration * self.framerate_num / self.framerate_denom)
-                self.log.debug("Startframe = {}".format(start_frame))
-                self.log.debug("Duration = {}".format(duration_frames))
+                self.log.debug(f"Startframe = {start_frame}")
+                self.log.debug(f"Duration = {duration_frames}")
                 res.append((start_frame, duration_frames))
         return res
 
@@ -228,8 +227,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.videowidth = vinfo.get_width()
             self.videoheight = vinfo.get_height()
 
-        self.log.debug("framerate_num: {}".format(self.framerate_num))
-        self.log.debug("framerate_denom: {}".format(self.framerate_denom))
+        self.log.debug(f"framerate_num: {self.framerate_num}")
+        self.log.debug(f"framerate_denom: {self.framerate_denom}")
         self.videolength = self.d.get_duration()
         self.frames = round(self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND)
         self.cutlist = self.load_cutlist(cutlist)
@@ -275,7 +274,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def ready_callback(self):
         self.log.debug("Function start")
-        self.builder.get_object('label_filename').set_markup("{}".format(os.path.basename(self.filename)))
+        self.builder.get_object('label_filename').set_markup(f"{os.path.basename(self.filename)}")
 
         self.update_timeline()
         self.update_listview()
@@ -413,7 +412,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def remove_segment(self, rel_s, rel_d):
         self.log.debug("\033[1;31m-- Entering remove_segment\033[1;m")
-        self.log.debug("Current timeline is: {}".format(self.timelines[-1]))
+        self.log.debug(f"Current timeline is: {self.timelines[-1]}")
 
         abs_start = self.get_absolute_position(rel_s)
         abs_end = self.get_absolute_position(rel_s + rel_d - 1)
@@ -422,7 +421,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         inverted_timeline.append((abs_start, abs_end - abs_start + 1))
         self.timelines.append(self.invert_full(inverted_timeline))
 
-        self.log.debug("Current timeline is: {}".format(self.timelines[-1]))
+        self.log.debug(f"Current timeline is: {self.timelines[-1]}")
         self.log.debug("\033[1;31m-- Leaving remove_segment\033[1;m")
 
         self.update_timeline()
@@ -430,10 +429,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         time.sleep(0.2)
         if self.hide_cuts:
-            self.log.debug("Seek To: {}".format(rel_s))
+            self.log.debug(f"Seek To: {rel_s}")
             self.jump_to(frames=rel_s)
         else:
-            self.log.debug("Seek To: {}".format(abs_end + 1))
+            self.log.debug(f"Seek To: {abs_end + 1}")
             self.jump_to(frames=abs_end+1)
 
     def get_frames(self):
@@ -464,7 +463,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 if not success:
                     return
             except Exception as e:  # manchmal geht es nicht, bspw. wenn gerade erst geseekt wurde
-                self.log.warning("Exception: {}".format(e))
+                self.log.warning(f"Exception: {e}")
                 return
 
             if self.atfc:
@@ -476,8 +475,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 string = 'Frame(K): '
             else:
                 string = 'Frame: '
-            self.builder.get_object('label_time').set_text(string + '%i/%i, Zeit %s/%s' % (self.current_frame_position,
-                                    self.get_frames() - 1, self.convert_sec(current_position), self.convert_sec(duration)))
+            self.builder.get_object('label_time')\
+                .set_text(string + f'{self.current_frame_position} / {self.get_frames() - 1}, '
+                                   f'Zeit: {self.convert_sec(current_position)} / {self.convert_sec(duration)}')
 
     def update_slider(self):
         try:
@@ -492,7 +492,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.builder.get_object('slider').handler_unblock_by_func(self.on_slider_value_changed)
         # catch Gst.QueryError
         except TypeError as typeError:
-            self.log.debug("Exeption: {}".format(typeError))
+            self.log.debug(f"Exeption: {typeError}")
 
     def seeker(self, direction):
         """ Jump forward or backward by self.seek_distance.
@@ -613,7 +613,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def on_error(self, bus, msg):
         err, debug = msg.parse_error()
-        self.log.error("Error: {0}, {1}".format(err, debug))
+        self.log.error(f"Error: {err}, {debug}")
         self.player.set_state(Gst.State.NULL)
         self.builder.get_object('label_time').set_text('Frame: 0/0, Zeit 0s/0s')
 
@@ -641,11 +641,11 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 self.timelines = [self.get_cuts_in_frames(self.initial_cutlist, self.initial_cutlist_in_frames)]
                 self.builder.get_object('slider').set_range(0, self.get_frames())
                 self.slider.queue_draw()
-                self.log.debug("Timelines: {}".format(self.timelines))
-                self.log.debug("framerate_num: {}".format(self.framerate_num))
-                self.log.debug("framerate_denom: {}".format(self.framerate_denom))
-                self.log.debug("videolength: {}".format(self.videolength))
-                self.log.debug("Number of frames: {}".format(self.frames))
+                self.log.debug(f"Timelines: {self.timelines}")
+                self.log.debug(f"framerate_num: {self.framerate_num}")
+                self.log.debug(f"framerate_denom: {self.framerate_denom}")
+                self.log.debug(f"videolength: {self.videolength}")
+                self.log.debug(f"Number of frames: {self.frames}")
 
     # signals #
 
@@ -781,7 +781,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def on_slider_value_changed(self, slider):
         frames = slider.get_value()
-        self.log.debug("Slider value = {}".format(frames))
+        self.log.debug(f"Slider value = {frames}")
         if frames >= self.get_frames():
             self.log.debug("slider.get_value() >= self.get_frames(). Restricting.")
             frames = self.get_frames() - 1
@@ -857,7 +857,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 jumpto = self.get_keyframe_in_front_of_frame(self.keyframes, frame)
             else:
                 jumpto = self.get_keyframe_after_frame(self.keyframes, frame)
-            self.log.debug("jumpto = {}".format(jumpto))
+            self.log.debug(f"jumpto = {jumpto}")
             self.jump_to(frames=jumpto)
 
         if playing:
@@ -924,20 +924,20 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def on_button_a_clicked(self, *args):
         # TODO: warn if Marker A = B or distance between them to low
-        self.log.debug('marker a = {}'.format(self.current_frame_position))
+        self.log.debug(f'marker a = {self.current_frame_position}')
         self.set_marker(a=self.current_frame_position)
         self.slider.queue_draw()
 
     def on_button_b_clicked(self, *args):
         # TODO: warn if Marker A = B or distance between them to low
-        self.log.debug('marker b = {}'.format(self.current_frame_position))
+        self.log.debug(f'marker b = {self.current_frame_position}')
         self.set_marker(b=self.current_frame_position)
         self.slider.queue_draw()
 
     def on_button_remove_clicked(self, widget):
         self.log.debug("Function start")
-        self.log.debug("marker a = {}".format(self.marker_a))
-        self.log.debug("marker b = {}".format(self.marker_b))
+        self.log.debug(f"marker a = {self.marker_a}")
+        self.log.debug(f"marker b = {self.marker_b}")
         if self.is_remove_modus():
             if self.marker_a >= 0 and self.marker_b >= 0:
                 self.remove_segment(self.marker_a, self.marker_b-self.marker_a+1)
@@ -1083,8 +1083,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 one_frame_in_pixels = (slider.get_allocation().width - 2*border) / float(self.get_frames())
                 # draw only if ...
                 if self.marker_a != self.marker_b and self.marker_a >= 0 and self.marker_b >= 0:
-                    self.log.debug("Slider allocation size: {0} x {1}".format(slider.get_allocation().width, slider.get_allocation().height))
-                    self.log.debug("one_frame_in_pixels: {}".format(one_frame_in_pixels))
+                    self.log.debug(f"Slider allocation size: {slider.get_allocation().width} x {slider.get_allocation().height}")
+                    self.log.debug(f"one_frame_in_pixels: {one_frame_in_pixels}")
                     marker_a = border + int(round(self.marker_a * one_frame_in_pixels))
                     marker_b = border + int(round(self.marker_b * one_frame_in_pixels))
 
