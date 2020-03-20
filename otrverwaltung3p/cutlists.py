@@ -229,8 +229,8 @@ class Cutlist:
                 return True, message
             else:
                 return False, message
-        except IOError:
-            return False, "Keine Internetverbindung"
+        except (IOError, TypeError):
+            return False, "Keine Internetverbindung oder sonstiger Fehler"
 
     def write_local_cutlist(self, uncut_video, intended_app_name, my_rating):
         """ Writes a cutlist file to the instance's local_filename. """
@@ -292,8 +292,8 @@ class Cutlist:
 #
 #
 
-def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq, error_cb=None,
-                                                    cutlist_found_cb=None, get_all_qualities=None):
+def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq,
+                      error_cb=None, cutlist_found_cb=None, get_all_qualities=None):
     """ Downloads all cutlists for the given file.
             filename            - movie filename
             server              - cutlist server
@@ -374,7 +374,7 @@ def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq, e
                     c.quality = value
 
             ids = [cutlist.id for cutlist in cutlists]
-            if not c.id in ids:
+            if c.id not in ids:
                 if cutlist_found_cb: cutlist_found_cb(c)
 
                 cutlists.append(c)
@@ -394,13 +394,12 @@ def __read_value(cutlist_element, node_name):
             for key, value in wrong_right_chars.items():
                 if key in bad_string:
                     bad_string = bad_string.replace(key, value)
-
             return bad_string  # hopefully not bad anymore
     except Exception as e:
         llog.debug("Exception: ".format(e))
         return ''
 
-    llog.debug("Reading node {} failed. Returning empty string.".format(node_name))
+    llog.debug(f"Reading node {node_name} failed. Returning empty string.")
     return ''
 
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
+<!-- Generated with glade 3.22.2 -->
 <interface>
   <requires lib="gtk+" version="3.16"/>
   <requires lib="ConclusionDialog" version="1.0"/>
@@ -10,16 +10,6 @@
     <property name="pixbuf">../media/play.png</property>
   </object>
   <object class="GtkImage" id="image4">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">../media/play.png</property>
-  </object>
-  <object class="GtkImage" id="image5">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">../media/play.png</property>
-  </object>
-  <object class="GtkImage" id="image6">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="pixbuf">../media/play.png</property>
@@ -62,7 +52,7 @@
     <property name="destroy_with_parent">True</property>
     <property name="icon">../media/icon.png</property>
     <property name="type_hint">dialog</property>
-    <child>
+    <child type="titlebar">
       <placeholder/>
     </child>
     <child internal-child="vbox">
@@ -94,11 +84,11 @@
                 <property name="can_focus">False</property>
                 <child>
                   <object class="GtkButton" id="button_abort">
-                    <property name="label">Schnitt abbrechen</property>
+                    <property name="label">Schnitt _abbrechen</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_stock">True</property>
+                    <property name="use_underline">True</property>
                     <signal name="clicked" handler="_on_button_abort_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -151,6 +141,7 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="use_stock">True</property>
+                    <property name="image_position">right</property>
                     <signal name="clicked" handler="_on_button_forward_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -167,13 +158,13 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="buttonConclusionClose">
+              <object class="GtkButton" id="button_conclusion_close_clicked">
                 <property name="label">gtk-close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="_on_buttonConclusionClose_clicked" swapped="no"/>
+                <signal name="clicked" handler="_on_button_conclusion_close_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -196,102 +187,138 @@
             <property name="orientation">vertical</property>
             <property name="spacing">10</property>
             <child>
-              <object class="GtkGrid" id="box_filenames">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkLabel" id="label_filename">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="halign">start</property>
                     <property name="label" translatable="yes">&lt;b&gt;Dateiname&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
                     <property name="selectable">True</property>
                     <property name="xalign">0</property>
                   </object>
                   <packing>
-                    <property name="left_attach">1</property>
-                    <property name="top_attach">0</property>
-                    <property name="width">2</property>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkImage" id="image_decode">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="valign">start</property>
-                    <property name="pixbuf">../media/decode.png</property>
+                    <child>
+                      <object class="GtkImage" id="image_decode">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">start</property>
+                        <property name="pixbuf">../media/decode.png</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label_decode">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_left">5</property>
+                        <property name="label" translatable="yes">Dekodieren:</property>
+                        <property name="xalign">0</property>
+                        <property name="yalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label_decode_status">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="margin_left">5</property>
+                        <property name="label" translatable="yes">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</property>
+                        <property name="wrap">True</property>
+                        <property name="track_visited_links">False</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">1</property>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkImage" id="image_cut">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="valign">start</property>
-                    <property name="pixbuf">../media/cut.png</property>
+                    <child>
+                      <object class="GtkImage" id="image_cut">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">start</property>
+                        <property name="pixbuf">../media/cut.png</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label_cut">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_left">5</property>
+                        <property name="label" translatable="yes">Schneiden:</property>
+                        <property name="xalign">0</property>
+                        <property name="yalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label_cut_status">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="margin_left">14</property>
+                        <property name="label" translatable="yes">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</property>
+                        <property name="selectable">True</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">2</property>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
                   </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="label_cut">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Schneiden:</property>
-                    <property name="xalign">0</property>
-                    <property name="yalign">0</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">1</property>
-                    <property name="top_attach">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="label_decode">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Dekodieren:</property>
-                    <property name="xalign">0</property>
-                    <property name="yalign">0</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">1</property>
-                    <property name="top_attach">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="label_decode_status">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">x</property>
-                    <property name="wrap">True</property>
-                    <property name="xalign">0</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">2</property>
-                    <property name="top_attach">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="label_cut_status">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">x</property>
-                    <property name="selectable">True</property>
-                    <property name="xalign">0</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">2</property>
-                    <property name="top_attach">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <placeholder/>
                 </child>
               </object>
               <packing>
@@ -317,11 +344,11 @@
                 <property name="can_focus">False</property>
                 <child>
                   <object class="GtkButton" id="button_play_cut">
-                    <property name="label" translatable="yes">Schnitte anspielen</property>
+                    <property name="label" translatable="yes">_Schnitte anspielen</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="image">image6</property>
+                    <property name="use_underline">True</property>
                     <signal name="clicked" handler="_on_button_conclusion_play_cut_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -375,12 +402,12 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="button_play">
-                    <property name="label" translatable="yes">Abspielen</property>
+                    <property name="label" translatable="yes">A_bspielen</property>
                     <property name="width_request">111</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="image">image5</property>
+                    <property name="use_underline">True</property>
                     <signal name="clicked" handler="_on_button_play_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -401,6 +428,7 @@
                         <property name="margin_left">5</property>
                         <property name="label" translatable="yes">&lt;i&gt;Wertung:&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
+                        <property name="width_chars">9</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -451,6 +479,7 @@
                         <property name="margin_left">5</property>
                         <property name="label" translatable="yes">&lt;i&gt;Archivieren:&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
+                        <property name="width_chars">9</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -481,6 +510,7 @@
                         <property name="margin_left">5</property>
                         <property name="label" translatable="yes">&lt;i&gt;Ersetze:&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
+                        <property name="width_chars">9</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -491,11 +521,12 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="button_spaces">
-                        <property name="label" translatable="yes">Leerzeichen</property>
+                        <property name="label" translatable="yes">_Leerzeichen</property>
                         <property name="name">button_underscore</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="use_underline">True</property>
                         <signal name="clicked" handler="_on_button_spaces_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -506,10 +537,11 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="button_umlauts">
-                        <property name="label" translatable="yes">Umlaute</property>
+                        <property name="label" translatable="yes">U_mlaute</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="use_underline">True</property>
                         <signal name="clicked" handler="_on_button_umlauts_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -539,11 +571,12 @@
             </child>
             <child>
               <object class="GtkCheckButton" id="check_delete_uncut">
-                <property name="label" translatable="yes">Ungeschnittene Datei in den Müll verschieben</property>
+                <property name="label" translatable="yes">_Ungeschnittene Datei in den Müll verschieben</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
                 <property name="halign">start</property>
+                <property name="use_underline">True</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
                 <signal name="toggled" handler="_on_check_delete_uncut_toggled" swapped="no"/>
@@ -576,11 +609,12 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkCheckButton" id="check_create_cutlist">
-                        <property name="label" translatable="yes">Cutlist erstellen</property>
+                        <property name="label" translatable="yes">Cutlist _erstellen</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="halign">start</property>
+                        <property name="use_underline">True</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="_on_check_create_cutlist_toggled" swapped="no"/>
                       </object>
@@ -592,11 +626,12 @@
                     </child>
                     <child>
                       <object class="GtkCheckButton" id="check_upload_cutlist">
-                        <property name="label" translatable="yes">Cutlist hochladen</property>
+                        <property name="label" translatable="yes">Cutlist _hochladen</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="halign">start</property>
+                        <property name="use_underline">True</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="_on_check_upload_cutlist_toggled" swapped="no"/>
                       </object>
@@ -702,6 +737,73 @@
                           </packing>
                         </child>
                         <child>
+                          <object class="GtkBox" id="hbox_comment_prepend">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <child>
+                              <object class="GtkLabel" id="lbl_prepend_comment">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="margin_right">10</property>
+                                <property name="label" translatable="yes">Dem Kommentar hinzufügen:</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="btn_prepend">
+                                <property name="label" translatable="yes">_Vorn</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="use_underline">True</property>
+                                <signal name="clicked" handler="_on_btn_prepend_clicked" object="entry_comment" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="btn_append">
+                                <property name="label" translatable="yes">H_inten</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="use_underline">True</property>
+                                <signal name="clicked" handler="_on_btn_append_clicked" object="entry_comment" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkComboBoxText" id="cboxtext_snippets">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="margin_left">10</property>
+                                <property name="hexpand">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">5</property>
+                          </packing>
+                        </child>
+                        <child>
                           <object class="GtkLabel" id="label47">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
@@ -711,7 +813,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">5</property>
+                            <property name="position">6</property>
                           </packing>
                         </child>
                         <child>
@@ -726,7 +828,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">6</property>
+                            <property name="position">7</property>
                           </packing>
                         </child>
                       </object>
@@ -920,6 +1022,45 @@
                 <property name="position">4</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkGrid" id="box_filenames">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="column_homogeneous">True</property>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">5</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">True</property>
@@ -941,8 +1082,5 @@
         </child>
       </object>
     </child>
-    <action-widgets>
-      <action-widget response="-5">buttonConclusionClose</action-widget>
-    </action-widgets>
   </object>
 </interface>

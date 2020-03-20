@@ -13,23 +13,25 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
+import os
+import sys
+import re
+import subprocess
+import bisect
+import logging
+import psutil
+import gc
 
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
 from gi.repository import Gtk, Gst
-import os
-import re
-import subprocess
-import bisect
-import logging
 
 from otrverwaltung3p.libs.pymediainfo import MediaInfo
-
 from otrverwaltung3p.actions.baseaction import BaseAction
 from otrverwaltung3p.constants import Format, Program
 from otrverwaltung3p import fileoperations
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 
 Gst.init(None)
 
@@ -43,13 +45,6 @@ class Cut(BaseAction):
         self.config = app.config
         self.gui = gui
         self.media_info = None
-        if not os.path.isdir(self.config.get('smartmkvmerge', 'workingdir')):
-            self.gui.message_info_box('Das in Einstellungen:Schneiden:SmartMKVmerge ' + \
-                                      'angegebene Arbeitsverzeichnis ist nicht gültig.\n' + \
-                                      'Es wird "/tmp" benutzt.')
-            self.config.set('smartmkvmerge', 'workingdir', '/tmp')
-        self.workingdir = self.config.get('smartmkvmerge', 'workingdir')
-
         self.format_dict = {"High@L4": Format.HD, "High@L3.2": Format.HD, "High@L3.1": Format.HQ,
                             "High@L3.0": Format.HQ, "High@L3": Format.HQ, "Simple@L1": Format.AVI,
                             "Baseline@L1.3": Format.MP4}
@@ -84,22 +79,11 @@ class Cut(BaseAction):
         global bframe_delay
         root, extension = os.path.splitext(filename)
 
-        mi_version = subprocess.getoutput(self.app.config.get_program('mediainfo') + ' --version'
-                                           ).split(' ')[-1].replace('v', '').split('.')
-        self.log.debug("Mediainfo version: {0}.{1}".format(mi_version[0], mi_version[1]))
-        if int(mi_version[0] + mi_version[1]) >= 1710:
-            self.media_info = MediaInfo.parse(filename)
+        if sys.platform == 'win32':
+            lib_file = self.config.get_program('mediainfo').replace('.exe', '.dll')
+            self.media_info = MediaInfo.parse(filename, library_file=lib_file)
         else:
-            outfile = self.workingdir + '/mediainfo.xml'
-            subprocess.call([self.app.config.get_program('mediainfo'),
-                                            '--Output=XML', '--LogFile=' + outfile, filename],
-                                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            with open(outfile) as f:
-                self.media_info = MediaInfo(f.read())
-                print(self.media_info)
-
-            if os.path.isfile(outfile):
-                os.remove(outfile)
+            self.media_info = MediaInfo.parse(filename)
 
         codec_core = self.get_codeccore()
 
@@ -171,14 +155,14 @@ class Cut(BaseAction):
         config_value = programs[format]
 
         _, _, _, codec_core = self.get_format(filename)
-        vdub = path.get_internal_virtualdub_path('vdub.exe')
+        vdub = otrvpath.get_internal_virtualdub_path('vdub.exe')
         x264_codec = self.config.get('general', 'h264_codec')
         if 'avidemux' in config_value:
             return Program.AVIDEMUX, config_value, ac3
         elif 'intern-VirtualDub' in config_value:
-            return Program.VIRTUALDUB, path.get_internal_virtualdub_path('VirtualDub.exe'), ac3
+            return Program.VIRTUALDUB, otrvpath.get_internal_virtualdub_path('VirtualDub.exe'), ac3
         elif 'intern-vdub' in config_value:
-            return Program.VIRTUALDUB, path.get_internal_virtualdub_path('vdub.exe'), ac3
+            return Program.VIRTUALDUB, otrvpath.get_internal_virtualdub_path('vdub.exe'), ac3
         elif 'vdub' in config_value or 'VirtualDub' in config_value:
             return Program.VIRTUALDUB, config_value, ac3
         elif 'CutInterface' in config_value and manually:
@@ -298,9 +282,9 @@ class Cut(BaseAction):
 
         log = process.communicate()[0]
 
-        regex_video_infos = r".*(Duration).*(\d{1,}):(\d{1,}):(\d{1,}.\d{1,}).*|.*(SAR) " + \
-                            "(\d{1,}:\d{1,}) DAR (\d{1,}:\d{1,}).*\, (\d{2,}\.{0,}\d{0,}) " + \
-                            "tbr.*|.*(Stream).*(\d{1,}:\d{1,}).*Audio.*ac3.*"
+        regex_video_infos = (r".*(Duration).*(\d{1,}):(\d{1,}):(\d{1,}.\d{1,}).*|.*(SAR) "
+                             r"(\d{1,}:\d{1,}) DAR (\d{1,}:\d{1,}).*\, (\d{2,}\.{0,}\d{0,}) "
+                             r"tbr.*|.*(Stream).*(\d{1,}:\d{1,}).*Audio.*ac3.*")
         video_infos_match = re.compile(regex_video_infos)
         seconds = 0
         ac3_stream = fps = dar = sar = None
@@ -373,20 +357,21 @@ class Cut(BaseAction):
             index = open(filename_keyframes, 'r')
         except (IOError, TypeError) as e:
             return None, "Keyframe File von ffmsindex konnte nicht geöffnet werden."
-        index.readline()
-        index.readline()
+
+        index.readline()  # Skip the first line, it is a comment
+        index.readline()  # Skip the second line, it is 'fps 0'
         try:
-            list = [int(i) for i in index.read().splitlines()]
+            keyframes_list = [int(i) for i in index.read().splitlines()]
         except ValueError:
-            index.close()
             return None, "Keyframes konnten nicht ermittelt werden."
-        index.close()
+        finally:
+            index.close()
         if os.path.isfile(filename + '.ffindex'):
             fileoperations.remove_file(filename + '.ffindex')
 
-        return list, None
+        return keyframes_list, None
 
-    def get_timecodes_from_file(self, filename):  # TESTING
+    def get_timecodes_from_file(self, filename):
         """ returns frame->timecode and timecode->frame dict"""
 
         if not os.path.isfile(filename + '.ffindex_track00.tc.txt'):
@@ -417,16 +402,18 @@ class Cut(BaseAction):
             for line_num, line in enumerate(index, start=0):
                 frame_timecode[line_num] = int(round(float(line.replace('\n', '').strip()), 2) / 1000 * Gst.SECOND)
         except ValueError:
-            index.close()
             return None, None, "Timecodes konnten nicht ermittelt werden."
+        finally:
+            index.close()
+            gc.collect()  # MEMORYLEAK
 
-        index.close()
         # Generate reverse dict
         timecode_frame = {v: k for k, v in frame_timecode.items()}
+
         if os.path.isfile(filename + '.ffindex'):
             fileoperations.remove_file(filename + '.ffindex')
 
-        self.log.debug("Number of frames (frame_timecode dict): {}".format(list(frame_timecode.keys())[-1] + 1))
+        self.log.debug(f"Number of frames (frame_timecode dict): {list(frame_timecode.keys())[-1] + 1}")
         return frame_timecode, timecode_frame, None
 
     def show_indexing_progress(self, process):
@@ -448,12 +435,12 @@ class Cut(BaseAction):
             try:
                 if first_run and "Indexing" in l:
                     first_run = False
-                    self.gui.main_window.set_tasks_text("Datei wird indiziert")
+                    self.app.gui.main_window.set_tasks_text("Datei wird indiziert")
 
                 if len(l) > 25 and l[25].isdigit():
                     progress = int(l[25:].replace('%', ''))
                     # update progress
-                    self.gui.main_window.set_tasks_progress(progress)
+                    self.app.gui.main_window.set_tasks_progress(progress)
 
                 while Gtk.events_pending():
                     Gtk.main_iteration()
@@ -462,32 +449,32 @@ class Cut(BaseAction):
 
         return
 
-    def time_to_frame(self, nanoseconds):  # TESTING
-        """
-            Searches in dict self.timecode_frame for the nearest timecode
-            for the variable 'position' (in nanoseconds) and returns the frame number.
+    def time_to_frame(self, nanoseconds):
+        """ Searches in dict self.timecode_frame for the nearest timecode
+        for the variable 'position' (in nanoseconds) and returns the frame number.
         """
         if nanoseconds in self.timecode_frame:
             return self.timecode_frame[nanoseconds]
         else:
             nearest_position = self.find_closest(self.timecode_frame, nanoseconds)
-            # self.log.debug("nearest_position: {}".format(nearest_position))
+            self.log.debug("nearest_position: {}".format(nearest_position))
             return self.timecode_frame[nearest_position]
 
-    def frame_to_time(self, frame_number):  # TESTING
-        """
-            Returns the time (nanoseconds) for frame_number.
-        """
+    def frame_to_time(self, frame_number):
+        """Returns the time (nanoseconds) for frame_number."""
         if frame_number in self.frame_timecode:
             return self.frame_timecode[frame_number]
         else:
-            return self.videolength
+            if frame_number < 0:
+                return 0
+            else:
+                return self.videolength
 
-        return self.timecode_frame[nearest_position]
-
-    def find_closest(self, find_in, position):  # TESTING
+    @staticmethod
+    def find_closest(find_in, position):
         """ Assumes find_in (key_list) is sorted. Returns closest value to position.
-            If two numbers are equally close, return the smaller one."""
+        If two numbers are equally close, return the smaller one.
+        """
         key_list = list(find_in.keys())
         pos = bisect.bisect_left(key_list, position)
         if pos == 0:
@@ -497,9 +484,9 @@ class Cut(BaseAction):
         before = key_list[pos - 1]
         after = key_list[pos]
         if after - position < position - before:
-           return after
+            return after
         else:
-           return before
+            return before
 
     def get_keyframe_in_front_of_frame(self, keyframes, frame):
         """Find keyframe less-than to frame."""
@@ -708,8 +695,8 @@ class Cut(BaseAction):
                 if line == '':
                     break
                 elif 'x264 [info]: started' in line:
-                    self.gui.main_window.set_tasks_text('Kodiere Video')
-                    self.gui.main_window.set_tasks_progress(0)
+                    self.app.gui.main_window.set_tasks_text('Kodiere Video')
+                    self.app.gui.main_window.set_tasks_progress(0)
                 elif 'x264 [info]' in line:
                     continue
                 elif 'time=' in line:
@@ -717,37 +704,37 @@ class Cut(BaseAction):
                     if m:
                         sec = float(m.group(1)) * 3600 + float(m.group(2)) * 60 + float(m.group(3))
                         if max_sec >= 1.0:
-                            self.gui.main_window.set_tasks_progress(int(sec / max_sec * 100))
+                            self.app.gui.main_window.set_tasks_progress(int(sec / max_sec * 100))
                 elif '%' in line:
                     m = re.search(progress_match, line)
                     if m:
-                        self.gui.main_window.set_tasks_progress(int(m.group(1)))
+                        self.app.gui.main_window.set_tasks_progress(int(m.group(1)))
                 elif 'Importing' in line:
                     m = re.search(mp4box_match, line)
                     if m:
-                        self.gui.main_window.set_tasks_text('Importiere Stream')
-                        self.gui.main_window.set_tasks_progress(int(m.group(1)))
+                        self.app.gui.main_window.set_tasks_text('Importiere Stream')
+                        self.app.gui.main_window.set_tasks_progress(int(m.group(1)))
                 elif 'ISO File Writing' in line:
                     m = re.search(mp4box_match, line)
                     if m:
-                        self.gui.main_window.set_tasks_text('Schreibe MP4')
-                        self.gui.main_window.set_tasks_progress(int(m.group(1)))
+                        self.app.gui.main_window.set_tasks_text('Schreibe MP4')
+                        self.app.gui.main_window.set_tasks_progress(int(m.group(1)))
                 elif 'Duration' in line:
                     m = re.search(time_match, line)
                     if m:
                         max_sec = float(m.group(1)) * 3600 + float(m.group(2)) * 60 + float(m.group(3))
                 elif 'video_copy' in line and '.mkv\' has been opened for writing' in line:
-                    self.gui.main_window.set_tasks_text('Splitte Video')
-                    self.gui.main_window.set_tasks_progress(0)
+                    self.app.gui.main_window.set_tasks_text('Splitte Video')
+                    self.app.gui.main_window.set_tasks_progress(0)
                 elif 'audio_copy' in line and '.mkv\' has been opened for writing' in line:
-                    self.gui.main_window.set_tasks_text('Schneide Audio')
-                    self.gui.main_window.set_tasks_progress(0)
+                    self.app.gui.main_window.set_tasks_text('Schneide Audio')
+                    self.app.gui.main_window.set_tasks_progress(0)
                 elif '.mkv\' has been opened for writing.' in line:
-                    self.gui.main_window.set_tasks_text('Muxe MKV')
-                    self.gui.main_window.set_tasks_progress(0)
+                    self.app.gui.main_window.set_tasks_text('Muxe MKV')
+                    self.app.gui.main_window.set_tasks_progress(0)
                 elif 'ffmpeg version' in line:
-                    self.gui.main_window.set_tasks_text('Kodiere Audio')
-                    self.gui.main_window.set_tasks_progress(0)
+                    self.app.gui.main_window.set_tasks_text('Kodiere Audio')
+                    self.app.gui.main_window.set_tasks_progress(0)
                 else:
                     continue
 
@@ -765,11 +752,11 @@ class Cut(BaseAction):
                         1.0, error_message """
 
         global adjust
-        self.gui.main_window.set_tasks_text('Berechne den Normalisierungswert')
-        self.gui.main_window.set_tasks_progress(0)
+        self.app.gui.main_window.set_tasks_text('Berechne den Normalisierungswert')
+        self.app.gui.main_window.set_tasks_progress(0)
         try:
             process1 = subprocess.Popen(
-                [path.get_tools_path('intern-ffprobe'), '-v', 'error', '-of', 'compact=p=0:nk=1', '-drc_scale', '1.0',
+                [otrvpath.get_tools_path('intern-ffprobe'), '-v', 'error', '-of', 'compact=p=0:nk=1', '-drc_scale', '1.0',
                  '-show_entries', 'frame_tags=lavfi.r128.I', '-f', 'lavfi',
                  'amovie=' + filename + ':si=' + stream + ',ebur128=metadata=1'], stdout=subprocess.PIPE)
         except OSError:
@@ -783,7 +770,7 @@ class Cut(BaseAction):
             if sline:
                 loudness = sline
                 adjust = ref - float(loudness)
-        self.gui.main_window.set_tasks_progress(100)
+        self.app.gui.main_window.set_tasks_progress(100)
         if adjust:
             return str(adjust) + 'dB', None
         else:
@@ -794,7 +781,6 @@ class Cut(BaseAction):
         user/real as output by time(1) when called with an optimally scaling
         userspace-only program"""
 
-        # cpuset
         # cpuset may restrict the number of *available* processors
         try:
             m = re.search(r'(?m)^Cpus_allowed:\s*(.*)$',
@@ -806,107 +792,12 @@ class Cut(BaseAction):
         except IOError:
             pass
 
-        # Python 2.6+
         try:
-            import multiprocessing
-            return multiprocessing.cpu_count()
-        except (ImportError, NotImplementedError):
-            pass
-
-        # http://code.google.com/p/psutil/
-        try:
-            import psutil
-            return psutil.NUM_CPUS
-        except (ImportError, AttributeError):
-            pass
-
-        # POSIX
-        try:
-            res = int(os.sysconf('SC_NPROCESSORS_ONLN'))
-
-            if res > 0:
-                return res
-        except (AttributeError, ValueError):
-            pass
-
-        # Windows
-        try:
-            res = int(os.environ['NUMBER_OF_PROCESSORS'])
-
-            if res > 0:
-                return res
-        except (KeyError, ValueError):
-            pass
-
-        # jython
-        try:
-            from java.lang import Runtime
-            runtime = Runtime.getRuntime()
-            res = runtime.availableProcessors()
-            if res > 0:
-                return res
-        except ImportError:
-            pass
-
-        # BSD
-        try:
-            sysctl = subprocess.Popen(['sysctl', '-n', 'hw.ncpu'],
-                                      stdout=subprocess.PIPE)
-            scStdout = sysctl.communicate()[0]
-            res = int(scStdout)
-
-            if res > 0:
-                return res
-        except (OSError, ValueError):
-            pass
-
-        # Linux
-        try:
-            res = open('/proc/cpuinfo').read().count('processor\t:')
-
-            if res > 0:
-                return res
-        except IOError:
-            pass
-
-        # Solaris
-        try:
-            pseudoDevices = os.listdir('/devices/pseudo/')
-            res = 0
-            for pd in pseudoDevices:
-                if re.match(r'^cpuid@[0-9]+$', pd):
-                    res += 1
-
-            if res > 0:
-                return res
-        except OSError:
-            pass
-
-        # Other UNIXes (heuristic)
-        try:
-            try:
-                dmesg = open('/var/run/dmesg.boot').read()
-            except IOError:
-                dmesgProcess = subprocess.Popen(['dmesg'], stdout=subprocess.PIPE)
-                dmesg = dmesgProcess.communicate()[0]
-
-            res = 0
-            while '\ncpu' + str(res) + ':' in dmesg:
-                res += 1
-
-            if res > 0:
-                return res
-        except OSError:
-            pass
-
-        raise Exception('Can not determine number of CPUs on this system')
+            return psutil.cpu_count()
+        except AttributeError:
+            return 1
 
     def meminfo(self):
         """ return meminfo dict """
 
-        meminfo = dict()
-        with os.popen('cat /proc/meminfo') as f:
-            for l in f:
-                x = l.split()
-                meminfo[x[0][:-1]] = int(x[1])
-        return meminfo
+        return psutil.virtual_memory()

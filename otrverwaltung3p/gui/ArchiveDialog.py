@@ -16,12 +16,11 @@
 
 from os.path import basename
 import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p.gui.widgets.FolderChooserComboBox import FolderChooserComboBox
-
-gi.require_version('Gtk', '3.0')
 
 
 class ArchiveDialog(Gtk.Dialog, Gtk.Buildable):
@@ -75,7 +74,7 @@ class ArchiveDialog(Gtk.Dialog, Gtk.Buildable):
 
 
 def NewArchiveDialog():
-    glade_filename = path.getdatapath('ui', 'ArchiveDialog.glade')
+    glade_filename = otrvpath.getdatapath('ui', 'ArchiveDialog.glade')
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)

@@ -20,7 +20,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, Gdk, GObject
 
 from otrverwaltung3p.constants import DownloadStatus, DownloadTypes
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 
 
 class DownloadsTreeView(Gtk.TreeView):
@@ -66,11 +66,11 @@ class CellRendererDownload(Gtk.CellRenderer):
         self.set_property('mode', Gtk.CellRendererMode.ACTIVATABLE)
 
         self.statuses = {
-            DownloadStatus.RUNNING: GdkPixbuf.Pixbuf.new_from_file(path.getdatapath('media', 'download_start.png')),
-            DownloadStatus.STOPPED: GdkPixbuf.Pixbuf.new_from_file(path.getdatapath('media', 'download_stop.png')),
-            DownloadStatus.ERROR: GdkPixbuf.Pixbuf.new_from_file(path.getdatapath('media', 'error.png')),
-            DownloadStatus.FINISHED: GdkPixbuf.Pixbuf.new_from_file(path.getdatapath('media', 'finished.png')),
-            DownloadStatus.SEEDING: GdkPixbuf.Pixbuf.new_from_file(path.getdatapath('media', 'finished.png'))
+            DownloadStatus.RUNNING: GdkPixbuf.Pixbuf.new_from_file(otrvpath.getdatapath('media', 'download_start.png')),
+            DownloadStatus.STOPPED: GdkPixbuf.Pixbuf.new_from_file(otrvpath.getdatapath('media', 'download_stop.png')),
+            DownloadStatus.ERROR: GdkPixbuf.Pixbuf.new_from_file(otrvpath.getdatapath('media', 'error.png')),
+            DownloadStatus.FINISHED: GdkPixbuf.Pixbuf.new_from_file(otrvpath.getdatapath('media', 'finished.png')),
+            DownloadStatus.SEEDING: GdkPixbuf.Pixbuf.new_from_file(otrvpath.getdatapath('media', 'finished.png'))
         }
 
         self.types = {

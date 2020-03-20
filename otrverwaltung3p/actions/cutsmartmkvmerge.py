@@ -14,18 +14,17 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##END LICENSE
 
-import gi
-
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
-import re
+# import gi
+# gi.require_version('Gtk', '3.0')
+# from gi.repository import Gtk
+# import re
 import os
 import subprocess
 import logging
+import tempfile
 
 from otrverwaltung3p.actions.cut import Cut
 from otrverwaltung3p.constants import Format
-from otrverwaltung3p import path
 
 
 class CutSmartMkvmerge(Cut):
@@ -38,11 +37,12 @@ class CutSmartMkvmerge(Cut):
         self.gui = gui
         self.encode_nr = 0  # index for encoded video parts - for the smart rendering simulation
         self.copy_nr = 0  # index for copied video parts - for the smart rendering simulation
-        if not os.path.isdir(self.config.get('smartmkvmerge', 'workingdir')):
-            self.gui.message_info_box('Das in Einstellungen:Schneiden:SmartMKVmerge angegebene ' +\
-                                      'Arbeitsverzeichnis ist nicht gültig.\n' + \
-                                      'Es wird "/tmp" benutzt.')
-            self.config.set('smartmkvmerge', 'workingdir', '/tmp')
+        if not os.path.isdir(self.config.get('smartmkvmerge', 'workingdir').rstrip(os.sep)):
+            tmpdir = tempfile.gettempdir()
+            self.gui.message_info_box(f"Das in Einstellungen:Schneiden:SmartMKVmerge angegebene "
+                                      f"Arbeitsverzeichnis ist nicht gültig.\n"
+                                      f"Es wird \"{tmpdir}\" benutzt.")
+            self.config.set('smartmkvmerge', 'workingdir', tmpdir)
         self.workingdir = self.config.get('smartmkvmerge', 'workingdir')
         self.video_files = []  # temporary video files
         self.audio_files = []  # temporary audio files
@@ -133,16 +133,14 @@ class CutSmartMkvmerge(Cut):
         self.log.debug("Codec core: {}".format(codec_core))
 
         if not codec_core >= 125:
-            warning_msg = "\nUnbekannte Kodierung entdeckt! codec_core: " + str(codec_core) + \
-                          "\nDiese Datei genau prüfen und " + \
-                          "notfalls mit intern-vdub und Codec ffdshow schneiden.\n\n" + \
-                          "Wenn otr-verwaltung3p-vdub installiert ist und in Einstellungen - " + \
-                          "Schneiden:H264 Codec auf 'fddshow' gesetzt ist, würde automatisch " + \
-                          "mit intern-vdub geschnitten werden."
+            warning_msg = (f"\nUnbekannte Kodierung entdeckt! codec_core: {str(codec_core)}"
+                           "\nDiese Datei genau prüfen und notfalls mit intern-vdub schneiden.\n\n"
+                           "Wenn otr-verwaltung3p-vdub installiert wäre, würde automatisch "
+                           "mit intern-vdub geschnitten werden.")
             return None, warning_msg
 
         # test workingdir
-        if os.access(self.config.get('smartmkvmerge', 'workingdir').rstrip('/'), os.W_OK):
+        if os.access(self.config.get('smartmkvmerge', 'workingdir').rstrip(os.sep), os.W_OK):
             self.workingdir = os.path.abspath(self.config.get('smartmkvmerge',
                                                                     'workingdir')).rstrip('/')
         else:
@@ -154,14 +152,14 @@ class CutSmartMkvmerge(Cut):
         if self.config.get('smartmkvmerge', 'single_threaded_automatic'):
             try:
                 memory = self.meminfo()
-                if self.available_cpu_count() > 1 and memory['MemFree'] > (os.stat(filename).st_size / 1024):
+                if self.available_cpu_count() > 1 and memory.free > (os.stat(filename).st_size):
                     flag_singlethread = True
                 else:
                     flag_singlethread = False
             except Exception  as e:
                 flag_singlethread = self.config.get('smartmkvmerge', 'single_threaded')
 
-        self.log.debug("flag_singlethread: {}".format(flag_singlethread))
+        self.log.debug(f"flag_singlethread: {flag_singlethread}")
 
         # audio part 1 - cut audio
         if ac3_file:
@@ -172,7 +170,7 @@ class CutSmartMkvmerge(Cut):
              cutlist.cuts_seconds]))
         audio_timecodes = audio_timecodes.lstrip(',+')
 
-        command = [mkvmerge, '--ui-language', 'en_US', '-D', '--split', 'parts:' + audio_timecodes, '-o',
+        command = [mkvmerge, '-D', '--split', 'parts:' + audio_timecodes, '-o',
                    self.workingdir + '/audio_copy.mkv'] + audio_import_files
         self.log.debug("Command: {}".format(command))
         try:
@@ -234,7 +232,7 @@ class CutSmartMkvmerge(Cut):
 
         # video part 4 - cut the big parts out the file (keyframe accurate)
         # smart rendering part (2/2)
-        command = [mkvmerge, '--ui-language', 'en_US', '-A', '--split', 'parts-frames:' +
+        command = [mkvmerge, '-A', '--split', 'parts-frames:' +
                         video_splitframes, '-o', self.workingdir + '/video_copy.mkv', filename]
         self.log.debug("Command: {}".format(command))
         try:
@@ -247,10 +245,9 @@ class CutSmartMkvmerge(Cut):
             self.show_progress(non_blocking_process)
 
         # audio part 2 - encode audio to AAC
-        if 'MP3 Spur kopieren' in self.config.get('smartmkvmerge', 'first_audio_stream') \
-                                                        and 'AC3 Spur kopieren' \
-                                                        in self.config.get('smartmkvmerge',
-                                                                            'second_audio_stream'):
+        mp3copy = 'MP3 Spur kopieren' in self.config.get('smartmkvmerge', 'first_audio_stream')
+        ac3copy = 'AC3 Spur kopieren' in self.config.get('smartmkvmerge', 'second_audio_stream')
+        if mp3copy and ac3copy:
             self.audio_files.append(self.workingdir + '/audio_copy.mkv')
         else:
             self.show_progress(blocking_process)
@@ -349,7 +346,7 @@ class CutSmartMkvmerge(Cut):
             cut_video = os.path.splitext(self.generate_filename(filename, 1))[0] + ".mkv"
 
         command = [mkvmerge, '--engage', 'no_cue_duration', '--engage', 'no_cue_relative_position',
-                    '--ui-language', 'en_US', '-o', cut_video] + self.video_files + self.audio_files
+                    '-o', cut_video] + self.video_files + self.audio_files
         self.log.debug("Command: {}".format(command))
         try:
             blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,

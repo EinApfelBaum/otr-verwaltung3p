@@ -15,6 +15,7 @@
 # END LICENSE
 
 import base64
+import time
 
 
 class ConfigBinding:
@@ -32,6 +33,22 @@ class ConfigBinding:
 
     def change_value(self, value):
         raise NotImplementedError("This method should be overridden.")
+
+
+class TextbufferBinding(ConfigBinding):
+    def __init__(self, widget, config, category, option, obj):
+        ConfigBinding.__init__(self, widget, config, category, option)
+
+        # add signal
+        self.widget.connect('changed', self.on_changed)
+
+        self.button = obj('btn_snippets_save')
+
+    def change_value(self, value):
+        self.widget.props.text = value
+
+    def on_changed(self, widget, data=None):
+        self.button.set_sensitive(True)
 
 
 class CheckButtonBinding(ConfigBinding):
@@ -61,13 +78,11 @@ class EntryBinding(ConfigBinding):
             if not value:
                 self.widget.set_text('')
             else:
-                #self.widget.set_text(base64.b64decode(value.decode('utf-8')).decode('utf-8'))
                 try:
                     value.decode('utf-8')
                     self.widget.set_text(base64.b64decode(value.decode('utf-8')).decode('utf-8'))
                 except AttributeError:
                     self.widget.set_text(value)
-
         else:
             self.widget.set_text(value)
 
@@ -77,8 +92,9 @@ class EntryBinding(ConfigBinding):
         else:
             self.config.set(self.category, self.option, self.widget.get_text())
 
+
 class SpinbuttonBinding(ConfigBinding):
-    def __init__(self, widget, config, category, option, encode=False):
+    def __init__(self, widget, config, category, option):
         ConfigBinding.__init__(self, widget, config, category, option)
 
         # add signal

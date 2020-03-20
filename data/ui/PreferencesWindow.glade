@@ -1,8 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
+<!-- Generated with glade 3.22.2 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
   <requires lib="PreferencesWindow" version="1.0"/>
+  <object class="GtkAdjustment" id="adj_spinbtn_seek1">
+    <property name="upper">999</property>
+    <property name="value">4</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">5</property>
+  </object>
+  <object class="GtkAdjustment" id="adj_spinbtn_seek2">
+    <property name="lower">1</property>
+    <property name="upper">999</property>
+    <property name="value">20</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">5</property>
+  </object>
+  <object class="GtkAdjustment" id="adj_spinbtn_seeker">
+    <property name="lower">1</property>
+    <property name="upper">999</property>
+    <property name="value">80</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">5</property>
+  </object>
   <object class="GtkAdjustment" id="iconSizeAdjustment">
     <property name="lower">16</property>
     <property name="upper">128</property>
@@ -24,12 +44,7 @@
     <property name="step_increment">1</property>
     <property name="page_increment">100</property>
   </object>
-  <object class="GtkAdjustment" id="spinbuttonSeekerDistanceAdjustment">
-    <property name="upper">9999</property>
-    <property name="value">2000</property>
-    <property name="step_increment">100</property>
-    <property name="page_increment">500</property>
-  </object>
+  <object class="GtkTextBuffer" id="txtbuf_snippets"/>
   <object class="PreferencesWindow" id="preferences_window">
     <property name="can_focus">False</property>
     <property name="border_width">9</property>
@@ -39,7 +54,7 @@
     <property name="skip_taskbar_hint">True</property>
     <signal name="delete-event" handler="_on_preferences_window_delete_event" swapped="no"/>
     <signal name="key-press-event" handler="on_preferences_window_key_press_event" swapped="no"/>
-    <child>
+    <child type="titlebar">
       <placeholder/>
     </child>
     <child>
@@ -57,7 +72,7 @@
               <object class="GtkBox" id="vboxPathConfiguration">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">5</property>
+                <property name="margin_left">15</property>
                 <property name="margin_right">5</property>
                 <property name="margin_top">5</property>
                 <property name="margin_bottom">5</property>
@@ -246,7 +261,7 @@ Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="margin_top">10</property>
-                        <signal name="clicked" handler="_on_button_set_file_clicked" object="folderNewOtrkeys" swapped="no"/>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_folder_new_otrkeys" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">2</property>
@@ -254,7 +269,7 @@ Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry" id="folderNewOtrkeys">
+                      <object class="GtkEntry" id="entry_folder_new_otrkeys">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="tooltip_text" translatable="yes">Dies ist der Ordner für die verschlüsselten otrkey-Dateien.</property>
@@ -273,7 +288,7 @@ Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="margin_top">10</property>
-                        <signal name="clicked" handler="_on_button_set_file_clicked" object="folderUncutAvis" swapped="no"/>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_folder_uncut_avis" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">2</property>
@@ -281,7 +296,7 @@ Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry" id="folderUncutAvis">
+                      <object class="GtkEntry" id="entry_folder_uncut_avis">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="tooltip_markup" translatable="yes">In diesen Ordner werden die dekodierten Dateien verschoben. Dieser Ordner &lt;b&gt;darf nicht&lt;/b&gt; derselbe sein wie der für die neuen otrkey-Dateien.</property>
@@ -294,7 +309,7 @@ Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry" id="folderCutAvis">
+                      <object class="GtkEntry" id="entry_folder_cut_avis">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="tooltip_text" translatable="yes">In diesen Ordner werden die Dateien nach dem Schneiden verschoben. Dieser Ordner kann derselbe sein wie der für die ungeschnittenen Dateien.</property>
@@ -313,7 +328,7 @@ Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="margin_top">10</property>
-                        <signal name="clicked" handler="_on_button_set_file_clicked" object="folderCutAvis" swapped="no"/>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_folder_cut_avis" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">2</property>
@@ -327,7 +342,7 @@ Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="margin_top">10</property>
-                        <signal name="clicked" handler="_on_button_set_file_clicked" object="folderTrashOtrkeys" swapped="no"/>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_folder_trash_otrkeys" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">2</property>
@@ -341,7 +356,7 @@ Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="margin_top">10</property>
-                        <signal name="clicked" handler="_on_button_set_file_clicked" object="folderTrashAvis" swapped="no"/>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_folder_trash_avis" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">2</property>
@@ -355,7 +370,7 @@ Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="margin_top">10</property>
-                        <signal name="clicked" handler="_on_button_set_file_clicked" object="folderArchive" swapped="no"/>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_folder_archive" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">2</property>
@@ -363,7 +378,7 @@ Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry" id="folderTrashOtrkeys">
+                      <object class="GtkEntry" id="entry_folder_trash_otrkeys">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="tooltip_text" translatable="yes">Hierhin werden otrkey-Dateien nach dem Dekodieren verschoben.
@@ -377,7 +392,7 @@ Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry" id="folderTrashAvis">
+                      <object class="GtkEntry" id="entry_folder_trash_avis">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="tooltip_text" translatable="yes">Hierhin werden ungeschittene Dateien nach dem Schneiden verschoben. Dieser Ordner kann auch der Müll-Ordner des Systems sein. Beide Müll-Ordner können identisch sein.</property>
@@ -390,7 +405,7 @@ Dieser Ordner kann auch der Müll-Ordner des Systems sein.</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry" id="folderArchive">
+                      <object class="GtkEntry" id="entry_folder_archive">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="tooltip_text" translatable="yes">Ordner für zu archivierende geschnittene Dateien.
@@ -459,7 +474,7 @@ Hier muss auch dann ein bestehender Ordner angegeben werden,  wenn die Archivier
               <object class="GtkBox" id="vboxOTRConfiguration">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">5</property>
+                <property name="margin_left">15</property>
                 <property name="margin_right">5</property>
                 <property name="margin_top">5</property>
                 <property name="margin_bottom">5</property>
@@ -488,7 +503,7 @@ Hier muss auch dann ein bestehender Ordner angegeben werden,  wenn die Archivier
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
-                          <object class="GtkComboBoxText" id="entry_decoder">
+                          <object class="GtkComboBoxText" id="entry_prog_decoder">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <items>
@@ -496,7 +511,7 @@ Hier muss auch dann ein bestehender Ordner angegeben werden,  wenn die Archivier
                               <item id="intern-easydecoder" translatable="yes">intern-easydecoder</item>
                               <item id="otrtool" translatable="yes">otrtool</item>
                             </items>
-                            <signal name="changed" handler="_on_entry_decoder_changed" swapped="no"/>
+                            <signal name="changed" handler="_on_entry_prog_decoder_changed" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -510,7 +525,7 @@ Hier muss auch dann ein bestehender Ordner angegeben werden,  wenn die Archivier
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_decoder" swapped="no"/>
+                            <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_prog_decoder" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -525,7 +540,7 @@ Hier muss auch dann ein bestehender Ordner angegeben werden,  wenn die Archivier
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry" id="entryPassword">
+                      <object class="GtkEntry" id="entry_password">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
@@ -538,7 +553,7 @@ Hier muss auch dann ein bestehender Ordner angegeben werden,  wenn die Archivier
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry" id="entryEMail">
+                      <object class="GtkEntry" id="entry_email">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
@@ -575,7 +590,7 @@ Hier muss auch dann ein bestehender Ordner angegeben werden,  wenn die Archivier
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="checkCorrect">
+                      <object class="GtkCheckButton" id="check_verify_decoded">
                         <property name="label" translatable="yes">Dateien auf Korrektheit prüfen</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -697,7 +712,7 @@ In diesem Fall bitte "Passworthinweis beim Start ausblenden" aktivieren.&lt;/i&g
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="checkPasswdStoreMemory">
+                      <object class="GtkCheckButton" id="check_passwd_store_memory">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
@@ -775,7 +790,7 @@ In diesem Fall bitte "Passworthinweis beim Start ausblenden" aktivieren.&lt;/i&g
               <object class="GtkBox" id="vboxCutConfiguration">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">5</property>
+                <property name="margin_left">15</property>
                 <property name="margin_right">5</property>
                 <property name="margin_top">5</property>
                 <property name="margin_bottom">5</property>
@@ -1462,7 +1477,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
               <object class="GtkBox" id="vboxCutlistConfiguration">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">5</property>
+                <property name="margin_left">15</property>
                 <property name="margin_right">5</property>
                 <property name="margin_top">5</property>
                 <property name="margin_bottom">5</property>
@@ -1510,7 +1525,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry" id="entry_username">
+                      <object class="GtkEntry" id="entry_cutlist_username">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
@@ -1731,6 +1746,79 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                     <property name="position">5</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkBox" id="hbox_snippets">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_top">20</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel" id="lbl_snippets">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="tooltip_text" translatable="yes">Aus diesen Einträgen kann man im Zusammenfassungsdialog wählen und in den Cutlist Kommentar einfügen.</property>
+                            <property name="label" translatable="yes">Snippets:</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="btn_snippets_save">
+                            <property name="label" translatable="yes">Speichern</property>
+                            <property name="visible">True</property>
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <signal name="clicked" handler="_on_btn_snippets_save_clicked" object="txtbuf_snippets" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkScrolledWindow" id="scrollwin_snippets">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="hexpand">True</property>
+                        <property name="vexpand">True</property>
+                        <property name="shadow_type">in</property>
+                        <child>
+                          <object class="GtkTextView" id="textview_snippets">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="buffer">txtbuf_snippets</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">6</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="position">3</property>
@@ -1751,7 +1839,7 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
               <object class="GtkBox" id="vboxRenameConfiguration">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">5</property>
+                <property name="margin_left">15</property>
                 <property name="margin_right">5</property>
                 <property name="margin_top">5</property>
                 <property name="margin_bottom">5</property>
@@ -1872,18 +1960,18 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
 {titel_}				James_Bond_007
 {titel.}				James.Bond.007
 {lctitel}				james bond 007
-{lctitel_}				james_bond_007
+{lctitel_}			james_bond_007
 {lctitel.}				james.bond.007
-{sender}				ard
+{sender}			ard
 {SENDER}			Ard
 {tag}				06
-{monat}				01
+{monat}			01
 {MONAT}			Januar
 {jahr}				09
-{stunde}				20
-{minute}				15
+{stunde}			20
+{minute}			15
 {dauer}				120
-{format}				HQ</property>
+{format}			HQ</property>
                     <property name="use_markup">True</property>
                     <property name="wrap">True</property>
                     <property name="max_width_chars">70</property>
@@ -1916,7 +2004,7 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
               <object class="GtkBox" id="vboxMainwindowConfiguration">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">5</property>
+                <property name="margin_left">15</property>
                 <property name="margin_right">5</property>
                 <property name="margin_top">5</property>
                 <property name="margin_bottom">5</property>
@@ -2013,7 +2101,7 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                     </child>
                     <child>
                       <object class="GtkCheckButton" id="check_hide_archive_buttons">
-                        <property name="label" translatable="yes">Archivieren-Buttons ausblenden</property>
+                        <property name="label" translatable="yes"> Archivieren-Buttons ausblenden</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
@@ -2049,8 +2137,8 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="margin_top">25</property>
-                        <property name="margin_bottom">15</property>
-                        <property name="label" translatable="yes">Sektion "Ungeschnitten"</property>
+                        <property name="margin_bottom">10</property>
+                        <property name="label" translatable="yes">Sonstiges</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -2109,6 +2197,26 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                     <property name="position">3</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkCheckButton" id="check_show_conclusiondialog_after_cutting">
+                    <property name="label" translatable="yes">  Nach dem Schneiden die Zuammenfassung automatisch öffnen.</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="tooltip_text" translatable="yes">Normalerweise wird nach dem Schneiden links oben ein Button eingeblendet mit dem man die Zusammenfassung (Schnitte prüfen, Dateiname ändern etc.) öffnet.
+Dies kann man hier dahingehend ändern, dass die Zusammenfassung automatisch geöffnet wird.</property>
+                    <property name="margin_top">10</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
               </object>
               <packing>
                 <property name="position">5</property>
@@ -2129,7 +2237,7 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
               <object class="GtkBox" id="vboxCutinterfaceConfiguration">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">5</property>
+                <property name="margin_left">15</property>
                 <property name="margin_right">5</property>
                 <property name="margin_top">5</property>
                 <property name="margin_bottom">5</property>
@@ -2140,34 +2248,66 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                     <property name="can_focus">False</property>
                     <property name="column_spacing">30</property>
                     <child>
-                      <object class="GtkLabel" id="labelSeekerDistance">
-                        <property name="visible">True</property>
+                      <object class="GtkLabel" id="lbl_time_frame">
                         <property name="can_focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="label" translatable="yes">Defaultwert für den Seeker in Frames:</property>
+                        <property name="margin_top">30</property>
+                        <property name="label" translatable="yes">Alternative Zeit &lt;-&gt; Frame Umwandlung:</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
-                        <property name="top_attach">0</property>
+                        <property name="top_attach">6</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSpinButton" id="spinbutton_seeker">
-                        <property name="visible">True</property>
+                      <object class="GtkCheckButton" id="check_alt_time_frame_conv">
                         <property name="can_focus">True</property>
-                        <property name="halign">end</property>
-                        <property name="max_length">4</property>
-                        <property name="width_chars">4</property>
-                        <property name="xalign">1</property>
-                        <property name="input_purpose">number</property>
-                        <property name="adjustment">spinbuttonSeekerDistanceAdjustment</property>
-                        <property name="numeric">True</property>
-                        <property name="wrap">True</property>
-                        <property name="value">2000</property>
+                        <property name="receives_default">False</property>
+                        <property name="margin_top">30</property>
+                        <property name="draw_indicator">True</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">0</property>
+                        <property name="top_attach">6</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="labelMoviewindowY">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">Höhe des Videofensters in Pixels:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="spinbutton_y">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="xalign">1</property>
+                        <property name="adjustment">moviewindowAdjustmentY</property>
+                        <property name="numeric">True</property>
+                        <property name="value">450</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="button_reset_size_moviewindow">
+                        <property name="label" translatable="yes">Default</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="halign">start</property>
+                        <signal name="clicked" handler="_on_button_reset_size_moviewindow_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">5</property>
                       </packing>
                     </child>
                     <child>
@@ -2180,7 +2320,7 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
-                        <property name="top_attach">1</property>
+                        <property name="top_attach">4</property>
                       </packing>
                     </child>
                     <child>
@@ -2196,76 +2336,11 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">1</property>
+                        <property name="top_attach">4</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="labelMoviewindowY">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="label" translatable="yes">Höhe des Videofensters in Pixels:</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSpinButton" id="spinbutton_y">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="xalign">1</property>
-                        <property name="adjustment">moviewindowAdjustmentY</property>
-                        <property name="numeric">True</property>
-                        <property name="value">450</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="lbl_time_frame">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="margin_top">30</property>
-                        <property name="label" translatable="yes">Alternative Zeit &lt;-&gt; Frame Umwandlung:</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">3</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkCheckButton" id="check_alt_time_frame_conv">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="margin_top">30</property>
-                        <property name="draw_indicator">True</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">3</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="button_reset_size_moviewindow">
-                        <property name="label" translatable="yes">Default</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="halign">start</property>
-                        <signal name="clicked" handler="_on_button_reset_size_moviewindow_clicked" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="left_attach">2</property>
-                        <property name="top_attach">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkCheckButton">
+                      <object class="GtkCheckButton" id="check_xy">
                         <property name="label" translatable="yes">x / y</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
@@ -2274,7 +2349,7 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                       </object>
                       <packing>
                         <property name="left_attach">2</property>
-                        <property name="top_attach">1</property>
+                        <property name="top_attach">4</property>
                       </packing>
                     </child>
                     <child>
@@ -2288,7 +2363,19 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                       </object>
                       <packing>
                         <property name="left_attach">3</property>
-                        <property name="top_attach">1</property>
+                        <property name="top_attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="labelSeekerDistance">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">Defaultwert für den Seeker in Sekunden:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
                       </packing>
                     </child>
                     <child>
@@ -2302,35 +2389,97 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                       </object>
                       <packing>
                         <property name="left_attach">4</property>
+                        <property name="top_attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_seek1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">Suche1 in Sekunden:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
                         <property name="top_attach">1</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="lbl_vol_adjust_on">
+                      <object class="GtkLabel" id="lbl_seek2">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
-                        <property name="margin_top">30</property>
-                        <property name="label" translatable="yes">Lautstärkeanhebung aktivieren:</property>
-                        <property name="wrap">True</property>
+                        <property name="label" translatable="yes">Suche2 in Sekunden:</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
-                        <property name="top_attach">4</property>
+                        <property name="top_attach">2</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="check_vol_adjust_on">
+                      <object class="GtkSpinButton" id="spinbtn_seeker">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="margin_top">30</property>
-                        <property name="draw_indicator">True</property>
+                        <property name="max_width_chars">3</property>
+                        <property name="xalign">1</property>
+                        <property name="adjustment">adj_spinbtn_seeker</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">4</property>
+                        <property name="top_attach">0</property>
                       </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="spinbtn_seek1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="max_width_chars">3</property>
+                        <property name="xalign">1</property>
+                        <property name="input_purpose">number</property>
+                        <property name="adjustment">adj_spinbtn_seek1</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="spinbtn_seek2">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="max_width_chars">3</property>
+                        <property name="xalign">1</property>
+                        <property name="input_purpose">number</property>
+                        <property name="adjustment">adj_spinbtn_seek2</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>
@@ -2373,7 +2522,7 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkGrid">
+                  <object class="GtkGrid" id="grid_adjust_vol">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="hexpand">True</property>
@@ -2383,7 +2532,46 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
                         <property name="margin_top">10</property>
-                        <property name="label" translatable="yes">Lautstärkeanhebung Konfiguration:</property>
+                        <property name="label" translatable="yes">Konfiguration:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="hbox_vol_adjust_yesno">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkLabel" id="lbl_vol_adjust_on">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="margin_top">30</property>
+                            <property name="label" translatable="yes">Lautstärkeanhebung aktivieren:</property>
+                            <property name="wrap">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="check_vol_adjust_on">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="margin_top">30</property>
+                            <property name="draw_indicator">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
@@ -2395,23 +2583,12 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="tooltip_text" translatable="yes">Aufbau: &lt;Sender Suchstring&gt;,&lt;Lautstärke Cutinterface&gt;,&lt;Lautstärke mpv (Schnitte anspielen/Abspielen)&gt;
-Beispiel: "usw,3.0,140" (ohne Anführungszeichen)
-D.h. Wenn im Sendernamen "usw" vorkommt setze die Lautstärke im Cutinterface auf "3" (Standard isr "1") und die Lautstärke von mpv (Schnitte anspielen/Abspielen) auf 140 (Standard ist 100).
-Dies hebt die Wiedergabelautstärke für alle US-Sender an. Dies ist die Voreinstellung.
-Es dürfen nur die Zeichen a-z, 0-9 sowie Komma und Punkt vorkommen.
-Mehrere Anpassungen werden durch Unterstriche(e) getrennt.</property>
+Beispiel: "usw,3.0,140__uk,3.0,140" (ohne Anführungszeichen)
+D.h.: Wenn im Sendernamen "usw" oder "uk" vorkommt, setze die Lautstärke im Cutinterface auf "3" (Standard ist "1") und die Lautstärke von mpv (Schnitte anspielen/Abspielen) auf 140 (Standard ist 100).
+Dies hebt die Wiedergabelautstärke für alle US- und UK-Sender an. Dies ist die Voreinstellung.
+Es dürfen nur die Zeichen a bis z, 0 bis 9 sowie Komma und Punkt vorkommen.
+Mehrere Anpassungen werden durch Unterstrich(e) getrennt.</property>
                         <property name="hexpand">True</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="lbl_help_volume">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="halign">start</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
@@ -2423,6 +2600,22 @@ Mehrere Anpassungen werden durch Unterstriche(e) getrennt.</property>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check_show_tooltips">
+                    <property name="label" translatable="yes">  Tooltips anzeigen</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="tooltip_text" translatable="yes">Dies ist der Standardwert. Im Cutinterface kann man die Tooltips "on the fly" ein- und ausblenden.</property>
+                    <property name="margin_top">10</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
@@ -2440,6 +2633,346 @@ Mehrere Anpassungen werden durch Unterstriche(e) getrennt.</property>
                 <property name="position">6</property>
                 <property name="tab_fill">False</property>
               </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="vboxProgramConfiguration">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_left">15</property>
+                <property name="margin_right">5</property>
+                <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkGrid" id="grid_program">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkLabel" id="lbl_prog_ffmpeg">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">ffmpeg:</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_prog_ffprobe">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">ffprobe:</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_prog_ffmsindex">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">ffmsindex:</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_prog_mediainfo">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">mediainfo:</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_prog_mkvmerge">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">mkvmerge: </property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_prog_mpv">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">mpv:</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="btn_prog_ffmpeg">
+                        <property name="label" translatable="yes">...</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="halign">end</property>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_prog_ffmpeg" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="btn_prog_ffprobe">
+                        <property name="label" translatable="yes">...</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="halign">end</property>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_prog_ffprobe" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="btn_prog_ffmsindex">
+                        <property name="label" translatable="yes">...</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="halign">end</property>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_prog_ffmsindex" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="btn_prog_mediainfo">
+                        <property name="label" translatable="yes">...</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="halign">end</property>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_prog_mediainfo" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="btn_prog_mkvmerge">
+                        <property name="label" translatable="yes">...</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_prog_mkvmerge" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="btn_prog_mpv">
+                        <property name="label" translatable="yes">...</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_prog_mpv" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="entry_prog_ffmpeg">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="entry_prog_ffprobe">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="entry_prog_ffmsindex">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="entry_prog_mediainfo">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="entry_prog_mkvmerge">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="entry_prog_mpv">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_check_ffmpeg">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="use_markup">True</property>
+                        <property name="wrap">True</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_check_ffprobe">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_markup">True</property>
+                        <property name="wrap">True</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_check_ffmsindex">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_markup">True</property>
+                        <property name="wrap">True</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_check_mediainfo">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_markup">True</property>
+                        <property name="wrap">True</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_check_mkvmerge">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_markup">True</property>
+                        <property name="wrap">True</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_check_mpv">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_markup">True</property>
+                        <property name="wrap">True</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="position">7</property>
+              </packing>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="labelProgramConfiguration">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Programme</property>
+              </object>
+              <packing>
+                <property name="position">7</property>
+                <property name="tab_fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child type="tab">
+              <placeholder/>
             </child>
             <child>
               <placeholder/>

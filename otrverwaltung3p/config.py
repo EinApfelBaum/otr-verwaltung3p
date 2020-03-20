@@ -18,8 +18,6 @@
 import json
 import os.path
 import logging
-import shutil
-import re
 from base64 import b64decode, b64encode
 try:
     import keyring
@@ -27,7 +25,7 @@ try:
 except ImportError:
     keyring_available = False
 
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p.libs import pyaes
 from otrverwaltung3p import fileoperations
 
@@ -43,7 +41,6 @@ class Config:
         self.__callbacks = {}
         self.log = logging.getLogger(self.__class__.__name__)
         self.keyring_available = keyring_available
-
         self.log.debug(f"Keyring available: {self.keyring_available}")
 
     def connect(self, category, option, callback):
@@ -51,13 +48,8 @@ class Config:
         self.__callbacks[category].setdefault(option, []).append(callback)
 
     def set(self, category, option, value):
-        if option in ['email', 'password']:
-            self.log.debug("[%(category)s][%(option)s] to *****" % {"category": category,
-                                                                                "option": option})
-        else:
-            self.log.debug("[%(category)s][%(option)s] to %(value)s" % {"category": category,
-                                                                "option": option, "value": value})
-            pass
+        printed_value = "*****" if option in ['email', 'password', 'aes_key', 'server'] else value
+        self.log.debug(f"Set [{category}].[{option}] to {printed_value}")
 
         try:
             for callback in self.__callbacks[category][option]:
@@ -83,12 +75,9 @@ class Config:
             value = 'ffdshow'
         else:
             value = self.__fields[category][option]
-        if option in ['email', 'password']:
-            self.log.debug("[%(category)s][%(option)s]: *****" % \
-                                                        {"category": category, "option": option})
-        else:
-            self.log.debug("[%(category)s][%(option)s]: %(value)s" % \
-                                        {"category": category, "option": option, "value": value})
+
+        printed_value = "*****" if option in ['email', 'password', 'aes_key', 'server'] else value
+        self.log.debug(f"Get [{category}].[{option}]: {printed_value}")
 
         return value
 
@@ -125,15 +114,13 @@ class Config:
         """ Reads an existing configuration file. """
 
         try:
-            config = open(self.__config_file, 'r')
-            json_config = json.load(config)
-            config.close()
-        except json.decoder.JSONDecodeError as message:
+            with open(self.__config_file, 'r') as config:
+                json_config = json.load(config)
+        except json.decoder.JSONDecodeError:
             fileoperations.rename_file(self.__config_file, self.__config_file + ".bak")
             json_config = {}
         except IOError as message:
-            self.log.error("Config file is not available. " + "(" + f"{message}" + ") " +
-                                                                "Using default configuration.")
+            self.log.error(f"Config file is not available. ({message}) Using default configuration.")
             json_config = {}
 
         for category, options in self.__fields.items():
@@ -165,7 +152,7 @@ class Config:
             if the config value contains 'intern' """
 
         value = self.__fields['programs'][program]
-        intern_program = path.get_tools_path(value)
+        intern_program = otrvpath.get_tools_path(value)
 
         if 'intern-' in value:
             if os.path.isfile(intern_program):

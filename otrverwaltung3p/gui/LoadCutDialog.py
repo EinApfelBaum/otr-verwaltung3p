@@ -17,13 +17,13 @@
 import gi
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 import os, re, logging
 
 from otrverwaltung3p.constants import Cut_action
 import otrverwaltung3p.cutlists as cutlists_management
 from otrverwaltung3p import fileoperations
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p.gui.widgets.CutlistsTreeView import CutlistsTreeView
 from otrverwaltung3p.GeneratorTask import GeneratorTask
 
@@ -36,32 +36,33 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
     def __init__(self):
         Gtk.Dialog.__init__(self)
         self.log = logging.getLogger(self.__class__.__name__)
-        self.download_error = False
+        self.builder = None
+        self.chosen_cutlist = None
         self.cutlists_list = []
+        self.download_error = False
         self.download_first_try = True
+        self.filename = ''
+        self.local_cutlist_avail = False
+        self.result = None
+        self.treeview_download_cutlists = None
+        self.treeview_local_cutlists = None
 
     def do_parser_finished(self, builder):
         self.log.debug("Function start")
         self.builder = builder
         self.builder.connect_signals(self)
 
-        self.chosen_cutlist = None
-
         self.treeview_local_cutlists = CutlistsTreeView()
         self.treeview_local_cutlists.show()
-        self.treeview_local_cutlists.get_selection().connect(
-                                                    'changed', self._on_local_selection_changed)
+        self.treeview_local_cutlists.get_selection().connect('changed', self._on_local_selection_changed)
         self.builder.get_object('scrolledwindow_local').add(self.treeview_local_cutlists)
         self.treeview_download_cutlists = CutlistsTreeView()
         self.treeview_download_cutlists.show()
-        self.treeview_download_cutlists.get_selection().connect(
-                                                    'changed', self._on_download_selection_changed)
+        self.treeview_download_cutlists.get_selection().connect('changed', self._on_download_selection_changed)
         self.builder.get_object('scrolledwindow_download').add(self.treeview_download_cutlists)
 
-        self.filename = ""
-
     ###
-    ### Convenience methods
+    # Convenience methods
     ###
 
     def setup(self, video_file):
@@ -70,7 +71,7 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
 
         # looking for local cutlists
         p, filename = os.path.split(video_file)
-        cutregex = re.compile("^" + filename + "\.?(.*).cutlist$")
+        cutregex = re.compile("^" + filename + r"\.?(.*).cutlist$")
         files = os.listdir(p)
         local_cutlists = []
         for f in files:
@@ -84,17 +85,19 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
             self.treeview_local_cutlists.get_model().clear()
             self.builder.get_object('scrolledwindow_local').set_sensitive(True)
             self.builder.get_object('button_local').set_sensitive(True)
+            local_cutlists_list = []  # Sorting
             for c in local_cutlists:
                 cutlist = cutlists_management.Cutlist()
                 cutlist.local_filename = c
                 cutlist.read_from_file()
-                self.cutlists_list.append(cutlist)
+                local_cutlists_list.append(cutlist)
                 # ~ self.treeview_local_cutlists.add_cutlist(cutlist)
-            ## Sorting ->
-            self.cutlists_list.sort(key=lambda x: x.quality, reverse=False)
-            for cutlist_obj in self.cutlists_list:
+            # Sorting ->
+            local_cutlists_list.sort(key=lambda x: x.quality, reverse=False)
+            for cutlist_obj in local_cutlists_list:
                 self.treeview_local_cutlists.add_cutlist(cutlist_obj)
-            ## <- Sorting
+            # <<<<<
+            self.local_cutlist_avail = True  # gcurse: ONLY_ONE_CUTLIST
 
         else:
             self.builder.get_object('scrolledwindow_local').set_sensitive(False)
@@ -106,50 +109,71 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
     def download_generator(self, get_all_qualities):
         # start looking for downloadable cutlists
         self.treeview_download_cutlists.get_model().clear()
-        self.builder.get_object('label_status').set_markup(
-                                                "<b>Cutlisten werden heruntergeladen...</b>")
+        self.builder.get_object('label_status').set_markup("<b>Cutlisten werden heruntergeladen...</b>")
         self.download_error = False
 
         # Empty the list for reuse
         self.cutlists_list = []
-        GeneratorTask(cutlists_management.download_cutlists, None, self._completed).\
-                            start(self.filename, self.app.config.get('general', 'server'),
-                                  self.app.config.get('general', 'choose_cutlists_by'),
-                                  self.app.config.get('general', 'cutlist_mp4_as_hq'),
-                                  self._error_cb, self._cutlist_found_cb, get_all_qualities)
+        GeneratorTask(cutlists_management.download_cutlists, None, self._completed)\
+            .start(self.filename, self.app.config.get('general', 'server'),
+                   self.app.config.get('general', 'choose_cutlists_by'),
+                   self.app.config.get('general', 'cutlist_mp4_as_hq'),
+                   self._error_cb, self._cutlist_found_cb, get_all_qualities)
 
     def _error_cb(self, error):
         if error == "Keine Cutlists gefunden" and self.download_first_try:
             self.download_first_try = False
-            self.builder.get_object('label_status').set_markup("<b>%s</b>" % error +
-                                                        ". Versuche es mit allen Qualitäten")
+            self.builder.get_object('label_status').set_markup(f"<b>{error}</b>. Versuche es mit allen Qualitäten.")
             self.download_generator(True)
         else:
-            self.builder.get_object('label_status').set_markup("<b>%s</b>" % error +
-                                                    " (Es wurde nach allen Qualitäten gesucht)")
+            self.builder.get_object('label_status').set_markup(f"<b>{error}</b> (Es wurde nach allen Qualitäten gesucht)")
             self.download_error = True
             self.download_first_try = True
 
     def _cutlist_found_cb(self, cutlist):
-        ## Sorting
+        # Sorting
         # ~ self.add_cutlist(cutlist)
         self.cutlists_list.append(cutlist)
 
     def _completed(self):
         if not self.download_error:
-            ## Sorting ->
+            # Sorting ->
             self.cutlists_list.sort(key=lambda x: x.quality, reverse=False)
             for cutlist_obj in self.cutlists_list:
                 self.add_cutlist(cutlist_obj)
-            ## <- Sorting
+            # <- Sorting
             self.builder.get_object('label_status').set_markup("")
+
+            if len(self.cutlists_list) != 0:
+                self.treeview_download_cutlists.grab_focus()
+                self.treeview_download_cutlists.get_selection().select_path(Gtk.TreePath.new_first())
+            # gcurse: ONLY_ONE_CUTLIST
+            if len(self.cutlists_list) == 1 and not self.local_cutlist_avail:
+                # Close dialog and return the only cutlist
+                self.on_button_ok_clicked(None)
+            # <<<<<
 
     def add_cutlist(self, c):
         self.treeview_download_cutlists.add_cutlist(c)
 
     ###
-    ### Signal handlers
+    # Signal handlers
     ###
+
+    def on_load_cut_dialog_key_press_event(self, widget, event, *args):
+        """handle keyboard events"""
+        keyname = Gdk.keyval_name(event.keyval).upper()
+        mod_ctrl = (event.state & Gdk.ModifierType.CONTROL_MASK)
+        mod_shift = (event.state & Gdk.ModifierType.SHIFT_MASK)
+        mod_alt = (event.state & Gdk.ModifierType.MOD1_MASK)
+
+        if event.type == Gdk.EventType.KEY_PRESS:
+            print(keyname)
+            if not mod_ctrl and not mod_shift and not mod_alt:
+                if keyname == 'RETURN':
+                    self.builder.get_object('button_ok').clicked()
+                    print("Button OK")
+                    return True
 
     def _on_local_selection_changed(self, selection, data=None):
         model, paths = selection.get_selected_rows()
@@ -164,35 +188,28 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
             self.treeview_local_cutlists.get_selection().unselect_all()
 
     def on_button_ok_clicked(self, widget, data=None):
-        if self.builder.get_object('button_local').get_active() == True:
+        if self.builder.get_object('button_local').get_active():
             cutlist = self.treeview_local_cutlists.get_selected()
-
             if not cutlist:
-                self.gui.message_error_box("Es wurde keine Cutlist ausgewählt!")
+                self.app.gui.message_error_box("Es wurde keine Cutlist ausgewählt!")
                 return
-
             self.result = cutlist
             self.response(1)
 
-        elif self.builder.get_object('button_download').get_active() == True:
+        elif self.builder.get_object('button_download').get_active():
             cutlist = self.treeview_download_cutlists.get_selected()
-
             if not cutlist:
-                self.gui.message_error_box("Es wurde keine Cutlist ausgewählt!")
+                self.app.gui.message_error_box("Es wurde keine Cutlist ausgewählt!")
                 return
-
             cutlist.download(self.app.config.get('general', 'server'), self.filename)
             self.result = cutlist
             self.response(1)
 
 
-def NewLoadCutDialog(app, gui):
-    glade_filename = path.getdatapath('ui', 'LoadCutDialog.glade')
-
+def new(app):
+    glade_filename = otrvpath.getdatapath('ui', 'LoadCutDialog.glade')
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)
     dialog = builder.get_object("load_cut_dialog")
     dialog.app = app
-    dialog.gui = gui
-
     return dialog

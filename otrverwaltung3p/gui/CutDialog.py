@@ -21,7 +21,7 @@ from os.path import basename, exists
 from otrverwaltung3p.constants import Cut_action
 import otrverwaltung3p.cutlists as cutlists_management
 from otrverwaltung3p import fileoperations
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p.gui.widgets.CutlistsTreeView import CutlistsTreeView
 from otrverwaltung3p.GeneratorTask import GeneratorTask
 
@@ -146,7 +146,7 @@ class CutDialog(Gtk.Dialog, Gtk.Buildable):
 
 
 def NewCutDialog(app, gui):
-    glade_filename = path.getdatapath('ui', 'CutDialog.glade')
+    glade_filename = otrvpath.getdatapath('ui', 'CutDialog.glade')
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)

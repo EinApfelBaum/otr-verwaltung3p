@@ -74,7 +74,7 @@ class Restore(BaseAction):
                 fileoperations.move_file(f, self.__app.config.get('general', 'folder_new_otrkeys'))
             elif f.endswith("ac3"):
                 fileoperations.move_file(f, self.__app.config.get('general', 'folder_uncut_avis'))
-            elif self.__app.uncut_video.match(f):
+            elif self.__app.regex_uncut_video.match(f):
                 fileoperations.move_file(f, self.__app.config.get('general', 'folder_uncut_avis'))
             else:
                 fileoperations.move_file(f, self.__app.config.get('general', 'folder_cut_avis'))

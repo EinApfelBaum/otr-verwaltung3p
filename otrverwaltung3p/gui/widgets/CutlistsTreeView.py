@@ -18,7 +18,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf
 
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 
 
 class CutlistsTreeView(Gtk.TreeView):
@@ -26,7 +26,7 @@ class CutlistsTreeView(Gtk.TreeView):
     def __init__(self):
         Gtk.TreeView.__init__(self)
 
-        self.pixbuf_warning = GdkPixbuf.Pixbuf.new_from_file(path.get_image_path('error.png'))
+        self.pixbuf_warning = GdkPixbuf.Pixbuf.new_from_file(otrvpath.get_image_path('error.png'))
 
         self.errors = {
             "100000": "Fehlender Beginn",

@@ -9,7 +9,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 from otrverwaltung3p.constants import DownloadTypes
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 
 
 class DownloadPropertiesDialog(Gtk.Dialog, Gtk.Buildable):
@@ -134,7 +134,7 @@ class DownloadPropertiesDialog(Gtk.Dialog, Gtk.Buildable):
 
 
 def NewDownloadPropertiesDialog():
-    glade_filename = path.getdatapath('ui', 'DownloadPropertiesDialog.glade')
+    glade_filename = otrvpath.getdatapath('ui', 'DownloadPropertiesDialog.glade')
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)

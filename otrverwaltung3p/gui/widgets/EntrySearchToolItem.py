@@ -17,7 +17,7 @@
 import gi
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject, Gdk
+from gi.repository import Gtk, GObject, Gdk, GLib
 import sys
 
 
@@ -49,7 +49,6 @@ class EntrySearchToolItem(Gtk.ToolItem):
         self.show_all()
 
     def do_clear(self):
-        print('do_clear')
         self._clear_entry()
 
     def _clear_entry(self):
@@ -88,17 +87,17 @@ class EntrySearchToolItem(Gtk.ToolItem):
 
     def on_entry_changed(self, widget):
         if self.search_timeout != 0:
-            GObject.source_remove(self.search_timeout)
+            GLib.source_remove(self.search_timeout)
             self.search_timeout = 0
 
         if len(self.entry.get_text()) == 0:
             self.emit("clear")
         else:
             self.entry.modify_base(Gtk.StateType.NORMAL, Gdk.color_parse("#E8E7B6"))
-            self.search_timeout = GObject.timeout_add(250, self._typing_timeout)
+            self.search_timeout = GLib.timeout_add(250, self._typing_timeout)
 
     def on_entry_key_pressed(self, w, ev):
         """ Clear on escape. """
         if ev.keyval == Gdk.keyval_from_name("Escape") and len(self.entry.get_text()) > 0:
-            self.emit("Gtk")
+            self.emit("clear")
             return True

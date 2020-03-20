@@ -23,7 +23,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 
 
 class PlanningDialog(Gtk.Dialog, Gtk.Buildable):
@@ -106,7 +106,7 @@ class PlanningDialog(Gtk.Dialog, Gtk.Buildable):
 
 
 def NewPlanningDialog(gui):
-    glade_filename = path.getdatapath('ui', 'PlanningDialog.glade')
+    glade_filename = otrvpath.getdatapath('ui', 'PlanningDialog.glade')
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)

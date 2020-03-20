@@ -16,12 +16,11 @@
 
 from otrverwaltung3p.constants import Action
 import os.path
-from os.path import splitext
-import logging, time
+import logging
 
 from otrverwaltung3p.cutlists import Cutlist
 from otrverwaltung3p.constants import Action, Status
-from otrverwaltung3p import path
+from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p import fileoperations
 from otrverwaltung3p.GeneratorTask import GeneratorTask
 
@@ -84,14 +83,16 @@ class ConclusionsManager:
         if len(self.conclusions) == 1:
             text = "Eine geschnittene Datei anzeigen."
         else:
-            text = "{} geschnittene Dateien anzeigen.".format(len(self.conclusions))
+            text = f"{len(self.conclusions)} geschnittene Dateien anzeigen."
 
-        # ~ self.app.gui.main_window.builder.get_object('label_conclusion').set_text(text)
-        self.app.gui.main_window.builder.get_object('button_show_conclusion').set_label(text)
-        self.app.gui.main_window.builder.get_object('box_conclusion').show()
+        if self.app.config.get('general', 'show_conclusiondialog_after_cutting'):
+            self.show_conclusions()
+        else:
+            self.app.gui.main_window.builder.get_object('button_show_conclusion').set_label(text)
+            self.app.gui.main_window.builder.get_object('box_conclusion').show()
 
     def show_conclusions(self):
-        conclusions = self.app.gui.dialog_conclusion._run(self.conclusions, self.app.rename_by_schema,
+        conclusions = self.app.gui.dialog_conclusion.run_(self.conclusions, self.app.rename_by_schema,
                                                           self.app.config.get('general', 'folder_archive'))
         self.app.gui.main_window.builder.get_object('box_conclusion').hide()
         self.conclusions = []
@@ -155,12 +156,12 @@ class ConclusionsManager:
                     intended_app_name = "Avidemux"
 
                 if not conclusion.cut.cutlist.local_filename:
-                    conclusion.cut.cutlist.local_filename = self.app.config.get('general',
-                                                                                'folder_uncut_avis') + '/' + os.path.basename(
-                        conclusion.uncut_video) + ".cutlist"
+                    path_uncut_avis = self.app.config.get('general', 'folder_uncut_avis')
+                    conclusion.cut.cutlist.local_filename = \
+                        os.path.join(path_uncut_avis, os.path.basename(conclusion.uncut_video) + ".cutlist")
 
                 conclusion.cut.cutlist.author = self.app.config.get('general', 'cutlist_username')
-                conclusion.cut.cutlist.intended_version = open(path.getdatapath("VERSION"), 'r').read().strip()
+                conclusion.cut.cutlist.intended_version = open(otrvpath.getdatapath("VERSION"), 'r').read().strip()
                 conclusion.cut.cutlist.smart = self.app.config.get('general', 'smart')
 
                 conclusion.cut.cutlist.write_local_cutlist(conclusion.uncut_video, intended_app_name,

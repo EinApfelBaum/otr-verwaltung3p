@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
+<!-- Generated with glade 3.22.2 -->
 <interface>
   <requires lib="gtk+" version="3.16"/>
   <requires lib="LoadCutDialog" version="1.0"/>
@@ -11,7 +11,8 @@
     <property name="window_position">center-on-parent</property>
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">dialog</property>
-    <child>
+    <signal name="key-press-event" handler="on_load_cut_dialog_key_press_event" swapped="no"/>
+    <child type="titlebar">
       <placeholder/>
     </child>
     <child internal-child="vbox">
