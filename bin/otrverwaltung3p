@@ -462,15 +462,15 @@ class App:
     # recursive function for archive to add folders and files with a tree structure
     def __tree(self, parent=None, path=None):
         if parent is not None:
-            dir = self.gui.main_window.treeview_files.get_model().get_value(parent, 0)
+            folder = self.gui.main_window.treeview_files.get_model().get_value(parent, 0)
         else:  # base path (archive directory)
-            dir = path
+            folder = path
 
         files = []
-        files = os.listdir(dir)
+        files = os.listdir(folder)
 
         for file in files:
-            full_path = join(dir, file)
+            full_path = join(folder, file)
 
             if isdir(full_path):
                 tree_iter = self.__append_row_treeview_files(parent, full_path)

@@ -848,7 +848,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         if self.config.get('general', 'new_keyframe_search'):  # gcurse new_keyframe_search
             if direction == "backward":
                 self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT |
-                                        Gst.SeekFlags.SNAP_BEFORE, current_position + 1)
+                                        Gst.SeekFlags.SNAP_BEFORE, current_position - 1)
             else:
                 self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT |
                                         Gst.SeekFlags.SNAP_AFTER, current_position + 1)
