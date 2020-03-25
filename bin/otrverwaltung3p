@@ -135,9 +135,8 @@ class App:
                 'aes_key': b64encode(os.urandom(32)).decode('utf-8'),
                 'after_cut_show': 10,
                 'alt_time_frame_conv': True,
-                'new_keyframe_search': True,
                 'ask_if_all': True,
-                'choose_cutlists_by': 1,  # 0=name, 1=size
+                'choose_cutlists_by': 1,  # 1=name, 0=size
                 'cut_action': Cut_action.ASK,
                 'cut_avis_by': 'SmartMKVmerge',
                 'cut_avis_man_by': 'CutInterface',
@@ -173,6 +172,7 @@ class App:
                 'mplayer_fullscreen': True,
                 'mpv_screen': '0',
                 'mpv_vol_max': 150.0,
+                'new_keyframe_search': True,
                 'otrkey_search': 'http://otrkeyfinder.com/?search=',
                 'passwd_store': 2,  # 0 = Store in conf, 1 = Store in wallet, 2 = Do not store
                 'passwd_store_memory': False,
@@ -185,10 +185,10 @@ class App:
                 'save_email_password': False,
                 'seek_distance_default': 2000,
                 'server': 'http://cutlist.at/',
-                'show_conclusiondialog_after_cutting': False,
                 'show_bottom': False,
+                'show_conclusiondialog_after_cutting': False,
                 'smart': True,
-                'snippets': '[]',
+                'snippets': 'Snippets können in Einstellungen->Cutlist eingetragen werden',
                 'use_internal_icons': False,
                 'verify_decoded': True,
                 'vol_adjust': 'usw,3.0,140__uk,3.0,140',
@@ -711,7 +711,6 @@ class App:
 
         self.locked = False
         # update view
-        self.filenames_locked = []
         self.gui.main_window.do_search(self.__search_text)
         self.show_section(self.section)
 
@@ -817,17 +816,17 @@ class App:
             while Gtk.events_pending():
                 Gtk.main_iteration()
 
-        fileoperations.remove_file(f_edl)
-        fileoperations.remove_file(f_mpv_edl)
-        fileoperations.remove_file(f_sub)
-        fileoperations.remove_file(f_mpv_sub)
+        # fileoperations.remove_file(f_edl)
+        # fileoperations.remove_file(f_mpv_edl)
+        # fileoperations.remove_file(f_sub)
+        # fileoperations.remove_file(f_mpv_sub)
 
     def show_cuts(self, video_filename, cutlist):
         # FIXME doc-string
 
         def edl_subtitles_cb(f_edl, f_mpv_edl, f_sub, f_mpv_sub, cuts):
-            diff = self.config.get('general', 'pre_cut_show')
-            pre_diff = self.config.get('general', 'after_cut_show')
+            pre_cut_show = self.config.get('general', 'pre_cut_show')
+            after_cut_show = self.config.get('general', 'after_cut_show')
 
             sub_count = 0
             sub_mpv_count = 0
@@ -836,52 +835,53 @@ class App:
             f_mpv_edl.write('# mpv EDL v0\n')
 
             for count, (start, duration) in enumerate(cuts):
+                print(f"count: {count}, start: {start}, duration: {duration}")
                 end = start + duration
 
-                f_edl.write("%s 0\n" % (start - diff))
-                f_edl.write("%s %s 0\n" % (start + pre_diff, end - diff))
-                f_edl.write("%s " % (end + pre_diff))
+                f_edl.write(f"{start - pre_cut_show} 0\n")
+                f_edl.write(f"{start + after_cut_show} {end - pre_cut_show} 0\n")
+                f_edl.write(f"{end + after_cut_show} ")
 
-                f_mpv_edl.write('%s, %s, %s\n' % (video_filename, start, diff))
-                f_mpv_edl.write('%s, %s, %s\n' % (video_filename, end - pre_diff, pre_diff))
+                f_mpv_edl.write(f'{video_filename}, {start}, {pre_cut_show}\n')
+                f_mpv_edl.write(f'{video_filename}, {end - after_cut_show}, {after_cut_show}\n')
 
                 if count == 0:
-                    for second in range(diff):
+                    for second in range(pre_cut_show):
                         sub_count += 1
-                        f_sub.write("%s\n" % sub_count)
-                        f_sub.write("%s --> %s\n" % (self.format_seconds(start - diff + second),
-                                                     self.format_seconds(start - diff + second + 1)))
-                        f_sub.write("Sendung beginnt in %s Sekunden...\n\n" % str(diff - second))
+                        f_sub.write(f"{sub_count}\n")
+                        f_sub.write("%s --> %s\n" % (self.format_seconds(start - pre_cut_show + second),
+                                                     self.format_seconds(start - pre_cut_show + second + 1)))
+                        f_sub.write("Sendung beginnt in %s Sekunden...\n\n" % str(pre_cut_show - second))
                 else:
-                    for second in range(diff):
+                    for second in range(pre_cut_show):
                         sub_count += 1
-                        f_sub.write("%s\n" % sub_count)
-                        f_sub.write("%s --> %s\n" % (self.format_seconds(start - diff + second),
-                                                     self.format_seconds(start - diff + second + 1)))
-                        f_sub.write("Werbung #%i endet in %s Sekunden...\n\n" % (count, str(diff - second)))
+                        f_sub.write(f"{sub_count}\n")
+                        f_sub.write("%s --> %s\n" % (self.format_seconds(start - pre_cut_show + second),
+                                                     self.format_seconds(start - pre_cut_show + second + 1)))
+                        f_sub.write("Werbung #%i endet in %s Sekunden...\n\n" % (count, str(pre_cut_show - second)))
 
                 if count == (len(cuts) - 1):
-                    for second in range(diff):
+                    for second in range(pre_cut_show):
                         sub_count += 1
-                        f_sub.write("%s\n" % sub_count)
-                        f_sub.write("%s --> %s\n" % (self.format_seconds(end - diff + second),
-                                                     self.format_seconds(end - diff + second + 1)))
-                        f_sub.write("Sendung endet in %s Sekunden...\n\n" % str(diff - second))
+                        f_sub.write(f"{sub_count}\n")
+                        f_sub.write("%s --> %s\n" % (self.format_seconds(end - pre_cut_show + second),
+                                                     self.format_seconds(end - pre_cut_show + second + 1)))
+                        f_sub.write("Sendung endet in %s Sekunden...\n\n" % str(pre_cut_show - second))
                 else:
-                    for second in range(diff):
+                    for second in range(pre_cut_show):
                         sub_count += 1
-                        f_sub.write("%s\n" % sub_count)
-                        f_sub.write("%s --> %s\n" % (self.format_seconds(end - diff + second),
-                                                     self.format_seconds(end - diff + second + 1)))
-                        f_sub.write("Werbung #%i beginnt in %s Sekunden...\n\n" % (count + 1, str(diff - second)))
+                        f_sub.write(f"{sub_count}\n")
+                        f_sub.write("%s --> %s\n" % (self.format_seconds(end - pre_cut_show + second),
+                                                     self.format_seconds(end - pre_cut_show + second + 1)))
+                        f_sub.write("Werbung #%i beginnt in %s Sekunden...\n\n" % (count + 1, str(pre_cut_show - second)))
 
                 # mpv_sub
-                for second in range(diff):
+                for second in range(pre_cut_show):
                     sub_mpv_count += 1
-                    f_mpv_sub.write("%s\n" % sub_mpv_count)
-                    cut_sec = count * (pre_diff + diff) + diff + second
-                    f_mpv_sub.write("%s --> %s\n" % (self.format_seconds(cut_sec), self.format_seconds(cut_sec + 1)))
-                    f_mpv_sub.write("Schnitt #%i beginnt in %s Sekunden...\n\n" % (count + 1, str(pre_diff - second)))
+                    f_mpv_sub.write(f"{sub_mpv_count}\n")
+                    cut_sec = count * (after_cut_show + pre_cut_show) + pre_cut_show + second
+                    f_mpv_sub.write(f"{self.format_seconds(cut_sec)} --> {self.format_seconds(cut_sec + 1)}\n")
+                    f_mpv_sub.write(f"Schnitt {count + 1} beginnt in {after_cut_show - second} Sekunden...\n\n")
 
             f_edl.write("50000 0")
 
@@ -897,8 +897,8 @@ class App:
         # FIXME doc-string
 
         def edl_subtitles_cb(f_edl, f_mpv_edl, f_sub, f_mpv_sub, cuts):
-            diff = self.config.get('general', 'pre_cut_show')
-            pre_diff = self.config.get('general', 'after_cut_show')
+            pre_cut_show = self.config.get('general', 'pre_cut_show')
+            after_cut_show = self.config.get('general', 'after_cut_show')
 
             length = 0
             sub_count = 0
@@ -906,29 +906,29 @@ class App:
             f_mpv_edl.write('# mpv EDL v0\n')
 
             for count, (start, duration) in enumerate(cuts):
-                f_edl.write("%s %s 0\n" % (pre_diff + length, length + duration - diff))
-                if length == 0 or duration > diff:
-                    f_mpv_edl.write('%s, %s, %s\n' % (video_filename, length, diff))
+                f_edl.write(f"{after_cut_show + length} {length + duration - pre_cut_show} 0\n")
+                if length == 0 or duration > pre_cut_show:
+                    f_mpv_edl.write(f"{video_filename}, {length}, {pre_cut_show}\n")
                 length += duration
-                if duration > diff:
-                    f_mpv_edl.write('%s, %s, %s\n' % (video_filename, length - pre_diff, pre_diff))
+                if duration > pre_cut_show:
+                    f_mpv_edl.write(f"{video_filename}, {length - after_cut_show}, {after_cut_show}\n")
 
                 # vor dem schnitt:
-                for second in range(diff):
+                for second in range(pre_cut_show):
                     sub_count += 1
-                    f_sub.write("%s\n" % sub_count)
-                    f_sub.write("%s --> %s\n" % (self.format_seconds(length - diff + second),
-                                                 self.format_seconds(length - diff + second + 1)))
-                    f_mpv_sub.write("%s\n" % sub_count)
-                    f_mpv_sub.write("%s --> %s\n" % (self.format_seconds((diff + pre_diff) * count + diff + second),
-                                                     self.format_seconds(
-                                                         (diff + pre_diff) * count + diff + second + 1)))
+                    f_sub.write(f"{sub_count}\n")
+                    f_sub.write(f"{self.format_seconds(length - pre_cut_show + second)} --> "
+                                f"{self.format_seconds(length - pre_cut_show + second + 1)}\n")
+                    f_mpv_sub.write(f"{sub_count}\n")
+                    f_mpv_sub.write(
+                        f"{self.format_seconds((pre_cut_show + after_cut_show) * count + pre_cut_show + second)} --> "
+                        f"{self.format_seconds((pre_cut_show + after_cut_show) * count + pre_cut_show + second + 1)}\n")
                     if count == len(cuts) - 1:
-                        f_sub.write("Sendung endet in %s Sekunden...\n\n" % str(diff - second))
-                        f_mpv_sub.write("Sendung endet in %s Sekunden...\n\n" % str(diff - second))
+                        f_sub.write(f"Sendung endet in {pre_cut_show - second} Sekunden...\n\n")
+                        f_mpv_sub.write(f"Sendung endet in {pre_cut_show - second} Sekunden...\n\n")
                     else:
-                        f_sub.write("Schnitt in %s Sekunden...\n\n" % str(diff - second))
-                        f_mpv_sub.write("Schnitt in %s Sekunden...\n\n" % str(diff - second))
+                        f_sub.write(f"Schnitt in {pre_cut_show - second} Sekunden...\n\n")
+                        f_mpv_sub.write(f"Schnitt in {pre_cut_show - second}s Sekunden...\n\n")
 
         error = cutlist.read_cuts()
 
@@ -938,16 +938,17 @@ class App:
 
         self.__show(cutlist.cuts_seconds, video_filename, edl_subtitles_cb)
 
-    def format_seconds(self, seconds):
+    @staticmethod
+    def format_seconds(seconds):
         # FIXME doc-string
 
-        hrs = seconds / 3600
+        hrs = int(seconds / 3600)
         leftover = seconds % 3600
-        mins = leftover / 60
-        secs = leftover % 60
-        ms = int(seconds) - seconds
+        mins = int(leftover / 60)
+        secs = int(leftover % 60)
+        ms = int(int(seconds) - seconds)
 
-        return "%02d:%02d:%02d,%03d" % (hrs, mins, secs, ms)
+        return f"{hrs:02d}:{mins:02d}:{secs:02d},{ms:03d}"
 
     def run(self, link=None):
         # FIXME doc-string
@@ -1032,23 +1033,30 @@ class App:
         action.do(link)
 
     def check_program_paths(self, error_str=None):
-        progs = ["ffmpeg", "ffprobe", "ffmsindex", "mediainfo", "mkvmerge", "mpv"]
+        progs = ["ffmpeg", "ffprobe", "ffmsindex", "mediainfo", "mkvmerge", "mpv", "decoder"]
         fatal = False
         for prog in progs:
             if not os.path.exists(self.config.get_program(prog)):
-                prog_path = shutil.which(prog)
-                if prog_path:
-                    self.config.set('programs', prog, prog_path)
+                if self.config.get_program(prog) in ['intern-easydecoder', 'otrtool']:
+                    pass
                 else:
-                    if isinstance(error_str, str):
-                        if prog in ['mediainfo', 'mkvmerge']:
-                            error_str = error_str + f"- setzen Sie einen gültigen Pfad zu dem Programm {prog}\n"
-                        else:
-                            if fatal:
-                                error_str = error_str + f"Kritischer Fehler: '{prog}' konnte nicht gefunden werden.\n"
+                    prog_path = shutil.which(prog)
+                    if prog_path:
+                        self.config.set('programs', prog, prog_path)
+                    else:
+                        if isinstance(error_str, str):
+                            if prog in ['mediainfo', 'mkvmerge', "decoder"]:
+                                if self.config.get_program(prog) == 'intern-otrdecoder':
+                                    error_str += (f"! Der {prog} wird nicht mehr unterstützt. "
+                                                  "Es wird auf den intern-easydecoder umgestellt.\n")
+                                else:
+                                    error_str += f"- setzen Sie einen gültigen Pfad zu dem Programm {prog}\n"
                             else:
-                                error_str = f"Kritischer Fehler: '{prog}' konnte nicht gefunden werden.\n"
-                                fatal = True
+                                if fatal:
+                                    error_str += f"Kritischer Fehler: '{prog}' konnte nicht gefunden werden.\n"
+                                else:
+                                    error_str = f"Kritischer Fehler: '{prog}' konnte nicht gefunden werden.\n"
+                                    fatal = True
         if isinstance(error_str, str):
             return error_str
 

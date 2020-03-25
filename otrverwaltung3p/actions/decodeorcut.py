@@ -180,10 +180,12 @@ class DecodeOrCut(Cut):
                 if not self.config.get('general', 'verify_decoded'):
                     verify = False
                     command += ["-q"]
+                self.log.debug(f"decoder command: {command}")
             # <-- otrtool
 
             try:
-                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                           universal_newlines=True)
             except OSError:
                 file_conclusion.decode.status = Status.ERROR
                 file_conclusion.decode.message = "Dekoder wurde nicht gefunden."
@@ -198,7 +200,6 @@ class DecodeOrCut(Cut):
                             "Decrypting", "Trying to contact", "Server responded", "info:",
                             "warning:"]
                 for line in iter(process.stderr.readline,''):
-                    line = line.decode("utf-8")
                     if not line:
                         break
                     # Gathering errors
@@ -220,11 +221,11 @@ class DecodeOrCut(Cut):
                 while True:
                     l = ""
                     while True:
-                        c = process.stdout.read(1).decode('utf-8')
+                        c = process.stdout.read(1)
                         if c == "\r" or c == "\n":
                             break
                         l += c
-
+                    self.log.debug(f"decoder output: {l}")
                     if not l:
                         break
 
@@ -253,13 +254,12 @@ class DecodeOrCut(Cut):
                 errors = process.stderr.readlines()
                 error_message = ""
                 for error in errors:
-                    error = error.decode('ISO-8859-1')
-                    if not 'libmediaclient' in error:
+                    # ~ error = error.decode('ISO-8859-1')
+                    if 'libmediaclient' not in error:
                         error_message += error.strip()
 
             if error_message == "":  # dekodieren erfolgreich
                 file_conclusion.decode.status = Status.OK
-
                 file_conclusion.uncut_video = join(self.config.get('general', 'folder_uncut_avis'),
                                                    basename(file_conclusion.otrkey[0:len(file_conclusion.otrkey) - 7]))
 
@@ -288,10 +288,8 @@ class DecodeOrCut(Cut):
             default_cut_action = self.config.get('general', 'cut_action')
 
         for count, file_conclusion in enumerate(file_conclusions):
-            self.app.gui.main_window.set_tasks_text("Cutlist %s/%s wählen" % (count + 1,
-                                                                            len(file_conclusions)))
-            self.app.gui.main_window.set_tasks_progress((count + 1) / float(
-                                                                    len(file_conclusions)) * 100)
+            self.app.gui.main_window.set_tasks_text("Cutlist %s/%s wählen" % (count + 1, len(file_conclusions)))
+            self.app.gui.main_window.set_tasks_progress((count + 1) / float(len(file_conclusions)) * 100)
 
             # file correctly decoded?
             if action == Action.DECODEANDCUT:
@@ -319,9 +317,8 @@ class DecodeOrCut(Cut):
                         download_generator(True)
                     else:
                         self.app.gui.dialog_cut.builder.get_object('label_status').set_markup("")
-                        self.app.gui.dialog_cut.builder.get_object('label_status').set_markup(
-                                                    "<b>%s</b>" % error +
-                                                    " (Es wurde nach allen Qualitäten gesucht)")
+                        self.app.gui.dialog_cut.builder.get_object('label_status')\
+                            .set_markup("<b>%s</b>" % error + " (Es wurde nach allen Qualitäten gesucht)")
                         self.cutlists_error = True
                         self.download_first_try = True
 

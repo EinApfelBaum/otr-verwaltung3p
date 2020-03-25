@@ -252,7 +252,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         treeview = self.builder.get_object('treeview_files')
         treeview.connect('button_press_event', self._on_treeview_context_menu)
         treeview.connect('popup-menu', self._on_treeview_context_menu)
-        treeview.connect('row-activated', self._on_treeview_doubleclick)
+        treeview.connect('row-activated', self._on_treeview_files_row_activated)
         # TreeStore fields: filename, recording_date, size, date_modified, isdir, unlocked
         store = Gtk.TreeStore(str, str, float, float, bool, bool)  # gcurse:LOCK
         treeview.set_model(store)
@@ -661,13 +661,15 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     #  Signal handlers
     #
 
-    def _on_treeview_doubleclick(self, treeview, tree_path, column, data=None):
+    def _on_treeview_files_row_activated(self, treeview, tree_path, column, data=None):
         if self.app.section == Section.OTRKEY:
             self.app.perform_action(Action.DECODE)
         elif self.app.section == Section.VIDEO_UNCUT:
             self.app.perform_action(Action.CUT)
         elif self.app.section == Section.VIDEO_CUT:
             self._cmenu_play_file()
+        elif self.app.section in [Section.TRASH, Section.TRASH_AVI, Section.TRASH_OTRKEY]:
+            self.app.perform_action(Action.RESTORE)
 
     def _on_treeview_context_menu(self, treeview, event=None, *args):
         if event:
@@ -790,7 +792,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         else:
             self.maximized = False
 
-    def _on_main_window_destroy(self, widget, data=None):
+    @staticmethod
+    def _on_main_window_destroy(widget, data=None):
         Gtk.main_quit()
 
     def _on_main_window_delete_event(self, widget, data=None):

@@ -14,14 +14,17 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-import os
-import logging
 import hashlib
+import logging
+import os
 import requests
+import shutil
+import sys
 import urllib.request as urllib2
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, Pango
+
+from gi import require_version
+require_version('Gtk', '3.0')
+from gi.repository import Gdk, Gtk, Pango
 
 from otrverwaltung3p.constants import Cut_action
 from otrverwaltung3p.gui.config_bindings import EntryBinding, FileChooserFolderBinding, \
@@ -73,11 +76,15 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
     def bind_config(self, config):
         # If stored decoder is not in the standard list (see PreferenceWindow.glade)
         # it will be prepended and set as active entry.
-        entry_list = []
-        for row in self.obj('entry_prog_decoder').get_model():
-            entry_list.append(row[0])
+        entries = []
+        if sys.platform == 'linux':
+            entries = ['intern-easydecoder']
+            if shutil.which('otrtool'):
+                entries.append('otrtool')
+            for entry in entries:
+                self.obj('entry_prog_decoder').append(entry, entry)
         decoder_value = self.app.config.get('programs', 'decoder')
-        if decoder_value not in entry_list:
+        if decoder_value not in entries:
             self.obj('entry_prog_decoder').prepend(decoder_value, decoder_value)
             self.obj('entry_prog_decoder').set_active(0)
 

@@ -13,14 +13,14 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # ---END LICENSE---
 
-import sys
-import os
-import glob
 import fileinput
+import glob
+import os
+import sys
 
+from setuptools import Distribution
 from setuptools import setup
 from setuptools.command.install import install
-from setuptools import Distribution
 
 
 def update_data_path(path=None, oldvalue=None):
@@ -30,6 +30,8 @@ def update_data_path(path=None, oldvalue=None):
                 if 'data_dir =' in line:
                     if not oldvalue:  # update to prefix, store oldvalue
                         oldvalue = line
+                        if sys.platform == 'win32':
+                            line = f"data_dir = '{path}'\n"
                         line = f"data_dir = '{path}'\n"
                     else:  # restore oldvalue
                         line = f"{oldvalue}"
@@ -40,6 +42,7 @@ def update_data_path(path=None, oldvalue=None):
         sys.exit(1)
 
     return oldvalue
+
 
 def create_desktop_file(datadir):
     try:
@@ -66,7 +69,10 @@ class InstallCommand(install):
         except KeyError:
             prefix = sys.prefix
 
-        prefixed_path = os.path.join(prefix, 'share/otrverwaltung3p')
+        if sys.platform == 'win32':
+            prefixed_path = os.path.join('/msys64', prefix.replace('/', ''), 'share/otrverwaltung3p')
+        else:
+            prefixed_path = os.path.join(prefix, 'share/otrverwaltung3p')
         previous_datapath = update_data_path(path=prefixed_path)
         create_desktop_file(prefixed_path)
 
@@ -94,7 +100,8 @@ class InstallCommand(install):
             ('share/applications', ["otrverwaltung3p.desktop"])]
 
         if sys.platform == "linux":
-            data_files.append(('share/otrverwaltung3p/tools', glob.glob("data/tools/[!_]*")))
+            tools = [tool for tool in glob.glob("data/tools/[!_]*") if not os.path.isdir(tool)]
+            data_files.append(('share/otrverwaltung3p/tools', tools))
 
         return data_files
 

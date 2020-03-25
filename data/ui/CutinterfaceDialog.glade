@@ -291,7 +291,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Pfeil abwärts (Down)</property>
+                        <property name="tooltip_text" translatable="yes">Abwärts (Down)</property>
                         <signal name="clicked" handler="on_button_keyfast_back_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -307,7 +307,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Strg - Pfeil links (Ctrl - Left)</property>
+                        <property name="tooltip_text" translatable="yes">Strg - Links (Ctrl - Left)</property>
                         <signal name="clicked" handler="on_button_seek2_back_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -323,7 +323,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Shift - Pfeil abwärts (Shift - Down)</property>
+                        <property name="tooltip_text" translatable="yes">Shift - Abwärts (Shift - Down)</property>
                         <signal name="clicked" handler="on_button_seek1_back_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -339,7 +339,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Shift - Pfeil links (Shift - Left)</property>
+                        <property name="tooltip_text" translatable="yes">Shift - Links (Shift - Left)</property>
                         <signal name="clicked" handler="on_button_fast_back_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -355,7 +355,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Pfeil links (Left)</property>
+                        <property name="tooltip_text" translatable="yes">Links (Left)</property>
                         <signal name="clicked" handler="on_button_back_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -371,7 +371,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Pfeil rechts (Right)</property>
+                        <property name="tooltip_text" translatable="yes">Rechts (Right)</property>
                         <signal name="clicked" handler="on_button_forward_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -387,7 +387,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Shift - Pfeil rechts (Shift - Right)</property>
+                        <property name="tooltip_text" translatable="yes">Shift - Rechts (Shift - Right)</property>
                         <signal name="clicked" handler="on_button_fast_forward_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -403,7 +403,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Shift - Pfeil aufwärts (Shift - Up)</property>
+                        <property name="tooltip_text" translatable="yes">Shift - Aufwärts (Shift - Up)</property>
                         <signal name="clicked" handler="on_button_seek1_forward_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -419,7 +419,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Strg - Pfeil rechts (Ctrl - Right)</property>
+                        <property name="tooltip_text" translatable="yes">Strg - Rechts (Ctrl - Right)</property>
                         <signal name="clicked" handler="on_button_seek2_forward_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -434,7 +434,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Pfeil aufwärts (Up)</property>
+                        <property name="tooltip_text" translatable="yes">Aufwärts (Up)</property>
                         <signal name="clicked" handler="on_button_keyfast_forward_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -576,6 +576,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Esc</property>
                         <signal name="clicked" handler="on_button_deselect_clicked" swapped="no"/>
                       </object>
                       <packing>

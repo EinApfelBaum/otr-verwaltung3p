@@ -695,6 +695,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                     # -100 frames
                     self.on_button_seek1_back_clicked(None)
                     return True
+                elif keyname == 'DEL':
+                    self.on_button_delete_cut_clicked(None)
+                    return True
             # ALT
             if not mod_ctrl and not mod_shift and mod_alt:
                 if keyname == 'LEFT':
@@ -746,6 +749,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                     self.select_cut('prev')
                     return True
                 elif keyname == 'ESCAPE':
+                    self.on_button_deselect_clicked(None)
                     return True
                 else:
                     self.log.debug(f"keyname: {keyname}")

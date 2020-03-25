@@ -506,11 +506,6 @@ Hier muss auch dann ein bestehender Ordner angegeben werden,  wenn die Archivier
                           <object class="GtkComboBoxText" id="entry_prog_decoder">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <items>
-                              <item id="intern-otrdecoder" translatable="yes">intern-otrdecoder</item>
-                              <item id="intern-easydecoder" translatable="yes">intern-easydecoder</item>
-                              <item id="otrtool" translatable="yes">otrtool</item>
-                            </items>
                             <signal name="changed" handler="_on_entry_prog_decoder_changed" swapped="no"/>
                           </object>
                           <packing>

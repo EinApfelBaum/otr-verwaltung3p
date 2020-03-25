@@ -185,11 +185,13 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         # TODO gcurse:WARN_NOT_ALL_SEEN
         if self.all_file_conclusions_seen:
             self.set_entry_suggested_on_close()
+            self.app.filenames_locked = []
             self.close()
         elif self.app.gui.question_box("Es wurden nicht alle Dateien geprüft!\n"
                                        "Soll der Dialog trotzdem geschlossen werden?\n\n"
                                        "Auch alle nicht geprüften Dateien werden dann geschnitten!"):
             self.set_entry_suggested_on_close()
+            self.app.filenames_locked = []
             self.close()
         else:
             # not closing the dialog

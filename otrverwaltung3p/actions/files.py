@@ -42,6 +42,7 @@ class Delete(BaseAction):
                     fileoperations.move_file(f, self.__app.config.get('general', 'folder_trash_otrkeys'))
                 else:
                     fileoperations.move_file(f, self.__app.config.get('general', 'folder_trash_avis'))
+        self.__app.filenames_locked = []
 
 
 class RealDelete(BaseAction):
@@ -59,6 +60,7 @@ class RealDelete(BaseAction):
         if self.__gui.question_box(message + "endgültig gelöscht werden?"):
             for f in filenames:
                 fileoperations.remove_file(f)
+        self.__app.filenames_locked = []
 
 
 class Restore(BaseAction):
@@ -102,6 +104,7 @@ class Rename(BaseAction):
                 fileoperations.rename_file(f, new_name)
         else:
             self.update_list = False
+        self.__app.filenames_locked = []
 
 
 class NewFolder(BaseAction):

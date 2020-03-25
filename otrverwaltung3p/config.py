@@ -14,15 +14,25 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-
-import json
-import os.path
-import logging
 from base64 import b64decode, b64encode
+import json
+import logging
+import os.path
+import sys
+
 try:
     import keyring
     keyring_available = True
+    if sys.platform == 'win32':
+        from keyring.backends import Windows
+        keyring.set_keyring(Windows.WinVaultKeyring())
+    elif sys.platform == 'darwin':
+        from keyring.backends import OS_X
+        keyring.set_keyring(keyring.backends.OS_X.Keyring())
 except ImportError:
+    keyring = None
+    Windows = None
+    OS_X = None
     keyring_available = False
 
 from otrverwaltung3p import path as otrvpath
@@ -40,7 +50,7 @@ class Config:
         self.__fields = fields
         self.__callbacks = {}
         self.log = logging.getLogger(self.__class__.__name__)
-        self.keyring_available = keyring_available
+        self.keyring_available = keyring_available  # PreferenceWindow.py uses this
         self.log.debug(f"Keyring available: {self.keyring_available}")
 
     def connect(self, category, option, callback):
@@ -57,7 +67,8 @@ class Config:
         except KeyError:
             pass
 
-        if option == 'password' and self.__fields['general']['passwd_store'] == 1 and value is not None:
+        if option == 'password' and self.__fields['general']['passwd_store'] == 1 and value is not None \
+                and self.keyring_available:
             keyring.set_password("otr-verwaltung3p", self.__fields['general']['email'], value)
             self.log.debug("Writing password to keyring")
         else:
@@ -67,7 +78,7 @@ class Config:
         """ Gets a configuration option. """
         value = ""
 
-        if option == 'password' and self.__fields['general']['passwd_store'] == 1:
+        if option == 'password' and self.__fields['general']['passwd_store'] == 1 and self.keyring_available:
             password = keyring.get_password("otr-verwaltung3p", self.__fields['general']['email'])
             if password is not None:
                 value = password
