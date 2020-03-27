@@ -20,8 +20,6 @@ from gi.repository import GLib, Gdk, Gst, GstPbutils, Gtk
 
 Gst.init(None)
 
-# from otrverwaltung3p.elements import KeySeekElement
-# from otrverwaltung3p.elements import DecoderWrapper
 from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p import cutlists
 from otrverwaltung3p.gui import LoadCutDialog
@@ -42,23 +40,20 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.buttonClose = False
         self.buttonOk = False
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
-        self.current_frame_position = 0
-        self.cut_selected = -1
-        self.cut_selected_last = -1
-        self.cutlist = None
-        self.cutslistmodel = None
+        self.current_frame_position, self.cut_selected, self.cut_selected_last = 0, -1, -1
+        self.cutlist, self.cutslistmodel = None, None
         self.filename = ''
         self.fileuri = None
         self.frames = 0
-        self.frame_timecode = self.timecode_frame = {}
+        self.frame_timecode, self.timecode_frame = {}, {}
         self.getVideoLength = True
         self.hide_cuts = False
-        self.img_pause = self.img_play = None
+        self.img_pause, self.img_play = None, None
         self.initial_cutlist = []
         self.initial_cutlist_in_frames = False
         self.is_playing = False
         self.keyframes = None
-        self.last_direction = "none"
+        self.last_direction = 'none'
         self.marker_a, self.marker_b = 0, -1
         self.movie_box = None
         self.player = None
@@ -72,9 +67,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.videolength = 0
         self.widgets_tt_names = ['button_play', 'button_a', 'button_b', 'button_remove', 'button_keyfast_back',
                                  'button_seek2_back', 'button_seek1_back', 'button_fast_back', 'button_back',
-                                 'button_forward', 'button_fast_forward', 'button_seek1_forward', 'button_seek2_forward',
-                                 'button_keyfast_forward', 'button_jump_to_marker_a', 'button_jump_to_marker_b',
-                                 'load_button']
+                                 'button_forward', 'button_fast_forward', 'button_seek1_forward',
+                                 'button_seek2_forward', 'button_keyfast_forward', 'button_jump_to_marker_a',
+                                 'button_jump_to_marker_b', 'load_button']
         self.widgets_tt_obj = []
 
     def do_parser_finished(self, builder):
@@ -582,14 +577,12 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         else:
             self.builder.get_object('button_remove').set_label('Übernehmen')
 
-    def convert_sec(self, time):
-        s, rest = divmod(time, Gst.SECOND)
-
+    @staticmethod
+    def convert_sec(sec):
+        s, rest = divmod(sec, Gst.SECOND)
         h, s = divmod(s, 3600)
         m, s = divmod(s, 60)
-
         time_str = "%02i:%02i:%02i.%03i" % (h, m, s, rest*1000/Gst.SECOND)
-
         return time_str
 
     def contextmenu_label_filename(self, *args):

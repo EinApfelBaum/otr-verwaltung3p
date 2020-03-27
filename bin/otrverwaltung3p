@@ -31,8 +31,8 @@ from os.path import isdir, join, splitext
 from pathlib import Path
 
 try:
-    import gi
-    gi.require_version('Gtk', '3.0')
+    from gi import require_version
+    require_version('Gtk', '3.0')
     from gi.repository import Gtk, Gdk
 except Exception as e:
     print("Gtk or Gdk is missing.")

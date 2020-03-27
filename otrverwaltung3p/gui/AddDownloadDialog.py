@@ -3,18 +3,17 @@
 # This file is in the public domain
 # END LICENSE
 
-import gi
-
-gi.require_version('Gtk', '3.0')
+from gi import require_version
+require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf
+# import base64
+# ~ import libtorrent as lt
+# import os
+# import requests
+# import subprocess
 # import urllib, urllib2
 # import urllib.request as request
-# import requests
-# import re
-# import subprocess
-# import base64
-# import os
-# ~ import libtorrent as lt
+import re
 
 from otrverwaltung3p.GeneratorTask import GeneratorTask
 from otrverwaltung3p import cutlists
@@ -28,6 +27,7 @@ class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
 
     def __init__(self):
         Gtk.Dialog.__init__(self)
+        self.builder, self.cutlists_treeview, self.error = None, None, None
         self.mode = 0
         self.filename = ""
 
@@ -47,23 +47,22 @@ class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
         selection = self.builder.get_object('treeview_programs').get_selection()
         selection.connect('changed', self.treeview_programs_selection_changed)
 
-    ## del_libtorrent ->
-
+    # del_libtorrent ->
     """
     def get_download_options(self):
         if self.builder.get_object('radiobutton_torrent').get_active():
-            return ('torrent',)
+            return 'torrent'
         else:
             link = self.builder.get_object('entry_link').get_text()
 
             if self.builder.get_object('checkbutton_cut').get_active():
                 cutlist_id = self.cutlists_treeview.get_selected().id
-                return ('normal', 'decodeandcut', link, cutlist_id)
+                return 'normal', 'decodeandcut', link, cutlist_id
 
             if self.builder.get_object('checkbutton_decode').get_active():
-                return ('normal', 'decode', link)
+                return 'normal', 'decode', link
 
-            return ('normal', link)
+            return 'normal', link
 
     #
     # SEARCH
@@ -78,9 +77,8 @@ class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
             yield 'Verbindungsprobleme'
             return
 
-        results = re.findall(
-            r'title="(([^&]*)_([0-9\.]*)_([0-9-]*)_([^_]*)_([0-9]*)_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|mp4).otrkey)"[^\(]*>\(([0-9]*)\)',
-            html)
+        results = re.findall(r'title="(([^&]*)_([0-9\.]*)_([0-9-]*)_([^_]*)_([0-9]*)_TVOON_DE.mpg\.'
+                             r'(avi|HQ\.avi|HD\.avi|mp4).otrkey)"[^\(]*>\(([0-9]*)\)', html)
         for result in results:
             filename, name, date, time, station, length, format, mirrors = result
 
@@ -275,7 +273,8 @@ class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
         self.builder.get_object('box_normal').set_sensitive(not widget.get_active())
 
     def on_button_mirror_search_clicked(self, widget, data=None):
-        subprocess.call(["xdg-open", "http://otrkeyfinder.com/?search=%s" % self.filename])
+        uri = f"http://otrkeyfinder.com/?search={self.filename}"
+        Gtk.show_uri_on_window(self, uri, Gdk.CURRENT_TIME)
 
     def on_button_cancel_clicked(self, widget, data=None):
         self.response(-6)
@@ -299,10 +298,10 @@ class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
             self.response(-5)
     """
 
-    ## <- del_libtorrent
+    # <- del_libtorrent
 
 
-def NewAddDownloadDialog(gui, config, via_link, link=None):
+def new(gui, config, via_link, link=None):
     glade_filename = otrvpath.getdatapath('ui', 'AddDownloadDialog.glade')
 
     builder = Gtk.Builder()

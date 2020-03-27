@@ -45,7 +45,6 @@ class Config:
 
     def __init__(self, config_file, fields):
         """ """
-
         self.__config_file = config_file
         self.__fields = fields
         self.__callbacks = {}
@@ -60,13 +59,11 @@ class Config:
     def set(self, category, option, value):
         printed_value = "*****" if option in ['email', 'password', 'aes_key', 'server'] else value
         self.log.debug(f"Set [{category}].[{option}] to {printed_value}")
-
         try:
             for callback in self.__callbacks[category][option]:
                 callback(value)
         except KeyError:
             pass
-
         if option == 'password' and self.__fields['general']['passwd_store'] == 1 and value is not None \
                 and self.keyring_available:
             keyring.set_password("otr-verwaltung3p", self.__fields['general']['email'], value)
@@ -102,28 +99,25 @@ class Config:
             except OSError:
                 pass
 
-            config_file = open(self.__config_file, "w")
+            with open(self.__config_file, "w") as config_file:
+                if self.__fields['general']['passwd_store'] == 0:  # Store password in conf
+                    if len(str(self.__fields['general']['password'])) > 0:
+                        key = b64decode(self.__fields['general']['aes_key'].encode('UTF-8'))
+                        enc_aes = pyaes.AESModeOfOperationCTR(key)
+                        cipher_text = enc_aes.encrypt(self.__fields['general']['password'])
+                        self.__fields['general']['password'] = b64encode(cipher_text).decode('UTF-8')
+                else:  # Password will not be stored or stored in keyring/wallet
+                    self.__fields['general']['password'] = ''
+                self.log.debug("Writing to {0}".format(self.__config_file))
+                json.dump(self.__fields, config_file, ensure_ascii=False, sort_keys=True, indent=4)
 
-            if self.__fields['general']['passwd_store'] == 0:  # Store password in conf
-                if len(str(self.__fields['general']['password'])) > 0:
-                    key = b64decode(self.__fields['general']['aes_key'].encode('UTF-8'))
-                    enc_aes = pyaes.AESModeOfOperationCTR(key)
-                    cipher_text = enc_aes.encrypt(self.__fields['general']['password'])
-                    self.__fields['general']['password'] = b64encode(cipher_text).decode('UTF-8')
-            else:  # Password will not be stored or stored in keyring/wallet
-                self.__fields['general']['password'] = ''
-
-            self.log.debug("Writing to {0}".format(self.__config_file))
-            json.dump(self.__fields, config_file, ensure_ascii=False, sort_keys=True, indent=4)
-            config_file.close()
             os.chmod(self.__config_file, 0o600)
         except IOError as message:
-            self.log.error("Config file not available. Dumping configuration:")
+            self.log.error(f"Config file not available. ({message}) Dumping configuration:")
             print(json.dumps(self.__fields, sort_keys=True, indent=4))
 
     def load(self):
         """ Reads an existing configuration file. """
-
         try:
             with open(self.__config_file, 'r') as config:
                 json_config = json.load(config)

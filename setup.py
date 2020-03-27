@@ -10,7 +10,7 @@
 # PURPOSE.  See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along
-# with this program.  If not, see <http://www.gnu.org/licenses/>.
+# with this program. If not, see <http://www.gnu.org/licenses/>.
 # ---END LICENSE---
 
 import fileinput
@@ -105,8 +105,17 @@ class InstallCommand(install):
 
         return data_files
 
+    @staticmethod
+    def get_requirements():
+        # Only requirements that have to be installed via pip in msys2
+        requirements = ['appdirs', 'psutil']
+        if sys.platform == 'win32':
+            requirements.append('keyring<=19.2.0')  # else pyinstaller can't handle it
+        else:
+            requirements.append('keyring')
 
-assert sys.version_info[0] == 3, "otr-verwaltung3p is Python 3 only."
+
+assert sys.version_info >= (3, 6), "otr-verwaltung3p is Python 3.6+ only."
 # distutils depends on setup.py beeing executed from the same dir.
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
@@ -118,8 +127,9 @@ setup(
     url='https://github.com/EinApfelBaum/otr-verwaltung3p',
     license='GPL-3',
     author='Benjamin Elbers',
-    author_email='noone@nowhere.org',
+    author_email='PleaseContactUsViaAnIssue@github.com',
     scripts=['bin/otrverwaltung3p'],
     packages=['otrverwaltung3p', 'otrverwaltung3p.actions', 'otrverwaltung3p.elements', 'otrverwaltung3p.gui',
               'otrverwaltung3p.gui.widgets', 'otrverwaltung3p.libs.pyaes', 'otrverwaltung3p.libs.pymediainfo'],
-    data_files=InstallCommand.get_data_files())
+    data_files=InstallCommand.get_data_files(),
+    install_requires=InstallCommand.get_requirements())

@@ -17,19 +17,21 @@
 """ Stellt Methoden für Dateioperationen bereit.
 Zeigt bei Fehlern einen gtk.MessageDialog an."""
 
-import gi
-
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
-import os
-import shutil, logging
 from os.path import join, basename, exists, dirname, splitext
+import logging
+import os
+import shutil
+
+from gi import require_version
+require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 
 # TODO: Achten auf :/\* etc. in Dateiname!
 # TODO: Fehler abfangen, fehlerwert zurückgeben, damit das Programm weitermachen kann
 
 log = logging.getLogger(__name__)
+
 
 def __error(message_text):
     dialog = Gtk.MessageDialog(
@@ -53,54 +55,47 @@ def handle_error(error_cb, message):
 def remove_file(filename, error_cb=__error):
     """ Entfernt die angegebene Datei. """
 
-    log.debug("Remove {}".format(filename))
+    log.debug(f"Remove {filename}")
     try:
         if os.path.isfile(filename):
             os.remove(filename)
         elif os.path.isdir(filename):
             os.rmdir(filename)
     except Exception as e:
-        handle_error(error_cb, "Fehler beim Löschen von %s (%s)." % (filename, e))
+        handle_error(error_cb, f"Fehler beim Löschen von {filename} ({e})")
 
 
 def rename_file(old_filename, new_filename, error_cb=__error):
     """ Benennt eine Datei um. Wenn die Datei bereits existiert, wird der neue Name um eine Zahl erweitert. """
 
     if old_filename == new_filename:
-        handle_error(error_cb, "Umbenennen: Die beiden Dateinamen stimmen überein! (%s)" % old_filename)
+        handle_error(error_cb, f"Umbenennen: Die beiden Dateinamen stimmen überein! ({old_filename})")
         return
-
     new_filename = make_unique_filename(new_filename)
-
-    log.debug("Rename {} to {}".format(old_filename, new_filename))
-
+    log.debug(f"Rename {old_filename} to {new_filename}")
     try:
         os.rename(old_filename, new_filename)
     except Exception as e:
-        handle_error(error_cb, "Fehler beim Umbenennen von %s nach %s (%s)." % (old_filename, new_filename, e))
+        handle_error(error_cb, f"Fehler beim Umbenennen von {old_filename} nach {new_filename} ({e}).")
         return
-
     return new_filename
 
 
 def move_file(filename, target, error_cb=__error):
     """ Verschiebt eine Datei in den angegebenen Ordner."""
-    """ return: new filename """
 
     new_filename = join(target, basename(filename))
-
     if exists(new_filename):
-        handle_error(error_cb, "Umbenennen: Die Datei existiert bereits! (%s)" % new_filename)
+        handle_error(error_cb, f"Umbenennen: Die Datei existiert bereits! ({new_filename})")
         return filename
-
-    log.debug("Move {} to {}".format(filename, target))
+    log.debug(f"Moving {filename} to {target}")
     try:
         os.rename(filename, new_filename)
     except OSError as e:
         try:
             shutil.move(filename, target)
-        except Exception:
-            handle_error(error_cb, "Fehler beim Verschieben von %s nach %s (%s). " % (filename, target, e))
+        except Exception as e:
+            handle_error(error_cb, f"Fehler beim Verschieben von {filename} nach {target} ({e}). ")
             return filename
 
     if os.path.isfile(filename + '.cutlist'):
@@ -109,28 +104,33 @@ def move_file(filename, target, error_cb=__error):
 
 
 def make_unique_filename(filename):
-    """ Gleicht den gegebenen Dateinamen an, sodass  """
+    """If filename exists a number will be added to it to compose new_filename:
+    ex. /path/to/file.name -> /path/to/file.1.name
+    """
     new_filename = filename
     count = 1
     while exists(new_filename):
         path, extension = splitext(filename)
-        new_filename = "%s.%i%s" % (path, count, extension)
+        new_filename = f"{path}.{count:d}.{extension}"
         count += 1
-
     return new_filename
 
 
 def get_size(filename):
-    """ Gibt die Dateigröße in Bytes zurück. """
-    filestat = os.stat(filename)
-    size = filestat.st_size
-
+    """Returns the file size in bytes."""
+    if os.path.isfile(filename):
+        filestat = os.stat(filename)
+        size = filestat.st_size
+    else:
+        size = 0
     return size
 
 
 def get_date(filename):
     """ Gibt das Datum, an dem die Datei zuletzt geändert wurde, zurück."""
-    filestat = os.stat(filename)
-    date = filestat.st_mtime
-
+    if os.path.isfile(filename):
+        filestat = os.stat(filename)
+        date = filestat.st_mtime
+    else:
+        date = 0
     return date
