@@ -12,16 +12,18 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
-##END LICENSE
+# END LICENSE
 
-# import gi
-# gi.require_version('Gtk', '3.0')
-# from gi.repository import Gtk
-# import re
+import logging
+from pathlib import Path
 import os
 import subprocess
-import logging
+import sys
 import tempfile
+
+from gi import require_version
+require_version('Gst', '1.0')
+from gi.repository import Gst
 
 from otrverwaltung3p.actions.cut import Cut
 from otrverwaltung3p.constants import Format
@@ -75,18 +77,18 @@ class CutSmartMkvmerge(Cut):
             returns: name of cut video, error_message """
         # configuration
         videolist = []  # result list for smart rendering simulation
-        audio_import_files = [
-            filename]  # otr files which have audio streams  and needs to be cutted (e.g. OTR avi and ac3)
+        # otr files which have audio streams and needs to be cutted (e.g. OTR avi and ac3)
+        audio_import_files = [filename]
         process_list = []  # list of started processes
         mkvmerge_list = []  # list of started mkvmerge processes
         video_splitframes = ''  # mkvmerge split string for cutting the video at keyframes
         audio_timecodes = ''  # mkvmerge split timecodes for cutting the audio
         ac3_file = None  # AC3 source file
         warning_msg = None
+        processing_errors = "\n"
         mkvmerge = self.config.get_program('mkvmerge')
         x264 = self.config.get_program('x264')
         ffmpeg = self.config.get_program('ffmpeg')
-        self.log.debug("FFMPEG: {}".format(ffmpeg))
         encoder_engine = self.config.get('smartmkvmerge', 'encoder_engine')
         # env
         my_env = os.environ.copy()
@@ -97,52 +99,89 @@ class CutSmartMkvmerge(Cut):
         # analyse file
         fps, dar, sar, max_frames, ac3_stream, error = self.analyse_mediafile(filename)
         if error:
-            return None, "Konnte FPS nicht bestimmen: " + error
+            return None, "Analyse der Datei schlug fehl: " + error
+
+        cutlist.fps = fps
+        if not cutlist.cuts_frames:
+            for start, duration in cutlist.cuts_seconds:
+                cutlist.cuts_frames.append((int(start * cutlist.fps), int(duration * cutlist.fps)))
+        elif not cutlist.cuts_seconds:
+            for start, duration in cutlist.cuts_frames:
+                cutlist.cuts_seconds.append((float(start) / cutlist.fps), (float(duration) / cutlist.fps))
+        self.log.error(f"cutlist.cuts_frames: {cutlist.cuts_frames}")
+        self.log.error(f"cutlist.cuts_seconds: {cutlist.cuts_seconds}")
 
         # codec configuration string
-        format, ac3_file, bframe_delay, _ = self.get_format(filename)
-        if format == Format.HQ:
+        codec_core = -1
+        vformat, ac3_file, bframe_delay, _ = self.get_format(filename)
+        hd_offset = [0, 0]
+        if vformat == Format.HQ:
+            self.log.error(f"vformat: HQ")
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(
                     self.config.get('smartmkvmerge', 'x264_hq_string').split(' '), filename)
             elif encoder_engine == 'ffmpeg':
-                codec, codec_core = self.ffmpeg_codec_options(
+                codec, codec_core = self.complete_ffmpeg_opts(
                     self.config.get('smartmkvmerge', 'ffmpeg_hq_x264_options').split(' '), filename)
-        elif format == Format.HD:
+        elif vformat == Format.HQ0:  # HQ 2011/2012 and older
+            if encoder_engine == 'x264':
+                codec, codec_core = self.complete_x264_opts(
+                    self.config.get('smartmkvmerge', 'x264_hq0_string').split(' '), filename)
+            elif encoder_engine == 'ffmpeg':
+                codec, codec_core = self.complete_ffmpeg_opts(
+                    self.config.get('smartmkvmerge', 'ffmpeg_hq0_x264_options').split(' '), filename, vformat=vformat)
+            codec_core = 125  # Fake
+        elif vformat == Format.HD:
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(
                     self.config.get('smartmkvmerge', 'x264_hd_string').split(' '), filename)
             elif encoder_engine == 'ffmpeg':
-                codec, codec_core = self.ffmpeg_codec_options(
+                codec, codec_core = self.complete_ffmpeg_opts(
                     self.config.get('smartmkvmerge', 'ffmpeg_hd_x264_options').split(' '), filename)
-        elif format == Format.MP4:
+        elif vformat == Format.HD0:
+            if encoder_engine == 'x264':
+                codec, codec_core = self.complete_x264_opts(
+                    self.config.get('smartmkvmerge', 'x264_hd0_string').split(' '), filename)
+            elif encoder_engine == 'ffmpeg':
+                codec, codec_core = self.complete_ffmpeg_opts(
+                    self.config.get('smartmkvmerge', 'ffmpeg_hd_x264_options').split(' '), filename)
+        elif vformat == Format.HD2:
+            # hd_offset = [5, 0]
+            if encoder_engine == 'x264':
+                codec, codec_core = self.complete_x264_opts(self.config.get('smartmkvmerge', 'x264_hd2_string')
+                                                            .split(' '), filename)
+            elif encoder_engine == 'ffmpeg':
+                codec, codec_core = self.complete_ffmpeg_opts(
+                    self.config.get('smartmkvmerge', 'ffmpeg_hd2_x264_options').split(' '), filename, vformat=vformat)
+        elif vformat == Format.MP4:
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(
                     self.config.get('smartmkvmerge', 'x264_mp4_string').split(' '), filename)
             elif encoder_engine == 'ffmpeg':
-                codec, codec_core = self.ffmpeg_codec_options(
+                codec, codec_core = self.complete_ffmpeg_opts(
                     self.config.get('smartmkvmerge', 'ffmpeg_mp4_x264_options').split(' '), filename, quality='MP4')
-        elif format == Format.AVI:
+        elif vformat == Format.MP40:
+            if encoder_engine == 'x264':
+                codec, codec_core = self.complete_x264_opts(
+                    self.config.get('smartmkvmerge', 'x264_mp40_string').split(' '), filename)
+            elif encoder_engine == 'ffmpeg':
+                codec, codec_core = self.complete_ffmpeg_opts(
+                    self.config.get('smartmkvmerge', 'ffmpeg_mp4_x264_options').split(' '), filename, quality='MP4')
+            codec_core = 125  # Fake
+        elif vformat == Format.AVI:
             encoder_engine = 'ffmpeg'
             codec = self.config.get('smartmkvmerge', 'ffmpeg_avi_mpeg4_options').split(' ')
-            codec_core = 125
+            codec_core = 125  # Fake
         else:
-            return None, "Format nicht unterstützt (Nur MP4 H264, HQ H264 und HD H264 sind möglich)."
+            return None, f"Format nicht unterstützt (Nur MP4 H264, HQ H264 und HD H264 sind möglich)."
 
-        self.log.debug("Codec: {}".format(codec))
-        self.log.debug("Codec core: {}".format(codec_core))
-
-        if not codec_core >= 125:
-            warning_msg = (f"\nUnbekannte Kodierung entdeckt! codec_core: {str(codec_core)}"
-                           "\nDiese Datei genau prüfen und notfalls mit intern-vdub schneiden.\n\n"
-                           "Wenn otr-verwaltung3p-vdub installiert wäre, würde automatisch "
-                           "mit intern-vdub geschnitten werden.")
+        if codec_core == -1:
+            warning_msg = "TODO Die Datei kann nicht geschnitten werden, da die Kodiermethode unbekannt ist."
             return None, warning_msg
 
         # test workingdir
         if os.access(self.config.get('smartmkvmerge', 'workingdir').rstrip(os.sep), os.W_OK):
-            self.workingdir = os.path.abspath(self.config.get('smartmkvmerge',
-                                                                    'workingdir')).rstrip('/')
+            self.workingdir = os.path.abspath(self.config.get('smartmkvmerge', 'workingdir')).rstrip('/')
         else:
             return None, "Ungültiges Temp Verzeichnis. Schreiben nicht möglich."
 
@@ -152,11 +191,11 @@ class CutSmartMkvmerge(Cut):
         if self.config.get('smartmkvmerge', 'single_threaded_automatic'):
             try:
                 memory = self.meminfo()
-                if self.available_cpu_count() > 1 and memory.free > (os.stat(filename).st_size):
+                if self.available_cpu_count() > 1 and memory.free > os.stat(filename).st_size:
                     flag_singlethread = True
                 else:
                     flag_singlethread = False
-            except Exception  as e:
+            except Exception as e:
                 flag_singlethread = self.config.get('smartmkvmerge', 'single_threaded')
 
         self.log.debug(f"flag_singlethread: {flag_singlethread}")
@@ -165,14 +204,13 @@ class CutSmartMkvmerge(Cut):
         if ac3_file:
             audio_import_files.append(ac3_file)
 
-        audio_timecodes = (',+'.join(
-            [self.get_timecode(start) + '-' + self.get_timecode(start + duration) for start, duration in
-             cutlist.cuts_seconds]))
+        audio_timecodes = (',+'.join([self.seconds_to_hms(start) + '-' + self.seconds_to_hms(start + duration)
+                                      for start, duration in cutlist.cuts_seconds]))
         audio_timecodes = audio_timecodes.lstrip(',+')
 
         command = [mkvmerge, '-D', '--split', 'parts:' + audio_timecodes, '-o',
                    self.workingdir + '/audio_copy.mkv'] + audio_import_files
-        self.log.debug("Command: {}".format(command))
+        self.log.debug(f"Command: {command}")
         try:
             blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                                 universal_newlines=True, env=my_env)
@@ -180,69 +218,68 @@ class CutSmartMkvmerge(Cut):
             return None, e.strerror + ": " + mkvmerge
         mkvmerge_list.append(blocking_process)
         if flag_singlethread:
-            self.show_progress(blocking_process)
+            processing_errors += self.show_progress(blocking_process)
 
         # video part 1 - read keyframes
         keyframes, error = self.get_keyframes_from_file(filename)
-        if keyframes == None:
-            return None, "Keyframes konnten nicht ausgelesen werden."
+        if keyframes is None:
+            return None, "Keyframes konnten nicht ausgelesen werden." + "\n" + error
 
         # video part 2 - simulate smart rendering process
         for frame_start, frames_duration in cutlist.cuts_frames:
             result = self.__simulate_smart_mkvmerge(int(frame_start), int(frames_duration), keyframes)
-            if result != None:
+            if result is not None:
                 videolist += result
             else:
-                return None, 'Cutlist oder zu schneidende Datei passen nicht zusammen oder sind fehlerhaft.'
-        self.log.debug("Videolist: {}".format(videolist))
+                return None, ('Cutlist oder zu schneidende Datei passen nicht zusammen oder sind fehlerhaft.'
+                              'cutsmartmkvmerge:230:Result of __simulate_smart_mkvmerge is None')
+        self.log.error(f"video part 2:Videolist: {videolist}")
 
         # video part 3 - encode small parts - smart rendering part (1/2)
         for encode, start, duration, video_part_filename in videolist:
             self.video_files.append('+' + self.workingdir + '/' + video_part_filename)
             if encoder_engine == 'x264':
-                command = [x264] + codec + ['--demuxer', 'ffms', '--index', self.workingdir +
-                                            '/x264.index', '--seek', str(start), '--frames',
-                                            str(duration), '--output', self.workingdir + '/' +
-                                            video_part_filename, filename]
+                command = [x264] + codec + ['--demuxer', 'ffms', '--index', self.workingdir + '/x264.index',
+                                            '--seek', str(start + hd_offset[0]), '--frames', str(duration + hd_offset[1]),
+                                            '--output', self.workingdir + '/' + video_part_filename, filename]
             elif encoder_engine == 'ffmpeg':
-                command = [ffmpeg, '-ss', str(self.get_timecode((start + bframe_delay) / fps)),
-                            '-i', filename, '-vframes', str(duration), '-vf', 'setsar=' + str(sar),
-                            '-threads', '0', '-an', '-sn', '-dn', '-y',
-                            self.workingdir + '/' + video_part_filename]
-                command[5:5] = codec
+                command = [ffmpeg, '-hide_banner', '-ss', str(self.seconds_to_hms((start + bframe_delay) / fps)),
+                           '-i', filename, '-vframes', str(duration + bframe_delay), '-vf', 'setsar=' + str(sar),
+                           '-threads', '0', '-an', '-sn', '-dn', '-y', self.workingdir + '/' + video_part_filename]
+                command[6:6] = codec  # insert list 'codec' at position 6, i.e. after 'filename'
             else:
                 return None, "Keine unterstützte Render-Engine zum Kodieren eingestellt"
-            self.log.debug("Command: {}".format(command))
+            self.log.debug(f"Command: {command}")
             if encode:
                 try:
-                    non_blocking_process = subprocess.Popen(command,
-                                                            stdout=subprocess.PIPE,
-                                                            stderr=subprocess.STDOUT,
+                    non_blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                                             universal_newlines=True)
                 except OSError as e:
                     return None, e.strerror + ": " + 'Render Engine nicht vorhanden'
                 process_list.append(non_blocking_process)
                 if flag_singlethread:
-                    self.show_progress(non_blocking_process)
+                    processing_errors += self.show_progress(non_blocking_process)
             else:
                 video_splitframes += ',' + str(start) + '-' + str(duration)
+                self.log.error(f"video_splitframes: {video_splitframes}")
 
         self.video_files[0] = self.video_files[0].lstrip('+')
         video_splitframes = video_splitframes.lstrip(',')
 
         # video part 4 - cut the big parts out the file (keyframe accurate)
         # smart rendering part (2/2)
-        command = [mkvmerge, '-A', '--split', 'parts-frames:' +
-                        video_splitframes, '-o', self.workingdir + '/video_copy.mkv', filename]
-        self.log.debug("Command: {}".format(command))
-        try:
-            non_blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT, universal_newlines=True, env=my_env)
-        except OSError as e:
-            return None, e.strerror + ": " + mkvmerge
-        mkvmerge_list.append(non_blocking_process)
-        if flag_singlethread:
-            self.show_progress(non_blocking_process)
+        if video_splitframes:
+            command = [mkvmerge, '-A', '--split', 'parts-frames:' + video_splitframes, '-o', self.workingdir +
+                       '/video_copy.mkv', filename]
+            self.log.debug(f"Command: {command}")
+            try:
+                non_blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                                        universal_newlines=True, env=my_env)
+            except OSError as e:
+                return None, e.strerror + ": " + mkvmerge
+            mkvmerge_list.append(non_blocking_process)
+            if flag_singlethread:
+                processing_errors += self.show_progress(non_blocking_process)
 
         # audio part 2 - encode audio to AAC
         mp3copy = 'MP3 Spur kopieren' in self.config.get('smartmkvmerge', 'first_audio_stream')
@@ -250,7 +287,7 @@ class CutSmartMkvmerge(Cut):
         if mp3copy and ac3copy:
             self.audio_files.append(self.workingdir + '/audio_copy.mkv')
         else:
-            self.show_progress(blocking_process)
+            processing_errors += self.show_progress(blocking_process)
             blocking_process.wait()
             ffmpeginput_file = self.workingdir + '/audio_copy.mkv'
             ffmpegoutput_file = self.workingdir + '/audio_encode.mkv'
@@ -290,7 +327,7 @@ class CutSmartMkvmerge(Cut):
             if '2-Kanal' in self.config.get('smartmkvmerge', 'first_audio_stream'):
                 audiocodec.extend(['-ac:0', '2'])
 
-            if ac3_file == None:
+            if ac3_file is None:
                 # no ac3 stream found - all streams are muxed
                 map = ['-map', '0']
             else:
@@ -306,7 +343,7 @@ class CutSmartMkvmerge(Cut):
             map.extend(audiocodec)
             map.extend(audiofilter)
             args[8:8] = map
-            self.log.debug("Args: {}".format(args))
+            self.log.debug(f"Args: {args}")
             try:
                 non_blocking_process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                                         universal_newlines=True)
@@ -315,21 +352,21 @@ class CutSmartMkvmerge(Cut):
             process_list.append(non_blocking_process)
             self.audio_files.append(self.workingdir + '/audio_encode.mkv')
             if flag_singlethread:
-                self.show_progress(non_blocking_process)
+                processing_errors += self.show_progress(non_blocking_process)
 
         # wait until all threads are terminated
         for blocking_process in mkvmerge_list + process_list:
-            self.show_progress(blocking_process)
+            processing_errors += self.show_progress(blocking_process)
 
         # check all processes
         for blocking_process in mkvmerge_list:
             returncode = blocking_process.wait()
             if returncode != 0 and returncode != 1:
-                return None, 'beim Schneiden der Originaldatei...'
+                return None, 'beim Schneiden der Originaldatei...' + processing_errors
         for blocking_process in process_list:
             returncode = blocking_process.wait()
             if returncode != 0:
-                return None, 'beim Kodieren ...'
+                return None, 'beim Kodieren ...' + processing_errors
 
         # clean up
         if os.path.isfile(self.workingdir + '/video_copy.mkv'):
@@ -341,23 +378,23 @@ class CutSmartMkvmerge(Cut):
         # mux all together
         if self.config.get('smartmkvmerge', 'remux_to_mp4'):
             cut_video = self.workingdir + '/' + os.path.basename(
-                os.path.splitext(self.generate_filename((filename), 1))[0] + ".mkv")
+                os.path.splitext(self.generate_filename(filename, 1))[0] + ".mkv")
         else:
             cut_video = os.path.splitext(self.generate_filename(filename, 1))[0] + ".mkv"
 
         command = [mkvmerge, '--engage', 'no_cue_duration', '--engage', 'no_cue_relative_position',
-                    '-o', cut_video] + self.video_files + self.audio_files
-        self.log.debug("Command: {}".format(command))
+                   '-o', cut_video] + self.video_files + self.audio_files
+        self.log.debug(f"Command: {command}")
         try:
             blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                                 universal_newlines=True, env=my_env)
         except OSError:
             return None, "MKVMerge konnte nicht aufgerufen werden oder zu alt (6.5.0 benötigt)"
-        self.show_progress(blocking_process)
 
+        processing_errors += self.show_progress(blocking_process)
         returncode = blocking_process.wait()
         if returncode != 0 and returncode != 1:
-            return None, 'beim Schreiben des geschnittenen MKVs...'
+            return None, 'beim Schreiben des geschnittenen MKVs...' + processing_errors
 
         # remove all temporary files
         for n in self.video_files + self.audio_files:
@@ -398,7 +435,7 @@ class CutSmartMkvmerge(Cut):
                 if returncode != 0:
                     if os.path.isfile(cut_video):
                         os.remove(cut_video)
-                    return None, 'Fehler beim Extrahieren der Streams mit Eac3to'
+                    return None, 'Fehler beim Extrahieren der Streams mit Eac3to' + processing_errors
 
                 # remove mkv + log file
                 if os.path.isfile(cut_video):
@@ -428,10 +465,10 @@ class CutSmartMkvmerge(Cut):
                     return None, 'MP4Box konnte nicht aufgerufen werden'
 
                 self.gui.main_window.set_tasks_text('Muxe MP4')
-                self.show_progress(blocking_process)
+                processing_errors += self.show_progress(blocking_process)
                 returncode = blocking_process.wait()
                 if returncode != 0:
-                    return None, 'Fehler beim Erstellen der MP4'
+                    return None, 'Fehler beim Erstellen der MP4' + processing_errors
                 """
 
             args = [self.config.get_program('ffmpeg'), '-i', cut_video, '-c', 'copy']
@@ -441,25 +478,24 @@ class CutSmartMkvmerge(Cut):
 
             self.gui.main_window.set_tasks_text('Muxe MP4')
             try:
-                blocking_process = subprocess.Popen(args, stdout=subprocess.PIPE,
-                                                          stderr=subprocess.STDOUT,
-                                                          universal_newlines=True)
+                blocking_process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                                    universal_newlines=True)
             except OSError:
                 return None, 'ffmpeg konnte nicht aufgerufen werden'
 
-            self.show_progress(blocking_process)
+            processing_errors += self.show_progress(blocking_process)
             returncode = blocking_process.wait()
             if os.path.isfile(tmp_video):
                 os.remove(tmp_video)
             if returncode != 0:
-                return None, 'Fehler beim Erstellen der MP4'
+                return None, 'Fehler beim Erstellen der MP4' + processing_errors
 
         return cut_video, warning_msg
 
     def __simulate_smart_mkvmerge(self, start, duration, keyframes):
         end = start + duration
         if start in keyframes:
-            if (end) in keyframes:
+            if end in keyframes:
                 if end <= start:
                     return
                 # copy keyframe to keyframe
@@ -498,7 +534,7 @@ class CutSmartMkvmerge(Cut):
                 encode = [(True, start, duration_nt_kf, 'video_encode-{:03}.mkv'.format(self.encode_nr))]
                 if duration - duration_nt_kf > 0:
                     result = self.__simulate_smart_mkvmerge(nt_kf_from_start, duration - duration_nt_kf, keyframes)
-                    if result != None:
+                    if result is not None:
                         return encode + result
                     else:
                         return None
@@ -507,12 +543,12 @@ class CutSmartMkvmerge(Cut):
 
 
 class ChangeDir:
-    def __init__(self, newPath):
-        self.newPath = newPath
+    def __init__(self, new_path):
+        self.new_path = new_path
 
     def __enter__(self):
-        self.savedPath = os.getcwd()
-        os.chdir(self.newPath)
+        self.saved_path = os.getcwd()
+        os.chdir(self.new_path)
 
     def __exit__(self, etype, value, traceback):
-        os.chdir(self.savedPath)
+        os.chdir(self.saved_path)

@@ -80,7 +80,9 @@ class Config:
             if password is not None:
                 value = password
         elif option == 'h264_codec':
-            value = 'ffdshow'
+            value = 'ffdshow'  # FORCED
+        elif option == 'encoder_engine':
+            value = 'x264'  # FORCED
         else:
             value = self.__fields[category][option]
 
@@ -157,7 +159,9 @@ class Config:
             if the config value contains 'intern' """
 
         value = self.__fields['programs'][program]
+        self.log.debug(f"program value: {value}")
         intern_program = otrvpath.get_tools_path(value)
+        self.log.debug(f"intern_program: {intern_program}")
 
         if 'intern-' in value:
             if os.path.isfile(intern_program):

@@ -135,13 +135,13 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="menuHelpHelp">
+                      <object class="GtkImageMenuItem" id="menu_help_help">
                         <property name="label">gtk-help</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="_on_menuHelpHelp_activate" swapped="no"/>
+                        <signal name="activate" handler="_on_menu_help_help_activate" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -173,7 +173,7 @@
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="_on_menuHelpAbout_activate" swapped="no"/>
+                        <signal name="activate" handler="_on_menu_help_about_activate" swapped="no"/>
                       </object>
                     </child>
                   </object>

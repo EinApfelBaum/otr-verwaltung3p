@@ -41,12 +41,11 @@ class CutPlay(Plugin):
             image = Gtk.Image.new_from_file(self.get_path('play.png'))
         else:
             image = Gtk.Image.new_from_gicon(Gio.EmblemedIcon.new(
-                                        Gio.ThemedIcon.new('media-playback-start'),
-                                        Gio.Emblem.new(Gio.ThemedIcon.new('edit-cut-symbolic'))),
-                                        self.app.config.get('general', 'icon_size'))
+                                             Gio.ThemedIcon.new('media-playback-start'),
+                                             Gio.Emblem.new(Gio.ThemedIcon.new('edit-cut-symbolic'))),
+                                             self.app.config.get('general', 'icon_size'))
 
-        self.toolbutton = self.gui.main_window.add_toolbutton(image, 'Geschnitten abspielen',
-                                                                        [Section.VIDEO_UNCUT])
+        self.toolbutton = self.gui.main_window.add_toolbutton(image, 'Geschnitten abspielen',[Section.VIDEO_UNCUT])
         self.toolbutton.connect('clicked', self.on_cut_play_clicked)
 
     def disable(self):
@@ -57,10 +56,9 @@ class CutPlay(Plugin):
     def on_cut_play_clicked(self, widget, data=None):
         filename = self.gui.main_window.get_selected_filenames()[0]
 
-        error, cutlists = cutlists_management.download_cutlists(
-                                            filename, self.app.config.get('general', 'server'),
-                                            self.app.config.get('general', 'choose_cutlists_by'),
-                                            self.app.config.get('general', 'cutlist_mp4_as_hq'))
+        error, cutlists = cutlists_management.download_cutlists(filename, self.app.config.get('general', 'server'),
+                                                                self.app.config.get('general', 'choose_cutlists_by'),
+                                                                self.app.config.get('general', 'cutlist_mp4_as_hq'))
         if error:
             return
 
@@ -76,21 +74,18 @@ class CutPlay(Plugin):
         # http://www.mplayerhq.hu/DOCS/HTML/en/edl.html
         # [Begin Second] [End Second] [0=Skip/1=Mute]
         edl_filename = os.path.join(self.app.config.get('general', 'folder_uncut_avis'), ".tmp.edl")
-        f = open(edl_filename, "w")
-
-        f.write("0 %s 0\n" % (cutlist.cuts_seconds[0][0] - 1))
-
-        for count, (start, duration) in enumerate(cutlist.cuts_seconds):
-            end = start + duration
-            if count + 1 == len(cutlist.cuts_seconds):
-                f.write("%s 50000 0\n" % (end))
-            else:
-                f.write("%s %s 0\n" % (end, (cutlist.cuts_seconds[count + 1][0] - 1)))
-        f.close()
+        with open(edl_filename, "w") as f:
+            f.write("0 %s 0\n" % (cutlist.cuts_seconds[0][0] - 1))
+            for count, (start, duration) in enumerate(cutlist.cuts_seconds):
+                end = start + duration
+                if count + 1 == len(cutlist.cuts_seconds):
+                    f.write("%s 50000 0\n" % end)
+                else:
+                    f.write("%s %s 0\n" % (end, (cutlist.cuts_seconds[count + 1][0] - 1)))
 
         # make mpv edl
         # https://github.com/mpv-player/mpv-player.github.io/blob/master/guides/edl-playlists.rst
-        edlurl="edl://"
+        edlurl = "edl://"
         for count, (start, duration) in enumerate(cutlist.cuts_seconds):
             edlurl = edlurl + filename + "," + str(start) + "," + str(duration) + ";"
 
@@ -100,9 +95,8 @@ class CutPlay(Plugin):
 
             if shutil.which(prog):
                 cmdfound = True
-                if not subprocess.call(prog, stdin=subprocess.PIPE,
-                                             stdout=subprocess.DEVNULL,
-                                             stderr=subprocess.STDOUT):
+                if not subprocess.call(prog, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
+                                       stderr=subprocess.STDOUT):
                     plays = True
                 else:
                     self.log.error("{} failed to start.".format(prog))
@@ -113,8 +107,7 @@ class CutPlay(Plugin):
 
         def play_with(prog):
             if prog == 'mplayer':
-                self.p = subprocess.Popen([self.app.config.get_program('mplayer'), "-edl",
-                                                                  edl_filename, filename])
+                self.p = subprocess.Popen([self.app.config.get_program('mplayer'), "-edl", edl_filename, filename])
             elif prog == 'mpv':
                 self.p = subprocess.Popen([self.app.config.get_program('mpv'), edlurl])
 
@@ -132,7 +125,7 @@ class CutPlay(Plugin):
                                        "installiert bzw. funktionieren nicht.")
             return
 
-        while self.p.poll() == None:
+        while self.p.poll() is None:
             time.sleep(1)
             while Gtk.events_pending():
                 Gtk.main_iteration()

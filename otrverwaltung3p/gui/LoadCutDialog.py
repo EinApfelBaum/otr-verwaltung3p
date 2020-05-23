@@ -60,6 +60,9 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
         self.treeview_download_cutlists.show()
         self.treeview_download_cutlists.get_selection().connect('changed', self._on_download_selection_changed)
         self.builder.get_object('scrolledwindow_download').add(self.treeview_download_cutlists)
+        lcd_window = self.builder.get_object('load_cut_dialog')
+        lcd_window.set_size_request(int(lcd_window.size_request().width * 1.00),
+                                    int(lcd_window.size_request().height * 1.50))
 
     ###
     # Convenience methods
@@ -168,11 +171,11 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
         mod_alt = (event.state & Gdk.ModifierType.MOD1_MASK)
 
         if event.type == Gdk.EventType.KEY_PRESS:
-            print(keyname)
+            # print(keyname)
             if not mod_ctrl and not mod_shift and not mod_alt:
                 if keyname == 'RETURN':
                     self.builder.get_object('button_ok').clicked()
-                    print("Button OK")
+                    # print("Button OK")
                     return True
 
     def _on_local_selection_changed(self, selection, data=None):

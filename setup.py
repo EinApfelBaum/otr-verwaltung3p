@@ -70,7 +70,7 @@ class InstallCommand(install):
             prefix = sys.prefix
 
         if sys.platform == 'win32':
-            prefixed_path = os.path.join('/msys64', prefix.replace('/', ''), 'share/otrverwaltung3p')
+            prefixed_path = os.path.join('/msys64', prefix[1:], 'share/otrverwaltung3p')
         else:
             prefixed_path = os.path.join(prefix, 'share/otrverwaltung3p')
         previous_datapath = update_data_path(path=prefixed_path)

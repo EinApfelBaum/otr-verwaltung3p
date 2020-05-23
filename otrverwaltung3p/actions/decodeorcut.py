@@ -551,7 +551,7 @@ class DecodeOrCut(Cut):
             return None, None, error
 
         if (cutlist.cuts_frames and cutlist.filename_original != os.path.basename(filename)) \
-                                            or (not cutlist.cuts_frames and cutlist.cuts_seconds):
+                or (not cutlist.cuts_frames and cutlist.cuts_seconds):
             cutlist.cuts_frames = []
             fps, dar, sar, max_frames, ac3_stream, error = self.analyse_mediafile(filename)
             if not error:
@@ -560,7 +560,7 @@ class DecodeOrCut(Cut):
                 return None, None, "Konnte FPS nicht bestimmen: " + error
             self.log.info("Calculate frame values from seconds.")
             for start, duration in cutlist.cuts_seconds:
-                    cutlist.cuts_frames.append((round(start * cutlist.fps), round(duration * cutlist.fps)))
+                cutlist.cuts_frames.append((round(start * cutlist.fps), round(duration * cutlist.fps)))
 
         if program == Program.AVIDEMUX:
             cutter = CutAvidemux(self.app, self.gui)

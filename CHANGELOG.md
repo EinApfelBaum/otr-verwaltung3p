@@ -1,8 +1,7 @@
-#### 1.0.0b3, 2020-03-18
+#### 1.0.0b3, 2020-04-30
 
+* Implements cutting of new HD format. Old otr-files are cut without vdub.
 * Hauptfenster:
-  - New option to show "Zusammenfassung" after cut without clicking the button
-    (Preferences->Haupfenster)
   - New keyboard shortcut Ctrl-f to focus search widget
   - New context menu (Schneiden, Abspielen)
   - New column in treeview: "Aufnahmedatum"
@@ -16,7 +15,9 @@
   - Two new forward/backward seek buttons, seek distance is now based
     on seconds and can be defined in the settings
   - ESCAPE-key disabled
+  - Mousewheel over slider navigates forward/backward
 * Zusammenfassung:
+  - Default usercomment is now editable
   - Text snippets can be stored (Preferences->Cutlist->Snippets) and appended
     or prepended to the cutlist comment with one click.
   - User is warned when trying to close the ConclusionDialog and not all cut
@@ -25,10 +26,11 @@
 * PreferencesWindow:
   - Speicherorte: Paths are manually editable, new FileChooserDialog-Button
   - Help texts are tooltips now
-* New setup.py using Setuptools
+  - New option to show "Zusammenfassung" after cut without clicking the button
+    (Preferences->Schneiden)
+* New setup.py using setuptools, using appdirs instead of xdg
 * Changed versioning to be compatible with Setuptools
 * Dbus disabled
-* Default usercomment is now editable
 
 #### 1.0.0-beta002, 2020-02-03
 

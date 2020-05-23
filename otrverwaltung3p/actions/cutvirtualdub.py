@@ -48,18 +48,18 @@ class CutVirtualdub(Cut):
     def create_cutlist(self, filename, program_config_value):
         cut_video_is_none, error = self.__cut_file_virtualdub(filename, program_config_value, cuts=None, manually=True)
 
-        if error != None:
+        if error is not None:
             return None, error
-        format, ac3_file, bframe_delay, _ = self.get_format(filename)
+        vformat, ac3_file, bframe_delay, _ = self.get_format(filename)
         cuts_frames, cutlist_error = self.__create_cutlist_virtualdub(
-            os.path.join(self.config.get('general', 'folder_uncut_avis'), "cutlist.vcf"), format)
+            os.path.join(self.config.get('general', 'folder_uncut_avis'), "cutlist.vcf"), vformat)
 
         return cuts_frames, cutlist_error
 
     def __cut_file_virtualdub(self, filename, config_value, cuts=None, manually=False):
-        format, ac3_file, bframe_delay, _ = self.get_format(filename)
+        vformat, ac3_file, bframe_delay, _ = self.get_format(filename)
         fps, dar, sar, max_frames, ac3_stream, error = self.analyse_mediafile(filename)
-        if sar == None or dar == None:
+        if sar is None or dar is None:
             return None, error
 
         # find wine
@@ -72,7 +72,7 @@ class CutVirtualdub(Cut):
         else:
             return None, "Wine konnte nicht aufgerufen werden."
 
-        if format == Format.HQ:
+        if vformat == Format.HQ:
             if self.config.get('general', 'h264_codec') == 'ffdshow':
                 if dar == "16:9":
                     comp_data = codec.get_comp_data_h264_169()
@@ -88,7 +88,7 @@ class CutVirtualdub(Cut):
             else:
                 return None, "Codec nicht unterstützt. Nur ffdshow, x264vfw und komisar unterstützt."
 
-        elif format == Format.HD:
+        elif vformat == Format.HD or vformat == Format.HD2:
             if self.config.get('general', 'h264_codec') == 'ffdshow':
                 if dar == "16:9":
                     comp_data = codec.get_comp_data_hd_169()
@@ -104,14 +104,14 @@ class CutVirtualdub(Cut):
             else:
                 return None, "Codec nicht unterstützt. Nur ffdshow, x264vfw und komisar unterstützt."
 
-        elif format == Format.MP4:
+        elif vformat == Format.MP4:
             if self.config.get('general', 'h264_codec') == 'komisar':
-                comp_data = codec.get_comp_data_komsiar_dynamic(sar, self.config.get('general', 'komisar_mp4_string'))
+                comp_data = codec.get_comp_data_komisar_dynamic(sar, self.config.get('general', 'komisar_mp4_string'))
                 compression = 'VirtualDub.video.SetCompression(0x34363278,0,10000,0);\n'
             else:
                 comp_data = codec.get_comp_data_x264vfw_dynamic(sar, self.config.get('general', 'x264vfw_mp4_string'))
                 compression = 'VirtualDub.video.SetCompression(0x34363278,0,10000,0);\n'
-        elif format == Format.AVI:
+        elif vformat == Format.AVI:
             comp_data = codec.get_comp_data_dx50()
             compression = 'VirtualDub.video.SetCompression(0x53444646,0,10000,0);\n'
         else:
@@ -123,7 +123,7 @@ class CutVirtualdub(Cut):
             curr_dir = os.getcwd()
             try:
                 os.chdir(os.path.dirname(config_value))
-            except OSError:
+            except (OSError, TypeError):
                 return None, "VirtualDub konnte nicht aufgerufen werden: " + config_value
 
         self.gui.main_window.set_tasks_progress(50)
@@ -150,12 +150,13 @@ class CutVirtualdub(Cut):
         if not manually:
             keyframes, error = self.get_keyframes_from_file(filename)
 
-            if keyframes == None:
+            if keyframes is None:
                 return None, "Keyframes konnten nicht ausgelesen werden."
 
             for frame_start, frames_duration in cuts:
                 # interval does not begin with keyframe
-                if not frame_start in keyframes and format == Format.HQ or format == Format.HD:
+                if frame_start not in keyframes and (vformat == Format.HQ or vformat == Format.HD
+                                                     or vformat == Format.HD2):
                     try:  # get next keyframe
                         frame_start_keyframe = self.get_keyframe_after_frame(keyframes, frame_start)
                     except ValueError:
@@ -168,15 +169,15 @@ class CutVirtualdub(Cut):
                             f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (frame_start + 2, frames_duration - 2))
                         else:
                             # smart rendering part  (duration -2 due to smart rendering bug)
-                            f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (
-                            frame_start + 2, frame_start_keyframe - frame_start - 2))
+                            f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (frame_start + 2, frame_start_keyframe
+                                                                               - frame_start - 2))
                             # vd smart rendering bug
-                            if ac3_file != None:
+                            if ac3_file is not None:
                                 f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (frame_start_keyframe - 1, 1))
                                 f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (frame_start_keyframe - 1, 1))
                                 # copy part
                             f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (
-                            frame_start_keyframe, frames_duration - (frame_start_keyframe - frame_start)))
+                                frame_start_keyframe, frames_duration - (frame_start_keyframe - frame_start)))
                     else:
                         print('reiner Smart Rendering Part')
                         try:  # get next keyframe after the interval
@@ -188,15 +189,17 @@ class CutVirtualdub(Cut):
                         else:
                             # workaround for smart rendering bug
                             f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (frame_start + 2, frames_duration - 2))
-                            if ac3_file != None:
+                            if ac3_file is not None:
                                 f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (next_keyframe - 1, 1))
                                 f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (next_keyframe - 1, 1))
                 else:
-                    if not (frame_start + frames_duration) in keyframes and format == Format.HQ or format == Format.HD:
+                    if (frame_start + frames_duration) not in keyframes and (vformat == Format.HQ
+                                                                             or vformat == Format.HD
+                                                                             or vformat == Format.HD2):
                         # 'Kopieren mit keinem Keyframe am Ende'
                         f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (frame_start, frames_duration - 2))
                         # we all love workarounds
-                        if ac3_file != None:
+                        if ac3_file:
                             f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (frame_start + frames_duration - 1, 1))
                             f.write("VirtualDub.subset.AddRange(%i, %i);\n" % (frame_start + frames_duration - 1, 1))
                     else:
@@ -232,7 +235,7 @@ class CutVirtualdub(Cut):
         except OSError:
             return None, "VirtualDub konnte nicht aufgerufen werden: " + config_value
 
-        while vdub.poll() == None:
+        while vdub.poll() is None:
             time.sleep(1)
 
             while Gtk.events_pending():
@@ -264,7 +267,7 @@ class CutVirtualdub(Cut):
                 except (IndexError, ValueError) as message:
                     return None, "Konnte Schnitte nicht lesen, um Cutlist zu erstellen. (%s)" % message
 
-                if format == Format.HQ or format == Format.HD:
+                if vformat == Format.HQ or vformat == Format.HD or vformat == Format.HD2:
                     cuts_frames.append((int(start) - 2, int(duration)))
                 else:
                     cuts_frames.append((int(start), int(duration)))

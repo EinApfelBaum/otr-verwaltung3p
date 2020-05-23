@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.2 -->
+<!-- Generated with glade 3.36.0 -->
 <interface>
   <requires lib="gtk+" version="3.16"/>
   <requires lib="ConclusionDialog" version="1.0"/>
@@ -52,9 +52,6 @@
     <property name="destroy_with_parent">True</property>
     <property name="icon">../media/icon.png</property>
     <property name="type_hint">dialog</property>
-    <child type="titlebar">
-      <placeholder/>
-    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox8">
         <property name="visible">True</property>
@@ -549,6 +546,12 @@
                         <property name="fill">True</property>
                         <property name="position">2</property>
                       </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                   </object>
                   <packing>
@@ -1081,6 +1084,9 @@
           </packing>
         </child>
       </object>
+    </child>
+    <child type="titlebar">
+      <placeholder/>
     </child>
   </object>
 </interface>

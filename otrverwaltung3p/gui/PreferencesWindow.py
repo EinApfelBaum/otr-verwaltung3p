@@ -63,7 +63,8 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                                         'entry_prog_mediainfo': 'Öffne mediainfo',
                                         'entry_prog_mkvmerge': 'Öffne mkvmerge',
                                         'entry_prog_mpv': 'Öffne mpv',
-                                        'entry_prog_decoder': 'Öffne otrdecoder'}
+                                        'entry_prog_decoder': 'Öffne otrdecoder',
+                                        'entry_folder_wineprefix': 'Wineprefix für vdub.exe'}
         self.last_path = None
 
     def do_parser_finished(self, builder):
@@ -106,9 +107,11 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         # 3 Schneiden
         ComboBoxEntryBinding(self.obj('combobox_avi'), self.app.config, 'general', 'cut_avis_by')
         ComboBoxEntryBinding(self.obj('combobox_hq'), self.app.config, 'general', 'cut_hqs_by')
+        ComboBoxEntryBinding(self.obj('combobox_hd2'), self.app.config, 'general', 'cut_hd2_by')
         ComboBoxEntryBinding(self.obj('combobox_mp4'), self.app.config, 'general', 'cut_mp4s_by')
         ComboBoxEntryBinding(self.obj('combobox_man_avi'), self.app.config, 'general', 'cut_avis_man_by')
         ComboBoxEntryBinding(self.obj('combobox_man_hq'), self.app.config, 'general', 'cut_hqs_man_by')
+        ComboBoxEntryBinding(self.obj('combobox_man_hd2'), self.app.config, 'general', 'cut_hd2_man_by')
         ComboBoxEntryBinding(self.obj('combobox_man_mp4'), self.app.config, 'general', 'cut_mp4s_man_by')
         ComboBoxEntryBinding(self.obj('h264_codec_cbox'), self.app.config, 'general', 'h264_codec')
         ComboBoxEntryBinding(self.obj('combobox_ac3'), self.app.config, 'general', 'merge_ac3s_by')
@@ -118,6 +121,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         EntryBinding(self.obj('smkv_workingdir'), self.app.config, 'smartmkvmerge', 'workingdir')
         CheckButtonBinding(self.obj('smkv_normalize'), self.app.config, 'smartmkvmerge', 'normalize_audio')
         CheckButtonBinding(self.obj('smkv_mp4'), self.app.config, 'smartmkvmerge', 'remux_to_mp4')
+        ComboBoxEntryBinding(self.obj('combobox_h264_encoding'), self.app.config, 'smartmkvmerge', 'encoder_engine')
 
         # 4 Cutlist
         EntryBinding(self.obj('entry_server'), self.app.config, 'general', 'server')
@@ -148,21 +152,21 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         SpinbuttonBinding(self.obj('spinbtn_seeker'), self.app.config, 'cutinterface', 'seek_distance_default')
         SpinbuttonBinding(self.obj('spinbtn_seek1'), self.app.config, 'cutinterface', 'seek1')
         SpinbuttonBinding(self.obj('spinbtn_seek2'), self.app.config, 'cutinterface', 'seek2')
-        SpinbuttonBinding(self.obj('spinbutton_x'), self.app.config, 'general', 'cutinterface_resolution_x')
-        SpinbuttonBinding(self.obj('spinbutton_y'), self.app.config, 'general', 'cutinterface_resolution_y')
+        SpinbuttonBinding(self.obj('spinbutton_x'), self.app.config, 'cutinterface', 'resolution_x')
+        SpinbuttonBinding(self.obj('spinbutton_y'), self.app.config, 'cutinterface', 'resolution_y')
         CheckButtonBinding(self.obj('check_vol_adjust_on'), self.app.config, 'general', 'vol_adjust_on')
         EntryBinding(self.obj('entry_vol_adjust'), self.app.config, 'general', 'vol_adjust')
-        CheckButtonBinding(self.obj('check_alt_time_frame_conv'), self.app.config, 'general', 'alt_time_frame_conv')
+        CheckButtonBinding(self.obj('check_alt_time_frame_conv'), self.app.config, 'cutinterface', 'alt_time_frame_conv')
         CheckButtonBinding(self.obj('check_show_tooltips'), self.app.config, 'cutinterface', 'show_tooltips')
 
         # 8 Programme
-        for prog in ['ffmpeg', 'ffprobe', 'ffmsindex', 'mediainfo', 'mkvmerge', 'mpv']:
+        for prog in ['ffmpeg', 'ffprobe', 'ffmsindex', 'x264', 'mediainfo', 'mkvmerge', 'mpv', 'vdub']:
             EntryBinding(self.obj('entry_prog_' + prog), self.app.config, 'programs', prog)
+        EntryBinding(self.obj('entry_folder_wineprefix'), self.app.config, 'programs', 'wineprefix')
 
         def rename_schema_changed(value):
             new = self.app.rename_by_schema(self.example_cut_filename, value)
-            self.obj('label_schema').set_label(
-                "<i>%s</i> wird zu <i>%s</i>" % (self.example_filename, new))
+            self.obj('label_schema').set_label(f"<i>{self.example_filename}</i> wird zu <i>{new}</i>")
 
         if not self.app.config.keyring_available:
             self.obj('radioPasswdStoreWallet').set_sensitive(False)
@@ -176,26 +180,23 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                        'folder_cut_avis', 'folder_archive']:
             self.app.config.connect('general', option, lambda value: self.app.show_section(self.app.section))
 
-        self.app.config.connect('general', 'rename_cut',
-                                lambda value: self.obj('entry_schema').set_sensitive(value))
-        self.app.config.connect('general', 'merge_ac3s',
-                                lambda value: self.obj('combobox_ac3').set_sensitive(value))
-        self.app.config.connect('general', 'merge_ac3s',
-                                lambda value: self.obj('button_set_file_ac3').set_sensitive(value))
-        self.app.config.connect('general', 'merge_ac3s',
-                                lambda value: self.obj('label_ac3').set_sensitive(value))
-        self.app.config.connect('general', 'use_internal_icons',
-                                lambda value: self.obj('label_iconsize').set_sensitive(not value))
-        self.app.config.connect('general', 'use_internal_icons',
-                                lambda value: self.obj('spinbutton_iconsize').set_sensitive(not value))
-        self.app.config.connect('general', 'passwd_store',
-                                lambda value: self._radio_passwd_store_toggled(value))
+        self.app.config.connect('general', 'rename_cut', lambda value: self.obj('entry_schema').set_sensitive(value))
+        self.app.config.connect('general', 'merge_ac3s', lambda value: self.obj('combobox_ac3').set_sensitive(value))
+        self.app.config.connect('general', 'merge_ac3s', lambda value: self.obj('button_set_file_ac3')
+                                .set_sensitive(value))
+        self.app.config.connect('general', 'merge_ac3s', lambda value: self.obj('label_ac3').set_sensitive(value))
+        self.app.config.connect('general', 'use_internal_icons', lambda value: self.obj('label_iconsize')
+                                .set_sensitive(not value))
+        self.app.config.connect('general', 'use_internal_icons', lambda value: self.obj('spinbutton_iconsize')
+                                .set_sensitive(not value))
+        self.app.config.connect('general', 'passwd_store', lambda value: self._radio_passwd_store_toggled(value))
 
-        # Delete combobox entries for intern-vdub/intern-virtualdub if they are not installed
+        # Delete combobox entries for intern-vdub if not installed
         if otrvpath.get_internal_virtualdub_path('vdub.exe') is None:
-            for widget_name in ['combobox_avi', 'combobox_hq', 'combobox_mp4', 'combobox_man_avi', 'combobox_man_hq',
-                                'combobox_man_mp4']:
+            for widget_name in ['combobox_avi', 'combobox_hq', 'combobox_hd2', 'combobox_mp4']:
                 self.obj(widget_name).remove(1)
+        # and (not os.path.exists(self.app.config.get_program('vdub'))
+        #      or not os.path.exists(self.app.config.get_program('wineprefix')))
 
         # Initializing
         self.obj('entry_password').set_visibility(False)
@@ -205,11 +206,24 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         self.obj('spinbutton_iconsize').set_sensitive(not self.obj('check_use_internal_icons').get_active())
         self._radio_passwd_store_toggled(self.app.config.get('general', 'passwd_store'))
 
-        for prog in ["ffmpeg", "ffprobe", "ffmsindex", 'mpv']:
-            for prefix in ['lbl_prog_', 'entry_prog_', 'btn_prog_', 'lbl_check_']:
-                self.obj(prefix + prog).set_visible(False)
+        # for prog in ["ffmpeg", "ffprobe", "ffmsindex", 'x264', 'mpv']:
+        #     for prefix in ['lbl_prog_', 'entry_prog_', 'btn_prog_', 'lbl_check_']:
+        #         self.obj(prefix + prog).set_visible(False)
+        # if sys.platform != 'win32':
+        #     for prefix in ['lbl_prog_', 'entry_prog_', 'btn_prog_', 'lbl_check_']:
+        #         self.obj(prefix + 'vdub').set_visible(False)
 
 # Signal handlers ###
+
+    def on_entry_prog_changed(self, entry):
+        entry_name = Gtk.Buildable.get_name(entry)
+        prog_name = entry_name.rpartition('_')[2]   # name scheme is entry_prog_ffmpeg
+        lbl_check = self.obj("lbl_check_" + prog_name)
+        if os.path.exists(entry.get_text()):
+            lbl_check.set_markup("<span color='green'>✓</span>")
+        else:
+            lbl_check.set_markup("<span color='red'>✘</span>")
+        return False
 
     def _on_btn_snippets_save_clicked(self, txtbuf):
         self.app.config.set('general', 'snippets', txtbuf.props.text)
@@ -251,24 +265,24 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             self.obj('OTRCredentialCheckResponse').set_markup("<span color='red'>🖧 Keine Internetverbindung!</span>")
 
     def _on_button_set_file_clicked(self, entry, data=None):
+        entry_name = Gtk.Buildable.get_name(entry)
         try:
-            entry_name = Gtk.Buildable.get_name(entry)
             chooser_title = self.filechooser_title_setup[entry_name] + ":"
         except KeyError:
             chooser_title = "Datei auswählen:"
 
-        if entry_name.startswith('entry_prog'):
+        if entry_name.startswith('entry_prog') or entry_name.startswith('combobox_'):
             chooser_action = Gtk.FileChooserAction.OPEN
         else:
             chooser_action = Gtk.FileChooserAction.SELECT_FOLDER
 
-        chooser = Gtk.FileChooserDialog(title=chooser_title,
-                                        parent=self,
-                                        action=chooser_action,
+        chooser = Gtk.FileChooserDialog(title=chooser_title, parent=self, action=chooser_action,
                                         buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
                                         Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
         chooser.set_transient_for(self)
         if isinstance(entry, Gtk.Entry):
+            if entry_name.startswith('entry_prog'):
+                self.last_path = None
             if os.path.exists(entry.get_text()) and self.last_path is None:
                 chooser.set_current_folder(os.path.join(entry.get_text(), '..'))
             elif self.last_path is not None:

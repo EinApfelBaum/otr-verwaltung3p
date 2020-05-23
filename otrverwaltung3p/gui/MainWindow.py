@@ -454,22 +454,23 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         iter_files = self.treeview_files.get_model().append(parent, data)
         return iter_files
 
-    def humanize_size(self, bytes):
-        bytes = float(bytes)
-        if bytes >= 1099511627776:
-            terabytes = bytes / 1099511627776
-            size = '%.1f T' % terabytes
-        elif bytes >= 1073741824:
-            gigabytes = bytes / 1073741824
-            size = '%.1f GB' % gigabytes
-        elif bytes >= 1048576:
-            megabytes = bytes / 1048576
-            size = '%.1f MB' % megabytes
-        elif bytes >= 1024:
-            kilobytes = bytes / 1024
-            size = '%.1f K' % kilobytes
+    @staticmethod
+    def humanize_size(bytz):
+        bytz = float(bytz)
+        if bytz >= 1099511627776:
+            terabytes = bytz / 1099511627776
+            size = f'{terabytes}.1f T'
+        elif bytz >= 1073741824:
+            gigabytes = bytz / 1073741824
+            size = f'{gigabytes:.1f} GB'
+        elif bytz >= 1048576:
+            megabytes = bytz / 1048576
+            size = f'{megabytes:.1f} MB'
+        elif bytz >= 1024:
+            kilobytes = bytz / 1024
+            size = f'{kilobytes:.1f} K'
         else:
-            size = '%.1f b' % bytes
+            size = f'{bytz:.1f} b'
         return size
 
     def __tv_files_sort(self, model, iter1, iter2, data=None):
@@ -486,8 +487,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         iter1_isdir = model.get_value(iter1, self.__ISDIR)
         iter2_isdir = model.get_value(iter2, self.__ISDIR)
 
-        if (iter1_isdir and iter2_isdir) or (
-            not iter1_isdir and not iter2_isdir):  # both are folders OR none of them is a folder
+        if (iter1_isdir and iter2_isdir) or (not iter1_isdir and not iter2_isdir):
+            # both are folders OR none of them is a folder
             # put names into array and sort them
             folders = [filename_iter1, filename_iter2]
             folders.sort()
@@ -536,28 +537,31 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     # treeview_planning
     #
 
-    def __treeview_planning_title(self, column, cell, model, iter, data=None):
+    @staticmethod
+    def __treeview_planning_title(column, cell, model, iter, data=None):
         broadcast = model.get_value(iter, 0)
 
         if broadcast.datetime < time.time():
-            cell.set_property('markup', "<b>%s</b>" % broadcast.title)
+            cell.set_property('markup', f"<b>{broadcast.title}</b>")
         else:
             cell.set_property('markup', broadcast.title)
 
-    def __treeview_planning_datetime(self, column, cell, model, iter, data=None):
+    @staticmethod
+    def __treeview_planning_datetime(column, cell, model, iter, data=None):
         broadcast = model.get_value(iter, 0)
         datetime = time.strftime("%a, %d.%m.%Y, %H:%M", time.localtime(broadcast.datetime))
 
         if broadcast.datetime < time.time():
-            cell.set_property('markup', "<b>%s</b>" % datetime)
+            cell.set_property('markup', f"<b>{datetime}</b>")
         else:
             cell.set_property('markup', datetime)
 
-    def __treeview_planning_station(self, column, cell, model, iter, data=None):
+    @staticmethod
+    def __treeview_planning_station(column, cell, model, iter, data=None):
         broadcast = model.get_value(iter, 0)
 
         if broadcast.datetime < time.time():
-            cell.set_property('markup', "<b>%s</b>" % broadcast.station)
+            cell.set_property('markup', f"<b>{broadcast.station}</b>")
         else:
             cell.set_property('markup', broadcast.station)
 
@@ -568,7 +572,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         iter = self.builder.get_object('treeview_planning').get_model().append([broadcast])
         return iter
 
-    def __tv_planning_sort(self, model, iter1, iter2, data):
+    @staticmethod
+    def __tv_planning_sort(model, iter1, iter2, data):
         """ -1 if the iter1 row should precede the iter2 row; 0, if the rows are equal;
             and 1 if the iter2 row should precede the iter1 row """
         time1 = model.get_value(iter1, 0).datetime
@@ -612,23 +617,20 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                 count += 1
 
         if count == 0:
-            pass
             self.eventbox_planning.hide()
         else:
             self.eventbox_planning.show()
-            self.label_planning_current.set_markup("<b>%i</b>" % count)
+            self.label_planning_current.set_markup(f"<b>{count:d}</b>")
 
     def change_status(self, message_type, message, permanent=False):
         """ Zeigt ein Bild und einen Text in der Statusleiste an.
               message_type 0 = Information-Icon, -1  = kein Icon
               message Anzuzeigender Text
-              permanent: wenn \e False, verschwindet die Nachricht nach 10s wieder."""
+              permanent: wenn e False, verschwindet die Nachricht nach 10s wieder."""
 
         self.builder.get_object('label_statusbar').set_text(message)
-
         if message_type == 0:
             self.builder.get_object('image_status').set_from_file(otrvpath.get_image_path("information.png"))
-
         if not permanent:
             def wait():
                 yield 0  # fake generator
@@ -651,7 +653,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
     def set_tasks_text(self, text):
         """ Zeigt den angegebenen Text im Aufgabenfenster an. """
-        self.builder.get_object('label_tasks').set_markup("<b>%s</b>" % text)
+        self.builder.get_object('label_tasks').set_markup(f"<b>{text}</b>")
 
     def set_tasks_progress(self, progress):
         """ Setzt den Fortschrittsbalken auf die angegebene %-Zahl. """
@@ -732,44 +734,41 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     def _on_menu_check_update_activate(self, widget, data=None):
         pass
         # ~ current_version = open(otrvpath.getdatapath("VERSION"), 'r').read().strip()
+        # try:
+        #     svn_version = urlopen(self.svn_version_url).read().strip().decode('utf-8')
+        # except IOError:
+        #     self.app.gui.message_error_box("Konnte keine Verbindung mit dem Internet herstellen!")
+        #     return
+        # self.app.gui.message_info_box(f"Ihre Version ist:\n{current_version}\n\nAktuelle Version ist:\n{svn_version}")
 
-        # ~ try:
-            # ~ svn_version = urlopen(self.svn_version_url).read().strip().decode('utf-8')
-        # ~ except IOError:
-            # ~ self.app.gui.message_error_box("Konnte keine Verbindung mit dem Internet herstellen!")
-            # ~ return
-
-        # ~ self.app.gui.message_info_box("Ihre Version ist:\n%s\n\nAktuelle Version ist:\n%s" % \
-                                                                    # ~ (current_version, svn_version))
-
-    def _on_menuHelpHelp_activate(self, widget, data=None):
+    @staticmethod
+    def _on_menu_help_help_activate(widget, data=None):
         webbrowser.open("https://github.com/EinApfelBaum/otr-verwaltung3p/wiki")
 
-    def _on_menuHelpAbout_activate(self, widget, data=None):
-
+    def _on_menu_help_about_activate(self, widget, data=None):
         version = open(otrvpath.getdatapath("VERSION"), 'r').read().strip()
-        script_root_dir = script_root_dir = os.path.abspath(os.path.realpath(sys.argv[0])+'/../..')
+        script_root_dir = os.path.abspath(os.path.realpath(sys.argv[0])+'/../..')
         authors = ["EinApfelBaum https://github.com/EinApfelBaum",
-                    "gCurse https://github.com/gCurse",
-                    "binsky08 https://github.com/binsky08",
-                    "Mainboand https://github.com/Mainboand","",
-                    "Predecessors:", "otr-verwaltung++ (2012-):",
-                    "monarc99 https://github.com/monarc99",
-                    "JanS", "",
-                    "otr-verwaltung (-2010):", "B. Elbers"]
+                   "gCurse https://github.com/gCurse",
+                   "binsky08 https://github.com/binsky08",
+                   "Mainboand https://github.com/Mainboand","",
+                   "Predecessors:", "otr-verwaltung++ (2012-):",
+                   "monarc99 https://github.com/monarc99",
+                   "JanS", "",
+                   "otr-verwaltung (-2010):", "B. Elbers"]
 
         license = "GPL version 3, see http://www.gnu.org/licenses/gpl-3.0.html#content"
 
         about_dialog = Gtk.AboutDialog(parent=self.app.gui.main_window,
-                program_name=self.app.app_name,
-                version=version,
-                copyright='\xa9 2010 - ' + str(datetime.datetime.now().year) +' B. Elbers and others',
-                license=license,
-                website='https://github.com/EinApfelBaum/otr-verwaltung3p/wiki',
-                comments='Verwalten und Schneiden der Dateien von onlinetvrecorder.com',
-                authors=authors,
-                logo=GdkPixbuf.Pixbuf.new_from_file(otrvpath.get_image_path('icon.png'))
-                )
+                                       program_name=self.app.app_name,
+                                       version=version,
+                                       copyright='\xa9 2010 - ' + str(datetime.datetime.now().year) +' B. Elbers and others',
+                                       license=license,
+                                       website='https://github.com/EinApfelBaum/otr-verwaltung3p/wiki',
+                                       comments='Verwalten und Schneiden der Dateien von onlinetvrecorder.com',
+                                       authors=authors,
+                                       logo=GdkPixbuf.Pixbuf.new_from_file(otrvpath.get_image_path('icon.png'))
+                                       )
 
         about_dialog.set_destroy_with_parent(True)
         about_dialog.set_size_request(500, 300)

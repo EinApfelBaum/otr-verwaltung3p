@@ -64,7 +64,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         self.conclusion_iter = None
         self.file_conclusion = None
         self.forward_clicks = 1
-        self.rename_by_schema = False
+        self.rename_by_schema = None
         self.widget_entry_suggested = None
 
     def obj(self, obj_name):
@@ -270,6 +270,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                 rename_list_entries = {}
 
                 full_fname = os.path.basename(self.file_conclusion.cut_video)
+                # print(f"273: self.file_conclusion.cut_video {self.file_conclusion.cut_video}")
                 for ext in fileextensions:
                     if full_fname.endswith(ext):
                         full_fname = full_fname.replace(ext, '')
@@ -294,6 +295,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                 try:
                     bare_fname = re_fname.match(os.path.basename(self.file_conclusion.uncut_video)).group()
                 except Exception as e:
+                    # TODO gcurse: Make it possible to cut already cut files
                     self.log.info(f"Filename does not match the otr pattern.\n"
                                   f"This happens when cutting a already cut file.\nException: {e}")
                 if self.file_conclusion.cut.cutlist.filename:  # suggested moviename
@@ -401,6 +403,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
             self.app.play_file(self.file_conclusion.cut_video)
 
     def _on_button_conclusion_play_cut_clicked(self, widget, data=None):
+        # print(f"406 self.file_conclusion.cut_video {self.file_conclusion.cut_video}")
         self.app.show_cuts_after_cut(self.file_conclusion.cut_video, self.file_conclusion.cut.cutlist)
 
     def _on_combobox_external_rating_changed(self, widget, data=None):

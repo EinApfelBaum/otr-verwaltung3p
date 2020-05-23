@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import os
+import os.path
+import subprocess
 
-import gi
+from gi import require_version
+require_version('Gtk', '3.0')
+from gi.repository import Gtk, GdkPixbuf
 
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
 from otrverwaltung3p.pluginsystem import Plugin
 from otrverwaltung3p.constants import Section
-import subprocess, os.path
 
 
 class Mediainfo(Plugin):
@@ -20,10 +21,11 @@ class Mediainfo(Plugin):
     Config = {'mediainfo': 'mediainfo-gui'}
 
     def enable(self):
-        self.toolbutton = self.gui.main_window.add_toolbutton(Gtk.Image.new_from_file(self.get_path('mediainfo.png')),
-                                                              'MediaInfo',
-                                                              [Section.VIDEO_UNCUT, Section.VIDEO_CUT, Section.ARCHIVE,
-                                                               Section.TRASH])
+        icon_size = self.app.config.get('general', 'icon_size')
+        icon = GdkPixbuf.Pixbuf.new_from_file_at_size(self.get_path('mediainfo.svg'), icon_size, icon_size)
+        self.toolbutton = self.gui.main_window.add_toolbutton(
+            Gtk.Image.new_from_pixbuf(icon), 'MediaInfo',
+            [Section.VIDEO_UNCUT, Section.VIDEO_CUT, Section.ARCHIVE, Section.TRASH])
         self.toolbutton.connect('clicked', self.mediainfo)
 
     def disable(self):

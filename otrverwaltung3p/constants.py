@@ -70,10 +70,14 @@ class Status:
 
 class Format:
     AVI = 0
-    HQ  = 1
+    HQ = 1
     MP4 = 2
-    HD  = 3
+    HD = 3
     AC3 = 4
+    HD2 = 5  # new HD 2020
+    HQ0 = 6  # old HQ 2011, core < 125
+    HD0 = 7  # old HD 2011, core < 125
+    MP40 = 8  # old mp4 2011, core < 125
 
 
 class Program:

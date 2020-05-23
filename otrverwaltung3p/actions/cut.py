@@ -45,9 +45,10 @@ class Cut(BaseAction):
         self.config = app.config
         self.gui = gui
         self.media_info = None
-        self.format_dict = {"High@L4": Format.HD, "High@L3.2": Format.HD, "High@L3.1": Format.HQ,
-                            "High@L3.0": Format.HQ, "High@L3": Format.HQ, "Simple@L1": Format.AVI,
-                            "Baseline@L1.3": Format.MP4}
+        #  self.format_dict: Both, old HD anf HQ use "Main@L3", so these are not listed here.
+        self.format_dict = {"High@L4": Format.HD, "High@L3.2": Format.HD, "Main@L3.2": Format.HD2,
+                            "High@L3.1": Format.HQ, "High@L3.0": Format.HQ, "High@L3": Format.HQ,
+                            "Simple@L1": Format.AVI, "Baseline@L1.3": Format.MP4}
 
     def cut_file_by_cutlist(self, filename, cutlist, program_config_value):
         raise Exception("Override this method!")
@@ -55,28 +56,26 @@ class Cut(BaseAction):
     def create_cutlist(self, filename, program_config_value):
         raise Exception("Override this method!")
 
-    def get_codeccore(self):
-        try:
-            if not "core" in self.media_info.tracks[1].writing_library:
-                codeccore = -1
-            else:
-                try:
-                    codeccore = int(self.media_info.tracks[1].writing_library.split(' ')[3])
-                except ValueError:
-                    try:
-                        codeccore = int(self.media_info.tracks[1].writing_library.split(' ')[2])
-                    except ValueError:
-                        codeccore = -1
-
-            self.log.debug("self.media_info.tracks[1].writing_library: {}".format(
-                                                    self.media_info.tracks[1].writing_library))
-        except TypeError:
+    def get_codeccore(self, fname):
+        if self.media_info.tracks[1].format_profile and ".HD." in fname:
+            if self.media_info.tracks[1].format_profile == 'Main@L3.2':  # New HD.test
+                codeccore = 0
+                return codeccore
+        if not self.media_info.tracks[1].writing_library:
             codeccore = -1
+            return codeccore
+        else:
+            try:
+                codeccore = int(self.media_info.tracks[1].writing_library.split(' ')[3])
+            except (ValueError, IndexError):
+                try:
+                    codeccore = int(self.media_info.tracks[1].writing_library.split(' ')[2])
+                except (ValueError, IndexError):
+                    codeccore = -1
         return codeccore
 
     def get_format(self, filename):
         self.log.debug("function start")
-        global bframe_delay
         root, extension = os.path.splitext(filename)
 
         if sys.platform == 'win32':
@@ -85,106 +84,160 @@ class Cut(BaseAction):
         else:
             self.media_info = MediaInfo.parse(filename)
 
-        codec_core = self.get_codeccore()
+        codec_core = self.get_codeccore(filename)
+        self.log.debug(f"get_format:get_codeccore: {codec_core}")
 
+        bframe_delay = 1
         if extension == '.avi':
-            bframe_delay = 2
             if os.path.splitext(root)[1] == '.HQ':
-                format = Format.HQ
+                if codec_core >= 125:
+                    bframe_delay = 2
+                    vformat = Format.HQ
+                else:  # old OTR file
+                    vformat = Format.HQ0
                 ac3name = os.path.splitext(root)[0] + ".HD.ac3"
             elif os.path.splitext(root)[1] == '.HD':
-                format = Format.HD
+                if codec_core >= 120:
+                    bframe_delay = 2
+                    vformat = Format.HD
+                if codec_core == 0:  # new HD 2020
+                    vformat = Format.HD2
+                else:  # old OTR file
+                    vformat = Format.HD0  # old HD
                 ac3name = root + ".ac3"
+            elif os.path.splitext(root)[1] == '.test' and codec_core == 0:
+                vformat = Format.HD2
+                ac3name = os.path.splitext(root)[0] + ".ac3"
             else:
-                format = Format.AVI
+                bframe_delay = 2
+                vformat = Format.AVI
                 ac3name = root + ".HD.ac3"
         elif extension == '.mp4':
             bframe_delay = 0
             if os.path.splitext(root)[1] == '.HQ':
-                format = Format.HQ
+                vformat = Format.HQ
                 ac3name = os.path.splitext(root)[0] + ".HD.ac3"
             elif os.path.splitext(root)[1] == '.HD':
-                format = Format.HD
+                vformat = Format.HD
                 ac3name = root + ".ac3"
+            elif os.path.splitext(root)[1] == '.test':
+                vformat = Format.HD2
+                ac3name = os.path.splitext(root)[0] + ".HD.ac3"
             else:
-                format = Format.MP4
+                if codec_core >= 125:
+                    vformat = Format.MP4
+                else:
+                    vformat = Format.MP40  # old mp4
                 ac3name = root + ".HD.ac3"
         elif extension == '.mkv':
-            bframe_delay = 2
             if os.path.splitext(root)[1] == '.HQ':
-                format = Format.HQ
+                if codec_core >= 125:
+                    bframe_delay = 2
+                    vformat = Format.HQ
+                else:  # old OTR file
+                    vformat = Format.HQ0
                 ac3name = os.path.splitext(root)[0] + ".HD.ac3"
             elif os.path.splitext(root)[1] == '.HD':
-                format = Format.HD
+                if codec_core >= 125:
+                    bframe_delay = 2
+                    vformat = Format.HD
+                if codec_core == 0:
+                    bframe_delay = 0
+                    vformat = Format.HD2
+                else:  # old OTR file
+                    bframe_delay = 1
+                    vformat = Format.HD0  # old HD
                 ac3name = root + ".ac3"
+            elif os.path.splitext(root)[1] == '.test':
+                bframe_delay = 0
+                vformat = Format.HD2
+                ac3name = os.path.splitext(root)[0] + ".HD.ac3"
             else:
-                format = self.format_dict[self.media_info.tracks[1].format_profile]
-                self.log.debug("Format: {}".format(format))
+                vformat = self.format_dict[self.media_info.tracks[1].format_profile]
+                self.log.debug(f"Format: {vformat}")
                 ac3name = root + ".HD.ac3"
         elif extension == '.ac3':
-            format = Format.AC3
+            vformat = Format.AC3
             ac3name = root
         else:
             return -1, None
 
         if os.path.isfile(ac3name):
-            return format, ac3name, bframe_delay, codec_core
+            return vformat, ac3name, bframe_delay, codec_core
         else:
-            return format, None, bframe_delay, codec_core
+            # print(f"format: {vformat}, bframe_delay: {bframe_delay}, codec_core: {codec_core}")
+            return vformat, None, bframe_delay, codec_core
 
     def get_program(self, filename, manually=False):
         if manually:
-            programs = {Format.AVI: self.config.get('general', 'cut_avis_man_by'),
-                        Format.HQ: self.config.get('general', 'cut_hqs_man_by'),
-                        Format.HD: self.config.get('general', 'cut_hqs_man_by'),
-                        Format.MP4: self.config.get('general', 'cut_mp4s_man_by')}
+            programs = {
+                Format.AVI: self.config.get('general', 'cut_avis_man_by'),
+                Format.HD0: self.config.get('general', 'cut_hqs_man_by'),
+                Format.HD2: self.config.get('general', 'cut_hd2_man_by'),
+                Format.HD: self.config.get('general', 'cut_hqs_man_by'),
+                Format.HQ0: self.config.get('general', 'cut_hqs_man_by'),
+                Format.HQ: self.config.get('general', 'cut_hqs_man_by'),
+                Format.MP4: self.config.get('general', 'cut_mp4s_man_by'),
+                Format.MP40: self.config.get('general', 'cut_mp4s_man_by'),
+            }
         else:
-            programs = {Format.AVI: self.config.get('general', 'cut_avis_by'),
-                        Format.HQ: self.config.get('general', 'cut_hqs_by'),
-                        Format.HD: self.config.get('general', 'cut_hqs_by'),
-                        Format.MP4: self.config.get('general', 'cut_mp4s_by')}
+            programs = {
+                Format.AVI: self.config.get('general', 'cut_avis_by'),
+                Format.HD0: self.config.get('general', 'cut_hqs_by'),
+                Format.HD2: self.config.get('general', 'cut_hd2_by'),
+                Format.HD: self.config.get('general', 'cut_hqs_by'),
+                Format.HQ0: self.config.get('general', 'cut_hqs_by'),
+                Format.HQ: self.config.get('general', 'cut_hqs_by'),
+                Format.MP4: self.config.get('general', 'cut_mp4s_by'),
+                Format.MP40: self.config.get('general', 'cut_mp4s_by'),
+            }
 
-        format, ac3, bframe_delay, _ = self.get_format(filename)
+        vformat, ac3, bframe_delay, _ = self.get_format(filename)
 
-        if format < 0:
+        if vformat < 0:
             return -1, "Format konnte nicht bestimmt werden/wird (noch) nicht unterstützt.", False
 
-        if format == Format.AC3:
+        if vformat == Format.AC3:
             return -1, "AC3 wird automatisch mit der HD.avi verarbeitet und nicht einzeln geschnitten.", False
 
-        config_value = programs[format]
+        config_value = programs[vformat]
 
-        _, _, _, codec_core = self.get_format(filename)
-        vdub = otrvpath.get_internal_virtualdub_path('vdub.exe')
+        codec_core = self.get_codeccore(filename)
+        if sys.platform == 'linux':
+            vdub = otrvpath.get_internal_virtualdub_path('vdub.exe')
+        else:
+            if os.path.exists(self.app.config.get_program('vdub')):
+                vdub = self.config.get_program('vdub')
+                if not vdub.endswith(vdub.exe):
+                    return -2, ("'vdub.exe' konnte nicht gefunden werden. Bitte prüfen Sie den Pfad unter "
+                                "Einstellungen->Programme->vdub.exe"), False
+            else:
+                return -2, ("'vdub.exe' konnte nicht gefunden werden. Bitte prüfen Sie den Pfad unter "
+                            "Einstellungen->Programme->vdub.exe"), False
         x264_codec = self.config.get('general', 'h264_codec')
         if 'avidemux' in config_value:
             return Program.AVIDEMUX, config_value, ac3
         elif 'intern-VirtualDub' in config_value:
             return Program.VIRTUALDUB, otrvpath.get_internal_virtualdub_path('VirtualDub.exe'), ac3
         elif 'intern-vdub' in config_value:
-            return Program.VIRTUALDUB, otrvpath.get_internal_virtualdub_path('vdub.exe'), ac3
+            return Program.VIRTUALDUB, vdub, ac3
         elif 'vdub' in config_value or 'VirtualDub' in config_value:
             return Program.VIRTUALDUB, config_value, ac3
         elif 'CutInterface' in config_value and manually:
             return Program.CUT_INTERFACE, config_value, ac3
         elif 'SmartMKVmerge' in config_value:
-            if codec_core >= 125 or codec_core == -1 or vdub is None or not x264_codec == 'ffdshow':
-                return Program.SMART_MKVMERGE, config_value, ac3
-            else:
-                return Program.VIRTUALDUB, vdub, ac3
+            return Program.SMART_MKVMERGE, config_value, ac3
         else:
-            return -2, "Programm '%s' konnte nicht bestimmt werden. Es wird nur VirtualDub unterstützt." % config_value, False
+            return -2, (f"Programm '{config_value}' konnte nicht bestimmt werden. "
+                        "Es wird nur VirtualDub unterstützt."), False
 
     def generate_filename(self, filename, forceavi=0):
         """ generate filename for a cut video file. """
-
         root, extension = os.path.splitext(os.path.basename(filename))
         if forceavi == 1:
             extension = '.avi'
         new_name = root + "-cut" + extension
-
         cut_video = os.path.join(self.config.get('general', 'folder_cut_avis'), new_name)
-
         return cut_video
 
     def mux_ac3(self, filename, cut_video, ac3_file, cutlist):
@@ -198,7 +251,7 @@ class Cut(BaseAction):
 
         # creates the timecodes string for splitting the .ac3 with mkvmerge
         timecodes = (','.join(
-            [self.get_timecode(start) + ',' + self.get_timecode(start + duration) for start, duration in
+            [self.seconds_to_hms(start) + ',' + self.seconds_to_hms(start + duration) for start, duration in
              cutlist.cuts_seconds]))
         # splitting .ac3. Every second fragment will be used.
         # return_value = subprocess.call([mkvmerge, "--split", "timecodes:" + timecodes, "-o",
@@ -257,7 +310,8 @@ class Cut(BaseAction):
         fileoperations.remove_file(cut_video)
         return mkv_file, ac3_file, None
 
-    def get_timecode(self, time):
+    @staticmethod
+    def seconds_to_hms(time):
         # converts the seconds into a timecode-format that mkvmerge understands
         minute, second = divmod(int(time), 60)  # discards milliseconds
         hour, minute = divmod(minute, 60)
@@ -272,10 +326,9 @@ class Cut(BaseAction):
             with error:
                 None, None, None, None, None, error_message
         """
-
         try:
             process = subprocess.Popen([self.config.get_program('ffmpeg'), "-i", filename],
-                                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except OSError:
             self.log.debug("Leave function")
             return None, None, None, None, None, "FFMPEG (static) konnte nicht ausgeführt werden!"
@@ -289,15 +342,15 @@ class Cut(BaseAction):
         seconds = 0
         ac3_stream = fps = dar = sar = None
 
+        m = None
         for line in log.split('\n'.encode()):
-            #TODO remove try catch
             try:
                 m = re.search(video_infos_match, line.decode())
             except UnicodeDecodeError:
                 try:
                     m = re.search(video_infos_match, line.decode('latin-1'))
                 except UnicodeDecodeError as ex:
-                    self.log.error("Exeption: {}".format(ex))
+                    self.log.error(f"Exeption: {ex}")
 
             if m:
                 if "Duration" == m.group(1):
@@ -312,23 +365,21 @@ class Cut(BaseAction):
                         sar = m.group(6)
                         dar = m.group(7)
                         fps = float(m.group(8))
-                        self.log.debug("FPS: {}".format(fps))
+                        self.log.debug(f"FPS: {fps}")
                     except ValueError:
                         self.log.debug("Leave function")
-                        error = "Video Stream Informationen konnte nicht ausgelesen werden."
+                        error = "Video Stream Informationen konnten nicht ausgelesen werden."
                         return None, None, None, None, error
                 elif "Stream" == m.group(9):
                     ac3_stream = m.group(10)
             else:
                 pass
 
-        self.log.debug("Seconds: {0}, fps: {1}, sar: {2}, dar: {3}".format(seconds, fps, sar, dar))
-        if seconds != 0 and fps != None and sar != None and dar != None:
+        if seconds != 0 and fps is not None and sar is not None and dar is not None:
             max_frames = seconds * fps
-            self.log.debug("Leave function")
+            self.log.error(f"fps: {fps}, dar: {dar}, sar: {sar}, max_frames: {max_frames}, ac3_stream: {ac3_stream}, ")
             return fps, dar, sar, max_frames, ac3_stream, None
 
-        self.log.debug("Leave function")
         error = "Es konnten keine Video Infos der zu bearbeitenden Datei ausgelesen werden."
         return None, None, None, None, None, error
 
@@ -338,8 +389,7 @@ class Cut(BaseAction):
         if not os.path.isfile(filename + '.ffindex_track00.kf.txt'):
             try:
                 command = [self.config.get_program('ffmsindex'), '-f', '-k', filename]
-                process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                                    stderr=subprocess.PIPE)
+                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 self.show_indexing_progress(process)
             except OSError:
                 return None, "ffmsindex konnte nicht aufgerufen werden."
@@ -377,8 +427,7 @@ class Cut(BaseAction):
         if not os.path.isfile(filename + '.ffindex_track00.tc.txt'):
             try:
                 command = [self.config.get_program('ffmsindex'), '-f', '-c', '-k', filename]
-                process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                                    stderr=subprocess.PIPE)
+                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 self.show_indexing_progress(process)
             except OSError:
                 return None, "ffmsindex konnte nicht aufgerufen werden."
@@ -396,16 +445,33 @@ class Cut(BaseAction):
             index = open(filename_timecodes, 'r')
         except (IOError, TypeError) as e:
             return None, None, "Timecode Datei von ffmsindex konnte nicht geöffnet werden."
-        index.readline()
+        index.readline()  # Skip the first line, it is a comment
         try:
             frame_timecode = {}
-            for line_num, line in enumerate(index, start=0):
+            # Read second line to check if the first timecode is 0 (it is not 0 if format is new HD (2020)
+            line = index.readline()
+            timecode = int(round(float(line.replace('\n', '').strip()), 2) / 1000 * Gst.SECOND)
+            # DEBUG
+            # print(f"First timecode: {timecode}")
+            start_num = 0
+            if timecode != 0:
+                frame_timecode[0] = 0
+                frame_timecode[1] = 60
+                start_num = 2
+            else:
+                frame_timecode[0] = timecode
+                start_num = 1
+
+            for line_num, line in enumerate(index, start=start_num):
                 frame_timecode[line_num] = int(round(float(line.replace('\n', '').strip()), 2) / 1000 * Gst.SECOND)
         except ValueError:
             return None, None, "Timecodes konnten nicht ermittelt werden."
         finally:
             index.close()
             gc.collect()  # MEMORYLEAK
+        # DEBUG
+        # for index in range(0, 9):
+        #     print(f"frame_timcode index: {index}: {frame_timecode[index]}")
 
         # Generate reverse dict
         timecode_frame = {v: k for k, v in frame_timecode.items()}
@@ -521,15 +587,13 @@ class Cut(BaseAction):
           x264_core  x264 core version
         """
 
-        global x264_core
+        # global x264_core
         bt709 = ['--videoformat', 'pal', '--colorprim', 'bt709', '--transfer', 'bt709', '--colormatrix', 'bt709']
         bt470bg = ['--videoformat', 'pal', '--colorprim', 'bt470bg', '--transfer', 'bt470bg', '--colormatrix',
                    'bt470bg']
-
+        x264_core = self.get_codeccore(filename)
+        self.log.debug(f"x264_core: {x264_core}")
         try:
-            x264_core = self.get_codeccore()
-            self.log.debug("x264_core: {}".format(x264_core))
-
             try:
                 if '709' in self.media_info.tracks[1].color_primaries:
                     x264_opts.extend(bt709)
@@ -550,11 +614,12 @@ class Cut(BaseAction):
             self.log.debug("Mediainfo IndexError. Using old method.")
             try:
                 blocking_process = subprocess.Popen([self.config.get_program('mediainfo'), filename],
-                                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+                                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                                    universal_newlines=True)
             except OSError as e:
-                return None, "Fehler: %s Filename: %s Error: %s" % str(e.errno), str(e.filename), str(e.strerror)
+                return None, f"Fehler: {e.errno}: {e.strerror} Filename: {e.filename}"
             except ValueError as e:
-                return None, "Falscher Wert: %s" % str(e)
+                return None, f"Falscher Wert: {e}"
 
             while True:
                 line = blocking_process.stdout.readline()
@@ -564,9 +629,7 @@ class Cut(BaseAction):
                         self.log.info(line)
                         try:
                             x264_core = int(line.strip().split(' ')[30])
-                        except ValueError as e:
-                            continue
-                        except IndexError as e:
+                        except (ValueError, IndexError):
                             continue
                     elif 'Color primaries' in line and '709' in line:
                         x264_opts.extend(bt709)
@@ -595,7 +658,7 @@ class Cut(BaseAction):
                     break
         return x264_opts, x264_core
 
-    def ffmpeg_codec_options(self, ffmpeg_codec_options, filename, quality=None):
+    def complete_ffmpeg_opts(self, ffmpeg_codec_options, filename, quality=None, vformat=None):
         fps, dar, sar, max_frames, ac3_stream, error = self.analyse_mediafile(filename)
         codec = None
         codec_core = None
@@ -604,42 +667,40 @@ class Cut(BaseAction):
         bt470bg = ['videoformat=pal:colorprim=bt470bg:transfer=bt470bg:colormatrix=bt470bg']
 
         try:
-            codec_core = self.get_codeccore()
-
-            if 'x264' in self.media_info.tracks[1].writing_library:
+            codec_core = self.get_codeccore(filename)
+            if self.media_info.tracks[1].format == "AVC":
                 codec = 'libx264'
-            try:
-                if self.media_info.tracks[1].color_primaries:
-                    if '709' in self.media_info.tracks[1].color_primaries:
-                        ffmpeg_codec_options.extend(bt709)
-                    elif '470' in self.media_info.tracks[1].color_primaries:
-                        ffmpeg_codec_options.extend(bt470bg)
-                elif self.media_info.tracks[1].transfer_characteristics:
-                    if '709' in self.media_info.tracks[1].transfer_characteristics:
-                        ffmpeg_codec_options.extend(bt709)
-                    elif '470' in self.media_info.tracks[1].transfer_characteristics:
-                        ffmpeg_codec_options.extend(bt470bg)
-                elif self.media_info.tracks[1].matrix_coefficients:
-                    if '709' in self.media_info.tracks[1].matrix_coefficients:
-                        ffmpeg_codec_options.extend(bt709)
-                    elif '470' in self.media_info.tracks[1].matrix_coefficients:
-                        ffmpeg_codec_options.extend(bt470bg)
-            except TypeError:
-                pass
+            if self.media_info.tracks[1].color_primaries:
+                if '709' in self.media_info.tracks[1].color_primaries:
+                    ffmpeg_codec_options.extend(bt709)
+                elif '470' in self.media_info.tracks[1].color_primaries:
+                    ffmpeg_codec_options.extend(bt470bg)
+            elif self.media_info.tracks[1].transfer_characteristics:
+                if '709' in self.media_info.tracks[1].transfer_characteristics:
+                    ffmpeg_codec_options.extend(bt709)
+                elif '470' in self.media_info.tracks[1].transfer_characteristics:
+                    ffmpeg_codec_options.extend(bt470bg)
+            elif self.media_info.tracks[1].matrix_coefficients:
+                if '709' in self.media_info.tracks[1].matrix_coefficients:
+                    ffmpeg_codec_options.extend(bt709)
+                elif '470' in self.media_info.tracks[1].matrix_coefficients:
+                    ffmpeg_codec_options.extend(bt470bg)
+
             profile = ['-profile:v', self.media_info.tracks[1].format_profile.split('@L')[0].lower()]
             ffmpeg_commandline.extend(profile)
 
-            level = ['-level', self.media_info.tracks[1].format_profile.split('@L')[1]]
+            level = ['-level', self.media_info.tracks[1].format_profile.split('@L')[1].replace('.', '')]
             ffmpeg_commandline.extend(level)
         except IndexError:
             self.log.debug("Mediainfo IndexError. Using old method.")
             try:
                 blocking_process = subprocess.Popen([self.config.get_program('mediainfo'), filename],
-                                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+                                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                                    universal_newlines=True)
             except OSError as e:
-                return None, "Fehler: %s Filename: %s Error: %s" % str(e.errno), str(e.filename), str(e.strerror)
+                return None, f"Fehler: {e.errno} Filename: {e.filename} Error: {e.strerror}"
             except ValueError as e:
-                return None, "Falscher Wert: %s" % str(e)
+                return None, f"Falscher Wert: {e}"
             while True:
                 line = blocking_process.stdout.readline()
 
@@ -670,30 +731,39 @@ class Cut(BaseAction):
                     break
 
         if codec == 'libx264':
-            x264opts = (':'.join([option for option in ffmpeg_codec_options])) + ':force_cfr'
+            x264opts = (':'.join([option for option in ffmpeg_codec_options]))
             x264opts = x264opts.lstrip(':')
             if quality and quality == 'MP4':
-                ffmpeg_commandline.extend(['-aspect', dar, '-vcodec', 'libx264', '-preset', 'veryfast', '-x264opts', x264opts])
-            ## --fade-compensate is no longer available in newer x264 encoders
+                ffmpeg_commandline.extend(['-aspect', dar, '-vcodec', 'libx264', '-preset', 'veryfast', '-x264opts',
+                                           x264opts + ':force_cfr'])
+            elif vformat and vformat == Format.HD2:
+                ffmpeg_commandline.extend(['-aspect', dar, '-vcodec', 'libx264', '-preset', 'veryfast',
+                                           '-tune', 'film', '-x264opts', x264opts])
+            elif vformat and vformat == Format.HQ0:
+                ffmpeg_commandline.extend(['-aspect', dar, '-vcodec', 'libx264', '-qp', '22', '-x264opts', x264opts])
             else:
-                ffmpeg_commandline.extend(['-aspect', dar, '-vcodec', 'libx264', '-preset', 'medium', '-tune', 'film', '-x264opts', x264opts])
+                ffmpeg_commandline.extend(['-aspect', dar, '-vcodec', 'libx264', '-preset', 'medium', '-tune', 'film',
+                                           '-x264opts', x264opts])
 
         return ffmpeg_commandline, codec_core
 
     def show_progress(self, blocking_process):
         # progress_match = re.compile(r".*(?<=\[|\ )(\d{1,}).*%.*")
-        progress_match = re.compile(r".*(?<=\[| )(\d{1,}).*%.*")
-        time_match = re.compile(r".*(\d{1,}):(\d{1,}):(\d{1,}.\d{1,}).*")
-        mp4box_match = re.compile(r".*\((\d{2,})\/\d{2,}\).*")
+        progress_match = re.compile(r".*(?<=\[| )(\d+).*%.*")
+        time_match = re.compile(r".*(\d+):(\d+):(\d+.\d+).*")
+        mp4box_match = re.compile(r".*\((\d{2,})/\d{2,}\).*")
+        errors = ""
 
         max_sec = 0.0
 
         while True:
             try:
                 line = blocking_process.stdout.readline()
-                logging.debug(line)
+                self.log.debug(line.rstrip('\n'))
                 if line == '':
                     break
+                elif "Error" in line:
+                    errors += line + "\n"
                 elif 'x264 [info]: started' in line:
                     self.app.gui.main_window.set_tasks_text('Kodiere Video')
                     self.app.gui.main_window.set_tasks_progress(0)
@@ -743,6 +813,7 @@ class Cut(BaseAction):
 
             while Gtk.events_pending():
                 Gtk.main_iteration()
+        return errors
 
     def get_norm_volume(self, filename, stream):
         """ Gets the volume correction of a movie using ffprobe.
@@ -751,19 +822,18 @@ class Cut(BaseAction):
                     with error:
                         1.0, error_message """
 
-        global adjust
         self.app.gui.main_window.set_tasks_text('Berechne den Normalisierungswert')
         self.app.gui.main_window.set_tasks_progress(0)
         try:
             process1 = subprocess.Popen(
-                [otrvpath.get_tools_path('intern-ffprobe'), '-v', 'error', '-of', 'compact=p=0:nk=1', '-drc_scale', '1.0',
+                [self.config.get_program('ffprobe'), '-v', 'error', '-of', 'compact=p=0:nk=1', '-drc_scale', '1.0',
                  '-show_entries', 'frame_tags=lavfi.r128.I', '-f', 'lavfi',
                  'amovie=' + filename + ':si=' + stream + ',ebur128=metadata=1'], stdout=subprocess.PIPE)
         except OSError:
-            return "1.0", "FFMPEG wurde nicht gefunden!"
+            return "1.0", "FFPROBE wurde nicht gefunden!"
 
         log = process1.communicate()[0]
-
+        adjust = None
         loudness = ref = -23
         for line in log.splitlines():
             sline = line.rstrip()
@@ -776,7 +846,8 @@ class Cut(BaseAction):
         else:
             return "1.0", "Volume konnte nicht bestimmt werden."
 
-    def available_cpu_count(self):
+    @staticmethod
+    def available_cpu_count():
         """ Number of available virtual or physical CPUs on this system, i.e.
         user/real as output by time(1) when called with an optimally scaling
         userspace-only program"""
@@ -797,7 +868,8 @@ class Cut(BaseAction):
         except AttributeError:
             return 1
 
-    def meminfo(self):
+    @staticmethod
+    def meminfo():
         """ return meminfo dict """
 
         return psutil.virtual_memory()

@@ -127,6 +127,11 @@ class App:
 
         self.log = logging.getLogger(self.__class__.__name__)
         self.filenames_locked = []
+        self.gtksettings = Gtk.Settings.get_default()
+        # self.gtksettings.props.gtk_application_prefer_dark_theme = False
+        # self.gtksettings.props.gtk_theme_name = "Windows-10-3.2"
+        # self.gtksettings.props.gtk_icon_theme_name = "Windows-10-1.0"
+        # self.gtksettings.props.gtk_font_name = "Segoe UI 14"
         self.last_marked_row = None
         self.section_info = {}
 
@@ -134,7 +139,6 @@ class App:
             'general': {
                 'aes_key': b64encode(os.urandom(32)).decode('utf-8'),
                 'after_cut_show': 10,
-                'alt_time_frame_conv': True,
                 'ask_if_all': True,
                 'choose_cutlists_by': 1,  # 1=name, 0=size
                 'cut_action': Cut_action.ASK,
@@ -142,11 +146,10 @@ class App:
                 'cut_avis_man_by': 'CutInterface',
                 'cut_hqs_by': 'SmartMKVmerge',
                 'cut_hqs_man_by': 'CutInterface',
+                'cut_hd2_by': 'SmartMKVmerge',
+                'cut_hd2_man_by': 'CutInterface',
                 'cut_mp4s_by': 'SmartMKVmerge',
                 'cut_mp4s_man_by': 'CutInterface',
-                'cutinterface_hide_cuts': False,
-                'cutinterface_resolution_x': 800,
-                'cutinterface_resolution_y': 450,
                 'cutlist_comment': 'OTRV3p',
                 'cutlist_hash': hashlib.md5(str(time.time()).encode()).hexdigest(),
                 'cutlist_mp4_as_hq': False,  # for mp4s, when searching cutlist by name, add an HQ --> Name.HQ.mp4
@@ -172,7 +175,6 @@ class App:
                 'mplayer_fullscreen': True,
                 'mpv_screen': '0',
                 'mpv_vol_max': 150.0,
-                'new_keyframe_search': True,
                 'otrkey_search': 'http://otrkeyfinder.com/?search=',
                 'passwd_store': 2,  # 0 = Store in conf, 1 = Store in wallet, 2 = Do not store
                 'passwd_store_memory': False,
@@ -183,7 +185,6 @@ class App:
                 'rename_cut': False,
                 'rename_schema': '{titel} vom {tag}. {MONAT} {jahr}, {stunde}-{minute} ({sender})',
                 'save_email_password': False,
-                'seek_distance_default': 2000,
                 'server': 'http://cutlist.at/',
                 'show_bottom': False,
                 'show_conclusiondialog_after_cutting': False,
@@ -191,18 +192,23 @@ class App:
                 'snippets': 'Snippets können in Einstellungen->Cutlist eingetragen werden',
                 'use_internal_icons': False,
                 'verify_decoded': True,
-                'vol_adjust': 'usw,3.0,140__uk,3.0,140',
+                'vol_adjust': 'uswabc,1.0,100__usw,3.0,140__uk,3.0,140',
                 'vol_adjust_on': False,
                 'window_settings': '',
                 'x264vfw_hd_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --weightp 0',
                 'x264vfw_hq_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --aq-mode 2 --weightp 0',  # noqa: E501
-                'x264vfw_mp4_string': '--force-cfr --profile baseline --preset medium --trellis 0',
+                'x264vfw_mp4_string': '--force-cfr --profile baseline --preset medium --trellis 0'
             },
             'cutinterface': {
+                'alt_time_frame_conv': True,
+                'hide_cuts': False,
+                'new_keyframe_search': True,
+                'resolution_x': 800,
+                'resolution_y': 450,
                 'seek_distance_default': 80,
                 'seek1': 4,
                 'seek2': 20,
-                'show_tooltips': False,
+                'show_tooltips': False
             },
             'downloader': {
                 'aria2c_opts': ['--allow-overwrite=true', '--continue', '--max-connection-per-server=1',
@@ -230,15 +236,20 @@ class App:
                 'mplayer': 'mplayer',
                 'mpv': 'mpv',
                 'sox': 'intern-sox',
+                'vdub': 'intern-vdub',
                 'wget': 'wget',
-                'x264': 'intern-x264',
+                'wineprefix': '',
+                'x264': 'x264',
             },
             'smartmkvmerge': {
-                'encoder_engine': 'ffmpeg',  # 'x264' or 'ffmpeg' possible
+                'encoder_engine': 'x264',  # 'x264' or 'ffmpeg' possible
                 'ffmpeg_avi_mpeg4_options': '-c:v mpeg4 -vtag DX50 -qscale:v 5 -g 300 -f avi',
-                'ffmpeg_hd_x264_options': 'crf=23:deblock=-1/-1:psy-rd=1/0.15:direct=auto:force-cfr=1:b-adapt=2:rc-lookahead=60:weightp=0:aq-mode=2',  # noqa: E501
+                'ffmpeg_hd_x264_options': 'crf=23:deblock=-1/-1:psy-rd=1/0.15:direct=auto:force-cfr=1:b-adapt=2:rc-lookahead=60:weightp=0:aq-mode=2:sps-id=1:stitchable=1:no-scenecut=1',  # noqa: E501
+                # 'ffmpeg_hd_x264_old_options': 'crf=23:deblock=-1/-1:psy-rd=1/0.15:direct=auto:force-cfr=1:b-adapt=2:rc-lookahead=60:weightp=0:aq-mode=2:sps-id=1:stitchable=1:no-scenecut=1',  # noqa: E501
+                'ffmpeg_hd2_x264_options': 'pic-struct=1:sps-id=1:stitchable=1:no-scenecut=1',  # noqa: E501
                 'ffmpeg_hq_x264_options': 'crf=23:deblock=-1/-1:psy-rd=1/0.15:direct=auto:force-cfr=1:b-adapt=2:rc-lookahead=60:weightp=0',  # noqa: E501
-                'ffmpeg_mp4_x264_options': 'crf=23:force-cfr=1:trellis=0',
+                'ffmpeg_hq0_x264_options': 'qp=23:b_pyramid=0:chroma_qp_offset=0:me=umh:psy_rd=0.00/0.00:subme=5:sps-id=1:stitchable=1',  # noqa: E501
+                'ffmpeg_mp4_x264_options': 'crf=23:force-cfr=1:trellis=0:sps-id=1:stitchable=1:no-scenecut=1',
                 'first_audio_stream': 'originale MP3 Spur kopieren',
                 'normalize_audio': False,
                 'remux_to_mp4': False,
@@ -246,12 +257,15 @@ class App:
                 'single_threaded': False,
                 'single_threaded_automatic': True,
                 'workingdir': '',
-                'x264_hd_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --weightp 0',
+                'x264_hd0_string': '--b-pyramid none --chroma-qp-offset 0 --me umh --psy-rd 0.00:0.00 --subme 5 --direct temporal --no-weightb --weightp 0 --ipratio 1.41 --pbratio 1.25 --qp 23 --ref 3',  # noqa: E501
+                'x264_hd2_string': '--preset veryfast --tune film --pic-struct --no-scenecut --sps-id 1 --stitchable',
+                'x264_hd_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --weightp 0',  # noqa: E501
+                'x264_hq0_string': '--b-pyramid none --chroma-qp-offset 0 --me umh --psy-rd 0.00:0.00 --subme 5 --direct temporal --no-weightb --weightp 0 --ipratio 1.41 --pbratio 1.25 --qp 22',  # noqa: E501
                 'x264_hq_string': '--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --aq-mode 2 --weightp 0',  # noqa: E501
-                'x264_mp4_string': '--force-cfr --trellis 0 --preset veryfast',
+                'x264_mp40_string': '--force-cfr --profile baseline --preset medium --trellis 0',
+                'x264_mp4_string': '--preset veryfast --force-cfr --trellis 0'
             }
         }
-        # ~ 'x264_mp4_string': '--force-cfr --profile baseline --preset medium --trellis 0',
 
         self.app_name = 'otr-verwaltung3p'
 
@@ -268,14 +282,16 @@ class App:
 
         # regex
         self.regex_uncut_video = re.compile(r'.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])'
-                                            r'*_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|mp4|mkv|HQ\.mkv|HD\.mkv|'
-                                            r'mp4\.mkv|HQ\.mp4|HD\.mp4)$')
+                                            r'*_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|HD\.test\.avi|mp4|mkv|HQ\.mkv'
+                                            r'|HD\.mkv|HD\.test\.mkv|mp4\.mkv|HQ\.mp4|HD\.mp4)$')
 
         # regex for the name schema should use cut videos just in case it has been muxed
         # into an mkv because of an ac3-track
         self.regex_rename_video = re.compile(r'.*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])*'
-                                             r'_TVOON_DE.mpg(-cut\.avi|\.HQ-cut\.avi|\.HD-cut\.avi|-cut\.mp4|'
-                                             r'\.HQ-cut\.mp4|\.HD-cut\.mp4|\.HD-cut\.mkv|\.HQ-cut\.mkv|-cut\.mkv)$')
+                                             r'_TVOON_DE.mpg(-cut\.avi|\.HQ-cut\.avi|\.HD-cut\.avi'
+                                             r'|\.HD\.test\.avi|\.HD\.test-cut\.avi'
+                                             r'|-cut\.mp4|\.HQ-cut\.mp4|\.HD-cut\.mp4'
+                                             r'|\.HD-cut\.mkv|\.HQ-cut\.mkv|-cut\.mkv)$')
 
         self.regex_cut_video = re.compile('.*(avi|mp4|mkv|wmv|ac3)$')
 
@@ -481,7 +497,7 @@ class App:
                         self.__append_row_treeview_files(parent, full_path)
 
     ###
-    ### Helpers
+    # Helpers
     ###
 
     def rename_by_schema(self, filename, schema=''):
@@ -513,16 +529,16 @@ class App:
 
             sender_gross = parts[3].capitalize()
 
-            format = parts[0]
+            vformat = parts[0]
 
             if 'mp4' in format:
-                format = 'mp4'
+                vformat = 'mp4'
             elif 'HQ' in format:
-                format = 'HQ'
+                vformat = 'HQ'
             elif 'HD' in format:
-                format = 'HD'
+                vformat = 'HD'
             else:
-                format = 'avi'
+                vformat = 'avi'
 
             values = {
                 'titel': titel,
@@ -540,7 +556,7 @@ class App:
                 'stunde': stunde,
                 'minute': minute,
                 'dauer': parts[2],
-                'format': format
+                'format': vformat
             }
 
             for token, value in values.items():
@@ -576,7 +592,7 @@ class App:
         return iter_f
 
     ###
-    ### Search
+    # Search
     ###
 
     def start_search(self, search):
@@ -715,6 +731,10 @@ class App:
         self.show_section(self.section)
 
         if self.last_marked_row is not None:
+            model_length = len(self.gui.main_window.treeview_files.get_model())
+            self.log.debug(f"last_marked_row model length: {model_length}")
+            self.log.debug(f"last_marked_row: {self.last_marked_row}")
+            self.last_marked_row = model_length - 1 if self.last_marked_row > model_length else self.last_marked_row
             self.gui.main_window.treeview_files.get_selection().select_path(Gtk.TreePath(self.last_marked_row))
 
     def play_file(self, filename):
@@ -792,7 +812,7 @@ class App:
                 if not mpv_screen:
                     mpv_screen = "0"
                 mpv_args.append(f"--screen={mpv_screen}")
-                mpv_args.extend([f"--volume-max={str(mpv_vol_max)}", f"--volume={str(mpv_vol)}",
+                mpv_args.extend(["--no-resume-playback", f"--volume-max={str(mpv_vol_max)}", f"--volume={str(mpv_vol)}",
                                 f"-sub-file={f_mpv_sub}", f_mpv_edl])
                 self.p = subprocess.Popen(mpv_args)
 
@@ -835,7 +855,6 @@ class App:
             f_mpv_edl.write('# mpv EDL v0\n')
 
             for count, (start, duration) in enumerate(cuts):
-                print(f"count: {count}, start: {start}, duration: {duration}")
                 end = start + duration
 
                 f_edl.write(f"{start - pre_cut_show} 0\n")
@@ -950,7 +969,7 @@ class App:
 
         return f"{hrs:02d}:{mins:02d}:{secs:02d},{ms:03d}"
 
-    def run(self, link=None):
+    def run(self, alink=None):
         # FIXME doc-string
 
         self.gui.main_window.show()
@@ -994,8 +1013,8 @@ class App:
                                               f"{errstr}\nKlicken Sie dazu auf OK.")
                     self.gui.preferences_window.show()
 
-        if link:
-            self.add_download_link(link)
+        if alink:
+            self.add_download_link(alink)
 
         self.gui.run()
 
@@ -1033,11 +1052,11 @@ class App:
         action.do(link)
 
     def check_program_paths(self, error_str=None):
-        progs = ["ffmpeg", "ffprobe", "ffmsindex", "mediainfo", "mkvmerge", "mpv", "decoder"]
+        progs = ["ffmpeg", "ffprobe", "ffmsindex", "x264", "mediainfo", "mkvmerge", "mpv", "decoder"]
         fatal = False
         for prog in progs:
             if not os.path.exists(self.config.get_program(prog)):
-                if self.config.get_program(prog) in ['intern-easydecoder', 'otrtool']:
+                if self.config.get_program(prog) in ['intern-easydecoder', 'otrtool'] and sys.platform == 'linux':
                     pass
                 else:
                     prog_path = shutil.which(prog)
@@ -1045,10 +1064,11 @@ class App:
                         self.config.set('programs', prog, prog_path)
                     else:
                         if isinstance(error_str, str):
-                            if prog in ['mediainfo', 'mkvmerge', "decoder"]:
+                            if prog in ['mediainfo', 'mkvmerge', "decoder", "x264"]:
                                 if self.config.get_program(prog) == 'intern-otrdecoder':
                                     error_str += (f"! Der {prog} wird nicht mehr unterstützt. "
                                                   "Es wird auf den intern-easydecoder umgestellt.\n")
+                                # elif self.config.get_program(prog) == 'intern-easydecoder' and sys.platform != 'linux'
                                 else:
                                     error_str += f"- setzen Sie einen gültigen Pfad zu dem Programm {prog}\n"
                             else:

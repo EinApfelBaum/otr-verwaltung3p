@@ -49,6 +49,7 @@ class RealDelete(BaseAction):
     def __init__(self, app, gui):
         BaseAction.__init__(self)
         self.update_list = True
+        self.__app = app
         self.__gui = gui
 
     def do(self, filenames, cut_action=None):
@@ -86,6 +87,7 @@ class Rename(BaseAction):
     def __init__(self, app, gui):
         BaseAction.__init__(self)
         self.update_list = True
+        self.__app = app
         self.__gui = gui
 
     def do(self, filenames, cut_action=None):
