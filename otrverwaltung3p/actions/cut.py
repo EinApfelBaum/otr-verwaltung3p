@@ -377,7 +377,7 @@ class Cut(BaseAction):
 
         if seconds != 0 and fps is not None and sar is not None and dar is not None:
             max_frames = seconds * fps
-            self.log.error(f"fps: {fps}, dar: {dar}, sar: {sar}, max_frames: {max_frames}, ac3_stream: {ac3_stream}, ")
+            self.log.debug(f"fps: {fps}, dar: {dar}, sar: {sar}, max_frames: {max_frames}, ac3_stream: {ac3_stream}, ")
             return fps, dar, sar, max_frames, ac3_stream, None
 
         error = "Es konnten keine Video Infos der zu bearbeitenden Datei ausgelesen werden."

@@ -108,15 +108,15 @@ class CutSmartMkvmerge(Cut):
         elif not cutlist.cuts_seconds:
             for start, duration in cutlist.cuts_frames:
                 cutlist.cuts_seconds.append((float(start) / cutlist.fps), (float(duration) / cutlist.fps))
-        self.log.error(f"cutlist.cuts_frames: {cutlist.cuts_frames}")
-        self.log.error(f"cutlist.cuts_seconds: {cutlist.cuts_seconds}")
+        self.log.debug(f"cutlist.cuts_frames: {cutlist.cuts_frames}")
+        self.log.debug(f"cutlist.cuts_seconds: {cutlist.cuts_seconds}")
 
         # codec configuration string
         codec_core = -1
         vformat, ac3_file, bframe_delay, _ = self.get_format(filename)
         hd_offset = [0, 0]
         if vformat == Format.HQ:
-            self.log.error(f"vformat: HQ")
+            self.log.debug(f"vformat: HQ")
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(
                     self.config.get('smartmkvmerge', 'x264_hq_string').split(' '), filename)
@@ -233,7 +233,7 @@ class CutSmartMkvmerge(Cut):
             else:
                 return None, ('Cutlist oder zu schneidende Datei passen nicht zusammen oder sind fehlerhaft.'
                               'cutsmartmkvmerge:230:Result of __simulate_smart_mkvmerge is None')
-        self.log.error(f"video part 2:Videolist: {videolist}")
+        self.log.debug(f"video part 2:Videolist: {videolist}")
 
         # video part 3 - encode small parts - smart rendering part (1/2)
         for encode, start, duration, video_part_filename in videolist:
@@ -261,7 +261,7 @@ class CutSmartMkvmerge(Cut):
                     processing_errors += self.show_progress(non_blocking_process)
             else:
                 video_splitframes += ',' + str(start) + '-' + str(duration)
-                self.log.error(f"video_splitframes: {video_splitframes}")
+                self.log.debug(f"video_splitframes: {video_splitframes}")
 
         self.video_files[0] = self.video_files[0].lstrip('+')
         video_splitframes = video_splitframes.lstrip(',')
