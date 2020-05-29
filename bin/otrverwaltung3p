@@ -531,11 +531,11 @@ class App:
 
             vformat = parts[0]
 
-            if 'mp4' in format:
+            if 'mp4' in vformat:
                 vformat = 'mp4'
-            elif 'HQ' in format:
+            elif 'HQ' in vformat:
                 vformat = 'HQ'
-            elif 'HD' in format:
+            elif 'HD' in vformat:
                 vformat = 'HD'
             else:
                 vformat = 'avi'
