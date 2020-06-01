@@ -92,8 +92,10 @@ class InstallCommand(install):
         data_files = [
             ('share/otrverwaltung3p/media', glob.glob("data/media/*.png")),
             ('share/otrverwaltung3p/media', glob.glob("data/media/*.gif")),
+            ('share/otrverwaltung3p/media', glob.glob("data/media/*.svg")),
             ('share/otrverwaltung3p/plugins', glob.glob("data/plugins/[!_]*.py")),
             ('share/otrverwaltung3p/plugins', glob.glob("data/plugins/[!_]*.png")),
+            ('share/otrverwaltung3p/plugins', glob.glob("data/plugins/[!_]*.svg")),
             ('share/otrverwaltung3p/ui', glob.glob("data/ui/[!xml]*")),
             ('share/otrverwaltung3p/ui/xml', glob.glob("data/ui/xml/*.xml")),
             ('share/otrverwaltung3p', ["data/VERSION"]),
