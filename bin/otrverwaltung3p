@@ -251,6 +251,7 @@ class App:
                 'ffmpeg_hq0_x264_options': 'qp=23:b_pyramid=0:chroma_qp_offset=0:me=umh:psy_rd=0.00/0.00:subme=5:sps-id=1:stitchable=1',  # noqa: E501
                 'ffmpeg_mp4_x264_options': 'crf=23:force-cfr=1:trellis=0:sps-id=1:stitchable=1:no-scenecut=1',
                 'first_audio_stream': 'originale MP3 Spur kopieren',
+                'hd2_offset': '1, -3',
                 'normalize_audio': False,
                 'remux_to_mp4': False,
                 'second_audio_stream': 'originale AC3 Spur kopieren',

@@ -116,7 +116,7 @@ class DecodeOrCut(Cut):
             self.app.conclusions_manager.add_conclusions(*file_conclusions)
 
     def decode(self, file_conclusions):
-        self.log.debug("Decoder: {}".format(self.config.get('programs', 'decoder')))
+        self.log.debug(f"Decoder: {self.config.get('programs', 'decoder')}")
         otrtool = shutil.which("otrtool")
         # no decoder
         # --> otrtool
@@ -454,9 +454,9 @@ class DecodeOrCut(Cut):
         """ Cuts a file manually with the CutInterface.
             returns: error_message, cutlist """
 
-        global cutlist_error, cuts_frames
+        cutlist_error, cuts_frames = None, None
         program, config_value, ac3file = self.get_program(filename, manually=True)
-        format, ac3_file, bframe_delay, _ = self.get_format(filename)
+        _, ac3_file, _, _ = self.get_format(filename)
         fps, dar, sar, max_frames, ac3_stream, error = self.analyse_mediafile(filename)
 
         if error:
@@ -489,7 +489,7 @@ class DecodeOrCut(Cut):
             for f in files:
                 match = cutregex.match(f)
                 if match:
-                    self.log.debug("Found local cutlist {}".format(match.group()))
+                    self.log.debug(f"Found local cutlist {match.group()}")
                     if match.group(1) == '' or match.group(1) == 'mkv':
                         res_num = 0
                     elif "." in match.group(1):
@@ -499,7 +499,7 @@ class DecodeOrCut(Cut):
                     else:
                         res_num = 0
 
-                    self.log.debug("local cutlist res_num: {}".format(match.group(1)))
+                    self.log.debug(f"local cutlist res_num: {match.group(1)}")
                     if res_num > number:
                         res_num = number
                         local_cutlist = p + "/" + match.group()

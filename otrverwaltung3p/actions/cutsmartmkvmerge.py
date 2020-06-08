@@ -50,27 +50,27 @@ class CutSmartMkvmerge(Cut):
         self.audio_files = []  # temporary audio files
         self.rawstreams = {}  # temporary eac3to files
 
-    def __del__(self):
-        # clean up
-        try:
-            if os.path.isfile(self.workingdir + '/audio_copy.mkv'):
-                os.remove(self.workingdir + '/audio_copy.mkv')
-            if os.path.isfile(self.workingdir + '/x264.index'):
-                os.remove(self.workingdir + '/x264.index')
-            if os.path.isfile(self.workingdir + '/video_copy.mkv'):
-                os.rename(self.workingdir + '/video_copy.mkv', self.workingdir + '/video_copy-001.mkv')
-            if os.path.isfile(self.workingdir + '/mediainfo.xml'):
-                os.remove(self.workingdir + '/mediainfo.xml')
-            for n in self.video_files + self.audio_files:
-                if os.path.isfile(n.lstrip('+')):
-                    os.remove(n.lstrip('+'))
-            if os.path.isfile(self.workingdir + '/audio_encode.mkv'):
-                os.remove(self.workingdir + '/audio_encode.mkv')
-            for index in sorted(self.rawstreams.keys()):
-                if os.path.isfile(self.workingdir + '/' + self.rawstreams[index]):
-                    os.remove(self.workingdir + '/' + self.rawstreams[index])
-        except:
-            pass
+    # def __del__(self):
+    #     # clean up
+    #     try:
+    #         if os.path.isfile(self.workingdir + '/audio_copy.mkv'):
+    #             os.remove(self.workingdir + '/audio_copy.mkv')
+    #         if os.path.isfile(self.workingdir + '/x264.index'):
+    #             os.remove(self.workingdir + '/x264.index')
+    #         if os.path.isfile(self.workingdir + '/video_copy.mkv'):
+    #             os.rename(self.workingdir + '/video_copy.mkv', self.workingdir + '/video_copy-001.mkv')
+    #         if os.path.isfile(self.workingdir + '/mediainfo.xml'):
+    #             os.remove(self.workingdir + '/mediainfo.xml')
+    #         for n in self.video_files + self.audio_files:
+    #             if os.path.isfile(n.lstrip('+')):
+    #                 os.remove(n.lstrip('+'))
+    #         if os.path.isfile(self.workingdir + '/audio_encode.mkv'):
+    #             os.remove(self.workingdir + '/audio_encode.mkv')
+    #         for index in sorted(self.rawstreams.keys()):
+    #             if os.path.isfile(self.workingdir + '/' + self.rawstreams[index]):
+    #                 os.remove(self.workingdir + '/' + self.rawstreams[index])
+    #     except:
+    #         pass
 
     def cut_file_by_cutlist(self, filename, cutlist=None, program_config_value=None):
         """ Cuts a otr file with x264 and mkvmerge frame accurate.
@@ -112,9 +112,11 @@ class CutSmartMkvmerge(Cut):
         self.log.debug(f"cutlist.cuts_seconds: {cutlist.cuts_seconds}")
 
         # codec configuration string
+        _, extension = os.path.splitext(filename)
+        hd_offset = [0, 0]
         codec_core = -1
         vformat, ac3_file, bframe_delay, _ = self.get_format(filename)
-        hd_offset = [0, 0]
+
         if vformat == Format.HQ:
             self.log.debug(f"vformat: HQ")
             if encoder_engine == 'x264':
@@ -146,7 +148,11 @@ class CutSmartMkvmerge(Cut):
                 codec, codec_core = self.complete_ffmpeg_opts(
                     self.config.get('smartmkvmerge', 'ffmpeg_hd_x264_options').split(' '), filename)
         elif vformat == Format.HD2:
-            # hd_offset = [5, 0]
+            if extension == '.mkv':
+                hd_offset = [0, -1]
+            else:
+                pass
+                # hd_offset = [7, -6]
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(self.config.get('smartmkvmerge', 'x264_hd2_string')
                                                             .split(' '), filename)
@@ -400,6 +406,8 @@ class CutSmartMkvmerge(Cut):
         for n in self.video_files + self.audio_files:
             if os.path.isfile(n.lstrip('+')):
                 os.remove(n.lstrip('+'))
+            if os.path.isfile(os.path.join(self.workingdir, 'x264.index')):
+                os.remove(os.path.join(self.workingdir, 'x264.index'))
 
         # mux to mp4
         if self.config.get('smartmkvmerge', 'remux_to_mp4'):

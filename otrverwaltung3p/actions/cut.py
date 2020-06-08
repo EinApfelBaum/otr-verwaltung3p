@@ -93,17 +93,22 @@ class Cut(BaseAction):
                 if codec_core >= 125:
                     bframe_delay = 2
                     vformat = Format.HQ
+                    self.log.debug(f"vformat = Format.HQ, value: {Format.HQ}")
                 else:  # old OTR file
                     vformat = Format.HQ0
+                    self.log.debug(f"vformat = Format.HQ0, value: {Format.HQ0}")
                 ac3name = os.path.splitext(root)[0] + ".HD.ac3"
             elif os.path.splitext(root)[1] == '.HD':
-                if codec_core >= 120:
+                if codec_core >= 125:
                     bframe_delay = 2
                     vformat = Format.HD
-                if codec_core == 0:  # new HD 2020
+                    self.log.debug(f"vformat = Format.HD, value: {Format.HD}")
+                elif codec_core == 0:  # new HD 2020
                     vformat = Format.HD2
+                    self.log.debug(f"vformat = Format.HD2, value: {Format.HD2}")
                 else:  # old OTR file
                     vformat = Format.HD0  # old HD
+                    self.log.debug(f"vformat = Format.HD0, value: {Format.HD0}")
                 ac3name = root + ".ac3"
             elif os.path.splitext(root)[1] == '.test' and codec_core == 0:
                 vformat = Format.HD2
@@ -453,16 +458,17 @@ class Cut(BaseAction):
             timecode = int(round(float(line.replace('\n', '').strip()), 2) / 1000 * Gst.SECOND)
             # DEBUG
             # print(f"First timecode: {timecode}")
-            start_num = 0
-            if timecode != 0:
-                frame_timecode[0] = 0
-                frame_timecode[1] = 60
-                start_num = 2
-            else:
-                frame_timecode[0] = timecode
-                start_num = 1
+            # start_num = 0
+            # if timecode != 0:
+            #     frame_timecode[0] = 0
+            #     frame_timecode[1] = 60
+            #     start_num = 2
+            # else:
+            #     frame_timecode[0] = timecode
+            #     start_num = 1
 
-            for line_num, line in enumerate(index, start=start_num):
+            # for line_num, line in enumerate(index, start=start_num):
+            for line_num, line in enumerate(index):
                 frame_timecode[line_num] = int(round(float(line.replace('\n', '').strip()), 2) / 1000 * Gst.SECOND)
         except ValueError:
             return None, None, "Timecodes konnten nicht ermittelt werden."

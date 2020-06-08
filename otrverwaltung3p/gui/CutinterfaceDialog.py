@@ -63,7 +63,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.state = Gst.State.NULL
         self.timelines = [[]]
         self.timeoutcontrol = True
-        self.timer = None
+        self.timer, self.timer2 = None, None
         self.videoheight = 0
         self.videolength = 0
         self.videowidth = 0
@@ -71,7 +71,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                                  'button_seek2_back', 'button_seek1_back', 'button_fast_back', 'button_back',
                                  'button_forward', 'button_fast_forward', 'button_seek1_forward',
                                  'button_seek2_forward', 'button_keyfast_forward', 'button_jump_to_marker_a',
-                                 'button_jump_to_marker_b', 'load_button']
+                                 'button_jump_to_marker_b', 'load_button', 'button_delete_cut', 'button_deselect']
         self.widgets_tt_obj = []
 
     def do_parser_finished(self, builder):
@@ -180,30 +180,17 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.config = app.config
         self.fileuri = Path(filename).as_uri()
         self.filename = str(Path(filename))
-        self.seek_distance_default = self.config.get('cutinterface', 'seek_distance_default') * Gst.SECOND
+        self.config_update()
         self.seek_distance = self.seek_distance_default
-        # Setup buttons
-        seek1 = str(self.config.get('cutinterface', 'seek1'))
-        seek2 = str(self.config.get('cutinterface', 'seek2'))
-        show_tooltips = self.config.get('cutinterface', 'show_tooltips')
-        self.builder.get_object('button_seek2_back').set_label(f"<< {seek2} s")
-        self.builder.get_object('button_seek2_forward').set_label(f"{seek2} s >>")
-        self.builder.get_object('button_seek1_back').set_label(f"<< {seek1} s")
-        self.builder.get_object('button_seek1_forward').set_label(f"{seek1} s >>")
-        self.builder.get_object('switch_tooltip').set_active(show_tooltips)
-        if not show_tooltips:
-            self.on_switch_tooltip_state_set(None)
-        if not self.config.get('cutinterface', 'new_keyframe_search'):
-            self.on_switch_keyframesearch_state_set(None)
 
         if self.config.get('cutinterface', 'alt_time_frame_conv'):
             self.frame_timecode, self.timecode_frame, error = self.get_timecodes_from_file(self.filename)
             if self.frame_timecode is None:
-                self.log.warning("Error: Timecodes konnten nicht ausgelesen werden.")
+                self.log.error("Error: Timecodes konnten nicht ausgelesen werden.")
 
         self.keyframes, error = self.get_keyframes_from_file(self.filename)
         if self.keyframes is None:
-            self.log.warning("Error: Keyframes konnten nicht ausgelesen werden.")
+            self.log.error("Error: Keyframes konnten nicht ausgelesen werden.")
 
         self.movie_box.set_size_request(self.config.get('cutinterface', 'resolution_x'),
                                         self.config.get('cutinterface', 'resolution_y'))
@@ -268,6 +255,23 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.timeoutcontrol = False
 
         return self.cutlist
+
+    def config_update(self):
+        self.seek_distance_default = self.config.get('cutinterface', 'seek_distance_default') * Gst.SECOND
+        # Setup buttons
+        seek1 = str(self.config.get('cutinterface', 'seek1'))
+        seek2 = str(self.config.get('cutinterface', 'seek2'))
+        self.builder.get_object('button_seek2_back').set_label(f"<< {seek2} s")
+        self.builder.get_object('button_seek2_forward').set_label(f"{seek2} s >>")
+        self.builder.get_object('button_seek1_back').set_label(f"<< {seek1} s")
+        self.builder.get_object('button_seek1_forward').set_label(f"{seek1} s >>")
+        self.builder.get_object('switch_tooltip').set_active(self.config.get('cutinterface', 'show_tooltips'))
+        self.builder.get_object('switch_keyframesearch').set_active(not self.config.get('cutinterface',
+                                                                                        'new_keyframe_search'))
+        if not self.config.get('cutinterface', 'show_tooltips'):
+            self.on_switch_tooltip_state_set(None)
+        if self.config.get('cutinterface', 'new_keyframe_search'):
+            self.on_switch_keyframesearch_state_set(None)
 
     def ready_callback(self):
         self.log.debug("Function start")
@@ -674,7 +678,13 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                     return True
                 if keyname == 'DELETE':
                     self.on_button_delete_cut_clicked(None)
-                    return False
+                    return True
+                if keyname == 'HOME':
+                    self.jump_to(nanoseconds=0)
+                    return True
+                if keyname == 'END':
+                    self.jump_to(nanoseconds=self.videolength)
+                    return True
             # SHIFT
             if not mod_ctrl and not mod_alt and mod_shift:
                 if keyname == 'LEFT':
@@ -692,9 +702,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 elif keyname == 'DOWN':
                     # -100 frames
                     self.on_button_seek1_back_clicked(None)
-                    return True
-                elif keyname == 'DELETE':
-                    self.on_button_delete_cut_clicked(None)
                     return True
             # ALT
             if not mod_ctrl and not mod_shift and mod_alt:
@@ -782,20 +789,40 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         accel_mask = Gtk.accelerator_get_default_mod_mask()
         mod_ctrl = (event.state & Gdk.ModifierType.CONTROL_MASK)
         mod_shift = (event.state & Gdk.ModifierType.SHIFT_MASK)
-        if mod_shift:
+        mod_alt = (event.state & Gdk.ModifierType.MOD1_MASK)
+        # SHIFT
+        if mod_shift and not mod_ctrl and not mod_alt:
             if direction == 'down':
                 self.on_button_seek1_back_clicked(None)
                 return True
             else:
                 self.on_button_seek1_forward_clicked(None)
                 return True
-        elif mod_ctrl:
+        # CTRL
+        elif mod_ctrl and not mod_shift and not mod_alt:
             if direction == 'down':
                 self.on_button_seek2_back_clicked(None)
                 return True
             else:
                 self.on_button_seek2_forward_clicked(None)
                 return True
+        # ALT
+        elif not mod_ctrl and not mod_shift and mod_alt:
+            if direction == 'down':
+                self.seeker("left")
+                return True
+            else:
+                self.seeker("right")
+                return True
+        # CTRL-SHIFT
+        elif mod_ctrl and mod_shift and not mod_alt:
+            if direction == 'down':
+                self.on_button_keyfast_back_clicked(None)
+                return True
+            else:
+                self.on_button_keyfast_forward_clicked(None)
+                return True
+        # Not SHIFT, not CTRL, not ALT
         else:
             if direction == 'down':
                 self.on_button_back_clicked(None)
@@ -998,6 +1025,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.slider.clear_marks()
         self.marker_a = -1
         self.marker_b = -1
+        self.seek_distance = self.seek_distance_default
 
     def on_button_undo_clicked(self, *args):
         if len(self.timelines) > 1:

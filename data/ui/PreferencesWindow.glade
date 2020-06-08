@@ -2380,7 +2380,7 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="margin_top">30</property>
-                        <property name="label" translatable="yes">Alternative Zeit &lt;-&gt; Frame Umwandlung:</property>
+                        <property name="label" translatable="yes">Neue Zeit &lt;-&gt; Frame Umwandlung:</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>

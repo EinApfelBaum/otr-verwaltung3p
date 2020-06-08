@@ -107,9 +107,8 @@ class ConclusionsManager:
             self.log.debug("for file ".format(conclusion.uncut_video))
 
             # rename
-            self.log.debug("Rename?")
             if conclusion.cut.rename:
-                self.log.debug("true")
+                self.log.debug("conclusion.cut.rename = true")
                 extension = os.path.splitext(conclusion.cut_video)[1]
                 if not conclusion.cut.rename.endswith(extension):
                     conclusion.cut.rename += extension
@@ -123,8 +122,8 @@ class ConclusionsManager:
 
             # move cut video to archive
             self.log.debug("Move to archive?")
-            if conclusion.cut.archive_to:
-                self.log.debug("true")
+            if conclusion.cut.status == Status.OK and conclusion.cut.archive_to:
+                self.log.debug("conclusion.cut.archive_to = true")
                 fileoperations.move_file(conclusion.cut_video, conclusion.cut.archive_to)
 
             # move uncut video to trash if it's ok

@@ -111,7 +111,7 @@ def make_unique_filename(filename):
     count = 1
     while exists(new_filename):
         path, extension = splitext(filename)
-        new_filename = f"{path}.{count:d}.{extension}"
+        new_filename = f"{path}.{count:d}{extension}"
         count += 1
     return new_filename
 
