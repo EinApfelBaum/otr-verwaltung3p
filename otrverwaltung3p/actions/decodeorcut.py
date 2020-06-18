@@ -176,7 +176,7 @@ class DecodeOrCut(Cut):
             else:
                 verify = True
                 command = [self.config.get_program('decoder'), "-i", file_conclusion.otrkey, "-e",
-                    email, "-p", password, "-o", self.config.get('general', 'folder_uncut_avis')]
+                           email, "-p", password, "-o", self.config.get('general', 'folder_uncut_avis')]
                 if not self.config.get('general', 'verify_decoded'):
                     verify = False
                     command += ["-q"]
@@ -408,9 +408,12 @@ class DecodeOrCut(Cut):
 
         # and finally cut the file
         for count, file_conclusion in enumerate(file_conclusions):
-
             if file_conclusion.cut.status in [Status.NOT_DONE, Status.ERROR]:
-                self.app.filenames_locked.remove(file_conclusion.uncut_video)
+                try:
+                    self.app.filenames_locked.remove(file_conclusion.uncut_video)
+                except ValueError:
+                    pass
+
                 continue
 
             self.log.info("[Decodeandcut] Datei %s wird geschnitten" % file_conclusion.uncut_video)

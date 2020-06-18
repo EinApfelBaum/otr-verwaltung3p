@@ -61,6 +61,7 @@ class Cut(BaseAction):
             if self.media_info.tracks[1].format_profile == 'Main@L3.2':  # New HD.test
                 codeccore = 0
                 return codeccore
+
         if not self.media_info.tracks[1].writing_library:
             codeccore = -1
             return codeccore
@@ -72,7 +73,7 @@ class Cut(BaseAction):
                     codeccore = int(self.media_info.tracks[1].writing_library.split(' ')[2])
                 except (ValueError, IndexError):
                     codeccore = -1
-        return codeccore
+            return codeccore
 
     def get_format(self, filename):
         self.log.debug("function start")
@@ -105,6 +106,7 @@ class Cut(BaseAction):
                     self.log.debug(f"vformat = Format.HD, value: {Format.HD}")
                 elif codec_core == 0:  # new HD 2020
                     vformat = Format.HD2
+                    bframe_delay = 0
                     self.log.debug(f"vformat = Format.HD2, value: {Format.HD2}")
                 else:  # old OTR file
                     vformat = Format.HD0  # old HD
@@ -112,6 +114,7 @@ class Cut(BaseAction):
                 ac3name = root + ".ac3"
             elif os.path.splitext(root)[1] == '.test' and codec_core == 0:
                 vformat = Format.HD2
+                bframe_delay = 0
                 ac3name = os.path.splitext(root)[0] + ".ac3"
             else:
                 bframe_delay = 2
@@ -127,6 +130,7 @@ class Cut(BaseAction):
                 ac3name = root + ".ac3"
             elif os.path.splitext(root)[1] == '.test':
                 vformat = Format.HD2
+                bframe_delay = 0
                 ac3name = os.path.splitext(root)[0] + ".HD.ac3"
             else:
                 if codec_core >= 125:
@@ -146,16 +150,16 @@ class Cut(BaseAction):
                 if codec_core >= 125:
                     bframe_delay = 2
                     vformat = Format.HD
-                if codec_core == 0:
-                    bframe_delay = 0
+                elif codec_core == 0:
                     vformat = Format.HD2
+                    bframe_delay = 0
                 else:  # old OTR file
                     bframe_delay = 1
                     vformat = Format.HD0  # old HD
                 ac3name = root + ".ac3"
             elif os.path.splitext(root)[1] == '.test':
-                bframe_delay = 0
                 vformat = Format.HD2
+                bframe_delay = 0
                 ac3name = os.path.splitext(root)[0] + ".HD.ac3"
             else:
                 vformat = self.format_dict[self.media_info.tracks[1].format_profile]
@@ -453,21 +457,6 @@ class Cut(BaseAction):
         index.readline()  # Skip the first line, it is a comment
         try:
             frame_timecode = {}
-            # Read second line to check if the first timecode is 0 (it is not 0 if format is new HD (2020)
-            line = index.readline()
-            timecode = int(round(float(line.replace('\n', '').strip()), 2) / 1000 * Gst.SECOND)
-            # DEBUG
-            # print(f"First timecode: {timecode}")
-            # start_num = 0
-            # if timecode != 0:
-            #     frame_timecode[0] = 0
-            #     frame_timecode[1] = 60
-            #     start_num = 2
-            # else:
-            #     frame_timecode[0] = timecode
-            #     start_num = 1
-
-            # for line_num, line in enumerate(index, start=start_num):
             for line_num, line in enumerate(index):
                 frame_timecode[line_num] = int(round(float(line.replace('\n', '').strip()), 2) / 1000 * Gst.SECOND)
         except ValueError:
@@ -768,7 +757,7 @@ class Cut(BaseAction):
                 self.log.debug(line.rstrip('\n'))
                 if line == '':
                     break
-                elif "Error" in line:
+                elif "error" in line.lower():
                     errors += line + "\n"
                 elif 'x264 [info]: started' in line:
                     self.app.gui.main_window.set_tasks_text('Kodiere Video')

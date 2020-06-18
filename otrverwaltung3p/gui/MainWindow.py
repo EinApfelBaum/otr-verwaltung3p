@@ -703,7 +703,11 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                 if "otrkey" not in selected_files[0]:
                     menu = Gtk.Menu()
                     if self.app.section == Section.VIDEO_UNCUT:
-                        m_cut = Gtk.MenuItem("Schneiden")
+                        m_cut_manually = Gtk.MenuItem("Manuell Schneiden")
+                        menu.append(m_cut_manually)
+                        m_cut_manually.connect("activate", self._cmenu_cut_manually)
+
+                        m_cut = Gtk.MenuItem("Schneiden - Standard")
                         menu.append(m_cut)
                         m_cut.connect("activate", self._cmenu_cut)
                     m_play = Gtk.MenuItem("Abspielen")
@@ -719,6 +723,9 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
     def _cmenu_cut(self, *args):
         self.app.perform_action(Action.CUT)
+
+    def _cmenu_cut_manually(self, *args):
+        self.app.perform_action(Action.CUT, cut_action=Cut_action.MANUALLY)
 
     def on_treeview_download_row_activated(self, treeview, path, view_colum, data=None):
         iter = treeview.get_model().get_iter(path)

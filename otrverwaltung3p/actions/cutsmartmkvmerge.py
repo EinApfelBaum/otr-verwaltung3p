@@ -152,7 +152,6 @@ class CutSmartMkvmerge(Cut):
                 hd_offset = [0, -1]
             else:
                 pass
-                # hd_offset = [7, -6]
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(self.config.get('smartmkvmerge', 'x264_hd2_string')
                                                             .split(' '), filename)
@@ -250,7 +249,7 @@ class CutSmartMkvmerge(Cut):
                                             '--output', self.workingdir + '/' + video_part_filename, filename]
             elif encoder_engine == 'ffmpeg':
                 command = [ffmpeg, '-hide_banner', '-ss', str(self.seconds_to_hms((start + bframe_delay) / fps)),
-                           '-i', filename, '-vframes', str(duration + bframe_delay), '-vf', 'setsar=' + str(sar),
+                           '-i', filename, '-vframes', str(duration), '-vf', 'setsar=' + str(sar),
                            '-threads', '0', '-an', '-sn', '-dn', '-y', self.workingdir + '/' + video_part_filename]
                 command[6:6] = codec  # insert list 'codec' at position 6, i.e. after 'filename'
             else:

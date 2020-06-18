@@ -2,7 +2,7 @@
 # BEGIN LICENSE
 # This file is in the public domain
 # END LICENSE
-
+import json
 from pathlib import Path
 import logging
 import os
@@ -185,6 +185,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         if self.config.get('cutinterface', 'alt_time_frame_conv'):
             self.frame_timecode, self.timecode_frame, error = self.get_timecodes_from_file(self.filename)
+            # with open('____d_frame_timecode.json', 'w') as fp:
+            #     json.dump(self.frame_timecode, fp)
+            # with open('____d_timecode_frame.json', 'w') as fp:
+            #     json.dump(self.timecode_frame, fp)
             if self.frame_timecode is None:
                 self.log.error("Error: Timecodes konnten nicht ausgelesen werden.")
 
@@ -904,7 +908,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         frame = self.current_frame_position
         # success, current_position = self.query_position(Gst.Format.TIME)
         if self.config.get('cutinterface', 'new_keyframe_search'):  # gcurse new_keyframe_search
-            print(f"Keyjump New keyframesearch: {self.config.get('cutinterface', 'new_keyframe_search')}")
             if direction == "backward":
                 self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT |
                                         Gst.SeekFlags.SNAP_BEFORE, self.current_position - 1)
@@ -912,7 +915,6 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 self.player.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT |
                                         Gst.SeekFlags.SNAP_AFTER, self.current_position + 1)
         else:
-            print(f"Keyjump New keyframesearch: {self.config.get('cutinterface', 'new_keyframe_search')}")
             if direction == "backward":
                 jumpto = self.get_keyframe_in_front_of_frame(self.keyframes, frame)
             else:
