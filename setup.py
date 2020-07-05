@@ -99,6 +99,7 @@ class InstallCommand(install):
             ('share/otrverwaltung3p/ui', glob.glob("data/ui/[!xml]*")),
             ('share/otrverwaltung3p/ui/xml', glob.glob("data/ui/xml/*.xml")),
             ('share/otrverwaltung3p', ["data/VERSION"]),
+            ('share/doc/otrverwaltung3p', ["CHANGELOG.md", "CHANGELOG.de.md"]),
             ('share/applications', ["otrverwaltung3p.desktop"])]
 
         if sys.platform == "linux":

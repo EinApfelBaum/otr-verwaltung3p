@@ -301,6 +301,7 @@
                         <property name="can_focus">False</property>
                         <property name="margin_left">14</property>
                         <property name="label" translatable="yes">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</property>
+                        <property name="wrap">True</property>
                         <property name="selectable">True</property>
                         <property name="xalign">0</property>
                       </object>
@@ -345,6 +346,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="margin_top">5</property>
                     <property name="use_underline">True</property>
                     <signal name="clicked" handler="_on_button_conclusion_play_cut_clicked" swapped="no"/>
                   </object>
@@ -366,6 +368,7 @@
                         <property name="margin_left">5</property>
                         <property name="label" translatable="yes">&lt;i&gt;Umbenennen:&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
+                        <property name="width_chars">12</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -425,7 +428,7 @@
                         <property name="margin_left">5</property>
                         <property name="label" translatable="yes">&lt;i&gt;Wertung:&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
-                        <property name="width_chars">9</property>
+                        <property name="width_chars">12</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -476,7 +479,7 @@
                         <property name="margin_left">5</property>
                         <property name="label" translatable="yes">&lt;i&gt;Archivieren:&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
-                        <property name="width_chars">9</property>
+                        <property name="width_chars">12</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -498,6 +501,7 @@
                   <object class="GtkBox" id="hbox_replace">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="margin_top">5</property>
                     <property name="spacing">5</property>
                     <child>
                       <object class="GtkLabel" id="label_replace">
@@ -507,7 +511,7 @@
                         <property name="margin_left">5</property>
                         <property name="label" translatable="yes">&lt;i&gt;Ersetze:&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
-                        <property name="width_chars">9</property>
+                        <property name="width_chars">12</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>

@@ -141,6 +141,21 @@
                 <property name="position">1</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkButton" id="btn_config">
+                <property name="label" translatable="yes">Einstellungen</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <signal name="clicked" handler="on_btn_config_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="pack_type">end</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -207,56 +222,113 @@
                       <placeholder/>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button_a">
-                        <property name="label" translatable="yes">A  [</property>
+                      <object class="GtkButtonBox">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Pos1 (Home)</property>
-                        <property name="margin_start">20</property>
-                        <property name="margin_end">2</property>
-                        <signal name="clicked" handler="on_button_a_clicked" swapped="no"/>
+                        <property name="can_focus">False</property>
+                        <property name="homogeneous">True</property>
+                        <property name="layout_style">start</property>
+                        <child>
+                          <object class="GtkButton" id="btn_test_next_marker">
+                            <property name="label" translatable="yes">&gt;A</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="tooltip_text" translatable="yes">Abspielen bis zum nächsten Marker A (Shift-A)</property>
+                            <property name="halign">end</property>
+                            <signal name="clicked" handler="on_btn_test_next_marker_clicked" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="btn_test_cut">
+                            <property name="label" translatable="yes">&gt;A|B&gt;</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="tooltip_text" translatable="yes">Schnitt testen (T)</property>
+                            <property name="halign">start</property>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">True</property>
+                        <property name="fill">False</property>
+                        <property name="pack_type">end</property>
                         <property name="position">2</property>
-                        <property name="non_homogeneous">True</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button_b">
-                        <property name="label" translatable="yes">]  B</property>
+                      <object class="GtkButtonBox">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Ende (End)</property>
-                        <property name="margin_end">2</property>
-                        <signal name="clicked" handler="on_button_b_clicked" swapped="no"/>
+                        <property name="can_focus">False</property>
+                        <property name="layout_style">start</property>
+                        <child>
+                          <object class="GtkButton" id="button_a">
+                            <property name="label" translatable="yes">A  [</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="tooltip_text" translatable="yes">Pos1 (Home)</property>
+                            <property name="halign">end</property>
+                            <signal name="clicked" handler="on_button_a_clicked" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="button_b">
+                            <property name="label" translatable="yes">]  B</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="tooltip_text" translatable="yes">Ende (End)</property>
+                            <property name="halign">start</property>
+                            <signal name="clicked" handler="on_button_b_clicked" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="button_remove">
+                            <property name="label" translatable="yes">Entfernen</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="tooltip_text" translatable="yes">Entf (Del)</property>
+                            <property name="halign">baseline</property>
+                            <property name="always_show_image">True</property>
+                            <signal name="clicked" handler="on_button_remove_clicked" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">True</property>
+                        <property name="fill">False</property>
                         <property name="position">3</property>
-                        <property name="non_homogeneous">True</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button_remove">
-                        <property name="label" translatable="yes">Entfernen</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Entf (Del)</property>
-                        <property name="halign">baseline</property>
-                        <property name="always_show_image">True</property>
-                        <signal name="clicked" handler="on_button_remove_clicked" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">4</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                     <child>
                       <object class="GtkCheckButton" id="checkbutton_hide_cuts">
@@ -274,9 +346,6 @@
                         <property name="fill">True</property>
                         <property name="position">5</property>
                       </packing>
-                    </child>
-                    <child>
-                      <placeholder/>
                     </child>
                   </object>
                   <packing>
@@ -561,6 +630,18 @@ Ende Video: Strg - Ende / Ctrl - End
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkLabel" id="lbl_cut_duration">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Laufzeit (geschnitten)</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkButtonBox" id="bbox03">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -603,7 +684,7 @@ Ende Video: Strg - Ende / Ctrl - End
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
                 <child>
@@ -633,7 +714,7 @@ Ende Video: Strg - Ende / Ctrl - End
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">2</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
               </object>
@@ -661,7 +742,7 @@ Ende Video: Strg - Ende / Ctrl - End
               <object class="GtkLabel" id="label_time">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Frame: 0/0, Zeit 0s/0s</property>
+                <property name="label" translatable="yes">K Frame: 0/0, Zeit 00:00:00.000/00:00:00.000, Sek: 0.0000/0.0000</property>
                 <property name="track_visited_links">False</property>
                 <property name="xalign">0</property>
                 <attributes>

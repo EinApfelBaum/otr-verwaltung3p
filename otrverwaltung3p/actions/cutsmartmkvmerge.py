@@ -17,13 +17,14 @@
 import logging
 from pathlib import Path
 import os
+import shlex
 import subprocess
-import sys
+# import sys
 import tempfile
 
-from gi import require_version
-require_version('Gst', '1.0')
-from gi.repository import Gst
+# from gi import require_version
+# require_version('Gst', '1.0')
+# from gi.repository import Gst
 
 from otrverwaltung3p.actions.cut import Cut
 from otrverwaltung3p.constants import Format
@@ -112,8 +113,8 @@ class CutSmartMkvmerge(Cut):
         self.log.debug(f"cutlist.cuts_seconds: {cutlist.cuts_seconds}")
 
         # codec configuration string
-        _, extension = os.path.splitext(filename)
-        hd_offset = [0, 0]
+        extension = Path(filename).suffix
+        x_offset = [0, 0]
         codec_core = -1
         vformat, ac3_file, bframe_delay, _ = self.get_format(filename)
 
@@ -121,67 +122,80 @@ class CutSmartMkvmerge(Cut):
             self.log.debug(f"vformat: HQ")
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(
-                    self.config.get('smartmkvmerge', 'x264_hq_string').split(' '), filename)
+                    shlex.split(self.app.encoding_strings['x264_hq_string']), filename)
+                #     self.config.get('smartmkvmerge', 'x264_hq_string').split(' '), filename)
             elif encoder_engine == 'ffmpeg':
                 codec, codec_core = self.complete_ffmpeg_opts(
-                    self.config.get('smartmkvmerge', 'ffmpeg_hq_x264_options').split(' '), filename)
+                    self.app.encoding_strings['ffmpeg_hq_x264_options'], filename)
+                #     self.config.get('smartmkvmerge', 'ffmpeg_hq_x264_options').split(' '), filename)
         elif vformat == Format.HQ0:  # HQ 2011/2012 and older
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(
-                    self.config.get('smartmkvmerge', 'x264_hq0_string').split(' '), filename)
+                    shlex.split(self.app.encoding_strings['x264_hq0_string']), filename)
+                #     self.config.get('smartmkvmerge', 'x264_hq0_string').split(' '), filename)
             elif encoder_engine == 'ffmpeg':
                 codec, codec_core = self.complete_ffmpeg_opts(
-                    self.config.get('smartmkvmerge', 'ffmpeg_hq0_x264_options').split(' '), filename, vformat=vformat)
+                    self.app.encoding_strings['ffmpeg_hq0_x264_options'], filename)
+            #        self.config.get('smartmkvmerge', 'ffmpeg_hq0_x264_options').split(' '), filename, vformat=vformat)
             codec_core = 125  # Fake
         elif vformat == Format.HD:
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(
-                    self.config.get('smartmkvmerge', 'x264_hd_string').split(' '), filename)
+                    shlex.split(self.app.encoding_strings['x264_hd_string']), filename)
+                #     self.config.get('smartmkvmerge', 'x264_hd_string').split(' '), filename)
             elif encoder_engine == 'ffmpeg':
                 codec, codec_core = self.complete_ffmpeg_opts(
-                    self.config.get('smartmkvmerge', 'ffmpeg_hd_x264_options').split(' '), filename)
+                    self.app.encoding_strings['ffmpeg_hd_x264_options'], filename)
+                #     self.config.get('smartmkvmerge', 'ffmpeg_hd_x264_options').split(' '), filename)
         elif vformat == Format.HD0:
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(
-                    self.config.get('smartmkvmerge', 'x264_hd0_string').split(' '), filename)
+                    shlex.split(self.app.encoding_strings['x264_hd0_string']), filename)
+                #     self.config.get('smartmkvmerge', 'x264_hd0_string').split(' '), filename)
             elif encoder_engine == 'ffmpeg':
                 codec, codec_core = self.complete_ffmpeg_opts(
-                    self.config.get('smartmkvmerge', 'ffmpeg_hd_x264_options').split(' '), filename)
+                    self.app.encoding_strings['ffmpeg_hd0_x264_options'], filename)
+                #     self.config.get('smartmkvmerge', 'ffmpeg_hd0_x264_options').split(' '), filename)
         elif vformat == Format.HD2:
             if extension == '.mkv':
-                hd_offset = [0, -1]
+                x_offset = [0, 0]
+                encoder_engine = 'x264'
             else:
-                pass
+                encoder_engine = 'ffmpeg'
             if encoder_engine == 'x264':
-                codec, codec_core = self.complete_x264_opts(self.config.get('smartmkvmerge', 'x264_hd2_string')
-                                                            .split(' '), filename)
+                codec, codec_core = self.complete_x264_opts(
+                    shlex.split(self.app.encoding_strings['x264_hd2_string']), filename)
             elif encoder_engine == 'ffmpeg':
                 codec, codec_core = self.complete_ffmpeg_opts(
-                    self.config.get('smartmkvmerge', 'ffmpeg_hd2_x264_options').split(' '), filename, vformat=vformat)
+                    self.app.encoding_strings['ffmpeg_hd2_x264_options'], filename)
         elif vformat == Format.MP4:
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(
-                    self.config.get('smartmkvmerge', 'x264_mp4_string').split(' '), filename)
+                    shlex.split(self.app.encoding_strings['x264_mp4_string']), filename)
             elif encoder_engine == 'ffmpeg':
                 codec, codec_core = self.complete_ffmpeg_opts(
-                    self.config.get('smartmkvmerge', 'ffmpeg_mp4_x264_options').split(' '), filename, quality='MP4')
+                    self.app.encoding_strings['ffmpeg_mp4_x264_options'], filename)
+            #        self.config.get('smartmkvmerge', 'ffmpeg_mp4_x264_options').split(' '), filename, quality='MP4')
         elif vformat == Format.MP40:
             if encoder_engine == 'x264':
                 codec, codec_core = self.complete_x264_opts(
-                    self.config.get('smartmkvmerge', 'x264_mp40_string').split(' '), filename)
+                    shlex.split(self.app.encoding_strings['x264_mp40_string']), filename)
+            #        self.config.get('smartmkvmerge', 'x264_mp40_string').split(' '), filename)
             elif encoder_engine == 'ffmpeg':
                 codec, codec_core = self.complete_ffmpeg_opts(
-                    self.config.get('smartmkvmerge', 'ffmpeg_mp4_x264_options').split(' '), filename, quality='MP4')
+                    self.app.encoding_strings['ffmpeg_mp40_x264_options'], filename)
+                #    self.config.get('smartmkvmerge', 'ffmpeg_mp4_x264_options').split(' '), filename, quality='MP4')
             codec_core = 125  # Fake
         elif vformat == Format.AVI:
             encoder_engine = 'ffmpeg'
-            codec = self.config.get('smartmkvmerge', 'ffmpeg_avi_mpeg4_options').split(' ')
+            codec = shlex.split(self.app.encoding_strings['ffmpeg_avi_mpeg4_options'])
+            # codec = self.config.get('smartmkvmerge', 'ffmpeg_avi_mpeg4_options').split(' ')
             codec_core = 125  # Fake
         else:
             return None, f"Format nicht unterstützt (Nur MP4 H264, HQ H264 und HD H264 sind möglich)."
 
         if codec_core == -1:
-            warning_msg = "TODO Die Datei kann nicht geschnitten werden, da die Kodiermethode unbekannt ist."
+            warning_msg = "Die Datei kann nicht geschnitten werden, da die Kodiermethode unbekannt ist."
             return None, warning_msg
 
         # test workingdir
@@ -226,7 +240,7 @@ class CutSmartMkvmerge(Cut):
             processing_errors += self.show_progress(blocking_process)
 
         # video part 1 - read keyframes
-        keyframes, error = self.get_keyframes_from_file(filename)
+        keyframes, error = self.get_keyframes_from_file(filename, vformat)
         if keyframes is None:
             return None, "Keyframes konnten nicht ausgelesen werden." + "\n" + error
 
@@ -245,7 +259,7 @@ class CutSmartMkvmerge(Cut):
             self.video_files.append('+' + self.workingdir + '/' + video_part_filename)
             if encoder_engine == 'x264':
                 command = [x264] + codec + ['--demuxer', 'ffms', '--index', self.workingdir + '/x264.index',
-                                            '--seek', str(start + hd_offset[0]), '--frames', str(duration + hd_offset[1]),
+                                            '--seek', str(start + x_offset[0]), '--frames', str(duration + x_offset[1]),
                                             '--output', self.workingdir + '/' + video_part_filename, filename]
             elif encoder_engine == 'ffmpeg':
                 command = [ffmpeg, '-hide_banner', '-ss', str(self.seconds_to_hms((start + bframe_delay) / fps)),
@@ -254,8 +268,8 @@ class CutSmartMkvmerge(Cut):
                 command[6:6] = codec  # insert list 'codec' at position 6, i.e. after 'filename'
             else:
                 return None, "Keine unterstützte Render-Engine zum Kodieren eingestellt"
-            self.log.debug(f"Command: {command}")
             if encode:
+                self.log.debug(f"Command executed: {command}")
                 try:
                     non_blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                                             universal_newlines=True)
@@ -276,7 +290,7 @@ class CutSmartMkvmerge(Cut):
         if video_splitframes:
             command = [mkvmerge, '-A', '--split', 'parts-frames:' + video_splitframes, '-o', self.workingdir +
                        '/video_copy.mkv', filename]
-            self.log.debug(f"Command: {command}")
+            self.log.debug(f"Command executed: {command}")
             try:
                 non_blocking_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                                         universal_newlines=True, env=my_env)
@@ -340,7 +354,7 @@ class CutSmartMkvmerge(Cut):
                     map = ['-map', '0:a:1']
                 else:
                     map = ['-map', '0:a:0']
-                if not 'AC3 Spur entfernen' in self.config.get('smartmkvmerge', 'second_audio_stream'):
+                if 'AC3 Spur entfernen' not in self.config.get('smartmkvmerge', 'second_audio_stream'):
                     map.extend(['-map', '0:a:1'])
 
             args = [ffmpeg, "-loglevel", "info", "-y", "-drc_scale", "1.0", "-i", ffmpeginput_file, "-vn", "-vsync",

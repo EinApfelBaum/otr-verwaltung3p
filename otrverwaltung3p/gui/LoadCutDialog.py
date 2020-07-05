@@ -14,11 +14,12 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-import gi
-
-gi.require_version('Gtk', '3.0')
+import logging
+import os
+import re
+from gi import require_version
+require_version('Gtk', '3.0')
 from gi.repository import Gdk, Gtk
-import os, re, logging
 
 from otrverwaltung3p.constants import Cut_action
 import otrverwaltung3p.cutlists as cutlists_management
@@ -39,13 +40,19 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
         self.builder = None
         self.chosen_cutlist = None
         self.cutlists_list = []
+        self.cutlists_list_before_size_search = []
         self.download_error = False
-        self.download_first_try = True
+        self.download_try = 0
         self.filename = ''
         self.local_cutlist_avail = False
         self.result = None
         self.treeview_download_cutlists = None
         self.treeview_local_cutlists = None
+        # self.regex_uncut_video = re.compile(
+        #     r".*_([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}_.*_([0-9])"
+        #     r"*_TVOON_DE.mpg\.(avi|HQ\.avi|HD\.avi|HD\.test\.avi|mp4|mkv|HQ\.mkv"
+        #     r"|HD\.mkv|HD\.test\.mkv|mp4\.mkv|HQ\.mp4|HD\.mp4)$"
+        # )
 
     def do_parser_finished(self, builder):
         self.log.debug("Function start")
@@ -64,13 +71,12 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
         lcd_window.set_size_request(int(lcd_window.size_request().width * 1.00),
                                     int(lcd_window.size_request().height * 1.50))
 
-    ###
     # Convenience methods
-    ###
 
     def setup(self, video_file):
         self.filename = video_file
         self.builder.get_object('label_file').set_markup("<b>%s</b>" % os.path.basename(video_file))
+        self.builder.get_object('btn_search_size').set_visible = False
 
         # looking for local cutlists
         p, filename = os.path.split(video_file)
@@ -95,13 +101,12 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
                 cutlist.read_from_file()
                 local_cutlists_list.append(cutlist)
                 # ~ self.treeview_local_cutlists.add_cutlist(cutlist)
-            # Sorting ->
+            # Sorting <--
             local_cutlists_list.sort(key=lambda x: x.quality, reverse=False)
             for cutlist_obj in local_cutlists_list:
                 self.treeview_local_cutlists.add_cutlist(cutlist_obj)
-            # <<<<<
+            # --> Sorting
             self.local_cutlist_avail = True  # gcurse: ONLY_ONE_CUTLIST
-
         else:
             self.builder.get_object('scrolledwindow_local').set_sensitive(False)
             self.builder.get_object('button_local').set_active(False)
@@ -109,7 +114,7 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
 
         self.download_generator(False)
 
-    def download_generator(self, get_all_qualities):
+    def download_generator(self, get_all_qualities, search_for_size=False):
         # start looking for downloadable cutlists
         self.treeview_download_cutlists.get_model().clear()
         self.builder.get_object('label_status').set_markup("<b>Cutlisten werden heruntergeladen...</b>")
@@ -117,51 +122,94 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
 
         # Empty the list for reuse
         self.cutlists_list = []
+        if search_for_size:
+            choose_cutlists_by = 0  # by size
+        else:
+            if not self.app.config.get('cutinterface', 'not_force_search_cutlist_by_name'):
+                choose_cutlists_by = 1  # by name
+            else:
+                choose_cutlists_by = self.app.config.get('general', 'choose_cutlists_by')
+
         GeneratorTask(cutlists_management.download_cutlists, None, self._completed)\
             .start(self.filename, self.app.config.get('general', 'server'),
-                   self.app.config.get('general', 'choose_cutlists_by'),
+                   choose_cutlists_by,
                    self.app.config.get('general', 'cutlist_mp4_as_hq'),
                    self._error_cb, self._cutlist_found_cb, get_all_qualities)
 
     def _error_cb(self, error):
-        if error == "Keine Cutlists gefunden" and self.download_first_try:
-            self.download_first_try = False
+        if error == "Keine Cutlists gefunden" and self.download_try < 1:
+            self.download_try = 1
             self.builder.get_object('label_status').set_markup(f"<b>{error}</b>. Versuche es mit allen Qualitäten.")
-            self.download_generator(True)
+            self.download_generator(True, False)
+        elif error == "Keine Cutlists gefunden" and self.download_try == 1:
+            self.download_try = 2
+            self.builder.get_object('label_status').set_markup(f"<b>{error}</b>. Letzte Chance! Suche nach Dateigröße.")
+            self.download_generator(True, True)
         else:
-            self.builder.get_object('label_status').set_markup(f"<b>{error}</b> (Es wurde nach allen Qualitäten gesucht)")
+            self.builder.get_object('label_status').set_markup(f"<b>{error}</b> (Es wurde nach allen Qualitäten "
+                                                               "und nach Dateigröße gesucht)")
             self.download_error = True
-            self.download_first_try = True
 
     def _cutlist_found_cb(self, cutlist):
-        # Sorting
-        # ~ self.add_cutlist(cutlist)
+        # root, extension = os.path.splitext(
+        #     self.filename
+        # )
+        # filename = os.path.basename(root)
+        # parts = filename.split("_")
+        # # parts.reverse()
+        # # title_list = parts[6: len(parts)]
+        # # title_list.reverse()
+        # # title = "_".join(title_list)
+        # time = parts[4]
+        # date = parts[5]
+        # station = parts[3]
+        #
+        # if all(cutlist.filename_original.find(i) >= 0 for i in [station, time, date]):
         self.cutlists_list.append(cutlist)
 
     def _completed(self):
         if not self.download_error:
-            # Sorting ->
-            self.cutlists_list.sort(key=lambda x: x.quality, reverse=False)
-            for cutlist_obj in self.cutlists_list:
-                self.add_cutlist(cutlist_obj)
-            # <- Sorting
-            self.builder.get_object('label_status').set_markup("")
+            # Do not sort cutlists if they were found by size
+            if self.download_try < 2:
+                self.cutlists_list.sort(key=lambda x: x.quality, reverse=False)
+
+            if self.cutlists_list_before_size_search is not None:
+                # We did search cutlists by size. only add cutlists that have not been found before
+                cutlist_ids = []
+                for cutlist_obj in self.cutlists_list_before_size_search:
+                    self.add_cutlist(cutlist_obj)  # Add cutlist found before size search
+                    cutlist_ids.append(cutlist_obj.id)  # Make a list of found cutlist.ids
+                # Add found cutlists to treeview
+                for cutlist_obj in self.cutlists_list:
+                    if cutlist_obj.id not in cutlist_ids:  # Add only new cutlists
+                        self.add_cutlist(cutlist_obj)
+            else:
+                # Add found cutlists to treeview
+                for cutlist_obj in self.cutlists_list:
+                    self.add_cutlist(cutlist_obj)
+
+            if self.download_try == 2:
+                self.builder.get_object('label_status').set_markup("<b>ACHTUNG:</b> Es wurde nach Dateigröße gesucht!")
+            elif self.download_try == 1:
+                self.builder.get_object('label_status').set_markup("Es wurde nach allen Qualitäten gesucht.")
+            else:
+                self.builder.get_object('label_status').set_markup("Es wurde exakt gesucht.")
 
             if len(self.cutlists_list) != 0:
                 self.treeview_download_cutlists.grab_focus()
                 self.treeview_download_cutlists.get_selection().select_path(Gtk.TreePath.new_first())
-            # gcurse: ONLY_ONE_CUTLIST
-            if len(self.cutlists_list) == 1 and not self.local_cutlist_avail:
+            if self.download_try < 2:
+                self.builder.get_object('btn_search_size').set_visible = True
+            # gcurse: ONLY_ONE_CUTLIST <--
+            if len(self.cutlists_list) == 1 and not self.local_cutlist_avail and not self.download_try == 2:
                 # Close dialog and return the only cutlist
                 self.on_button_ok_clicked(None)
-            # <<<<<
+            # --> ONLY_ONE_CUTLIST
 
     def add_cutlist(self, c):
         self.treeview_download_cutlists.add_cutlist(c)
 
-    ###
     # Signal handlers
-    ###
 
     def on_load_cut_dialog_key_press_event(self, widget, event, *args):
         """handle keyboard events"""
@@ -207,6 +255,16 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
             cutlist.download(self.app.config.get('general', 'server'), self.filename)
             self.result = cutlist
             self.response(1)
+
+    def on_load_cut_dialog_close(self, widget):
+        # self.builder.get_object('btn_search_size').set_visible = False
+        return False
+
+    def on_btn_search_size_clicked(self, widget, data=None):
+        self.cutlists_list_before_size_search = self.cutlists_list
+        self.cutlists_list = []
+        self.download_try = 2
+        self.download_generator(False, True)
 
 
 def new(app):

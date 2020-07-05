@@ -1,38 +1,63 @@
-#### 1.0.0b3, 2020-04-30
+#### 1.0.0b8-WIP
 
+* Fixes problems with new HD format
+
+##### Cutinterface (CI):
+* Adds third stage of cutlist search "by size":
+  _**Exact search**_ (1), _**Search for all qualities**_ (2) and _**Search by
+  size**_ (3). Search by size will be automatically executed if neither
+  (1) nor (2) yield any results but can also be invoked manually (a button
+  on the top right).
+* New button ">A": Play to next marker A
+* New button ">A|B>": Test selected cut
+* The settings can now be opened from the CI and changes take effect
+  immediatley.
+* The length of the video after the cut is now displayed.
+
+##### Hauptfenster:
+* New contextmenu item "Manuell schneiden" (Section "Ungeschnitten")
+
+
+### 1.0.0b4, 2020-05-23
 * Implements cutting of new HD format. Old otr-files are cut without vdub.
-* Hauptfenster:
-  - New keyboard shortcut Ctrl-f to focus search widget
-  - New context menu (Schneiden, Abspielen)
-  - New column in treeview: "Aufnahmedatum"
-  - Files that are processed are now locked in the file view
-  - The file treeviews are automatically updated by directory monitors when
-    changes occur
-  - Implemented a wait-cursor where applicable (eg. Indexing)
-* Cutinterface:
-  - If there is only one cutlist available, it is automatically
-    chosen and downloaded, after the dialog was opened
-  - Two new forward/backward seek buttons, seek distance is now based
-    on seconds and can be defined in the settings
-  - ESCAPE-key disabled
-  - Mousewheel over slider navigates forward/backward
-* Zusammenfassung:
-  - Default usercomment is now editable
-  - Text snippets can be stored (Preferences->Cutlist->Snippets) and appended
-    or prepended to the cutlist comment with one click.
-  - User is warned when trying to close the ConclusionDialog and not all cut
-    files have been inspected.
-  - ESCAPE-key disabled
-* PreferencesWindow:
-  - Speicherorte: Paths are manually editable, new FileChooserDialog-Button
-  - Help texts are tooltips now
-  - New option to show "Zusammenfassung" after cut without clicking the button
-    (Preferences->Schneiden)
+
+### 1.0.0b3, 2020-04-30
+
+##### Hauptfenster:
+* New keyboard shortcut Ctrl-f to focus search widget
+* New context menu (Schneiden, Abspielen)
+* New column in treeview: "Aufnahmedatum"
+* Files that are processed are now locked in the file view
+* The file treeviews are automatically updated by directory monitors when
+  changes occur
+* Implemented a wait-cursor where applicable (eg. Indexing)
+
+##### Cutinterface:
+* If there is only one cutlist available, it is automatically
+  chosen and downloaded, after the dialog was opened
+* Two new forward/backward seek buttons, seek distance is now based
+  on seconds and can be defined in the settings
+* ESCAPE-key disabled
+* Mousewheel over slider navigates forward/backward
+
+##### Zusammenfassung:
+* Default usercomment is now editable
+* Text snippets can be stored (Preferences->Cutlist->Snippets) and appended
+  or prepended to the cutlist comment with one click.
+* User is warned when trying to close the ConclusionDialog and not all cut
+  files have been inspected.
+* ESCAPE-key disabled
+
+##### PreferencesWindow:
+* Speicherorte: Paths are manually editable, new FileChooserDialog-Button
+* Help texts are tooltips now
+* New option to show "Zusammenfassung" after cut without clicking the button
+  (Preferences->Schneiden)
 * New setup.py using setuptools, using appdirs instead of xdg
 * Changed versioning to be compatible with Setuptools
 * Dbus disabled
 
-#### 1.0.0-beta002, 2020-02-03
+### 1.0.0-beta002, 2020-02-03
 
 * Fix pythonpath for debianoid systems
 * Adapted mpv parameters to work with version 0.32.0+
@@ -48,7 +73,7 @@
   opening the CutinterfaceDialog repeatedly (needs more research)
 * Plugin Mediainfo now disabled by default
 
-#### 1.0.0-beta001, 2020-01-28
+### 1.0.0-beta001, 2020-01-28
 
 * Add option to increase the volume for certain stations in Cutinterface and mpv
 * automatically converting (AVI/HQ) cutlists to HD and vice versa (#70)
@@ -82,31 +107,32 @@
 * CutinterfaceDialog: Cut marker improved
 * Handles if virtualdub (wine stuff) is installed or not
 
-#### 3.3.2-A, 2019-03-09
+### 3.3.2-A, 2019-03-09
 
 * Fixes AES encryption and dbus.glib deprecation warning
 * AddDownloadDialog: libtorrent deactivated. Fixes #80
 * Fix remuxing to mp4 for cutsmartmkvmerge
 
-#### 3.3.1-A, 2018-08-04
+### 3.3.1-A, 2018-08-04
 
-* PreferencesWindow:Cutlist:
-  - New option "Vorgeschlagenen Dateinamen der Cutlist ignorieren", including an
-    explanation
-* ConclusionDialog:
-  - File extension now stripped from suggested and other filenames
-  - Closes #60 File extension should be stripped from suggested_filename
+##### PreferencesWindow-Cutlist:
+* New option "Vorgeschlagenen Dateinamen der Cutlist ignorieren", including an
+  explanation
+##### ConclusionDialog:
+* File extension now stripped from suggested and other filenames
+* Closes #60 File extension should be stripped from suggested_filename
+##### +
 * Updated encoding parameters for ffmpeg
 * New options: Set icon size, use internal icons
 * Plugin CutPlay (Geschnittenes Abspielen) now works with mpv
 
-#### 3.3.0-A, 2018-07-29
+### 3.3.0-A, 2018-07-29
 
 * CutinterfaceDialog now uses gstreamer's gtksink for video output. Fixes
   "CutInterface with black Screen"
 * Removed option to set the video-sink of CutinterfaceDialog.player
 
-#### 3.2.5-A, 2018-07-23
+### 3.2.5-A, 2018-07-23
 
 * Add option to set the video-sink of CutinterfaceDialog.player
 * Cutting mp4 with smartMkvMerge should now work reliable. Changed the encoding
@@ -114,11 +140,13 @@
 * CutinterfaceDialog: New context menu for label_filename (copy filename)
 * New version
 
---------------------------------------------------------------------------------
+
+***
+
 
 #### 3.2.4-A, 2018-07-11
 
-* Hauptfenster:
+##### Hauptfenster:
   - Die Standard-Aktion für den Button "Schneiden" in der Sektion
     "Ungeschnitten" ist jetzt in Einstellungen:Hauptfenster einstellbar
   - Die Sektion "Ungeschnitten" wird nach dem Programmstart automatisch

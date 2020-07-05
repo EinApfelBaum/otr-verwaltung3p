@@ -41,6 +41,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
     def __init__(self):
         Gtk.Window.__init__(self)
         self.log = logging.getLogger(self.__class__.__name__)
+        self.app = None
         self.builder = None
         self.css = b"""
                     .font_larger { font-size: larger; }
@@ -67,14 +68,15 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                                         'entry_folder_wineprefix': 'Wineprefix für vdub.exe'}
         self.last_path = None
 
+    def obj(self, objectname):
+        return self.builder.get_object(objectname)
+
     def do_parser_finished(self, builder):
         self.builder = builder
         self.builder.connect_signals(self)
 
-    def obj(self, objectname):
-        return self.builder.get_object(objectname)
-
-    def bind_config(self, config):
+    def bind_config(self, app):
+        self.app = app
         # If stored decoder is not in the standard list (see PreferenceWindow.glade)
         # it will be prepended and set as active entry.
         entries = []
@@ -116,12 +118,14 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         ComboBoxEntryBinding(self.obj('h264_codec_cbox'), self.app.config, 'general', 'h264_codec')
         ComboBoxEntryBinding(self.obj('combobox_ac3'), self.app.config, 'general', 'merge_ac3s_by')
         CheckButtonBinding(self.obj('check_merge_ac3'), self.app.config, 'general', 'merge_ac3s')
-        ComboBoxEntryBinding(self.obj('smkv_first_audio'), self.app.config, 'smartmkvmerge', 'first_audio_stream')
-        ComboBoxEntryBinding(self.obj('smkv_second_audio'), self.app.config, 'smartmkvmerge', 'second_audio_stream')
+        ComboBoxEntryBinding(self.obj('smkv_first_audio'), self.app.config, 'smartmkvmerge', 'first_audio_stream',
+                             data=['normalize_audio', self.obj('check_normalize_audio')])
+        ComboBoxEntryBinding(self.obj('smkv_second_audio'), self.app.config, 'smartmkvmerge', 'second_audio_stream',
+                             data=['normalize_audio', self.obj('check_normalize_audio')])
         EntryBinding(self.obj('smkv_workingdir'), self.app.config, 'smartmkvmerge', 'workingdir')
-        CheckButtonBinding(self.obj('smkv_normalize'), self.app.config, 'smartmkvmerge', 'normalize_audio')
+        CheckButtonBinding(self.obj('check_normalize_audio'), self.app.config, 'smartmkvmerge', 'normalize_audio')
         CheckButtonBinding(self.obj('smkv_mp4'), self.app.config, 'smartmkvmerge', 'remux_to_mp4')
-        ComboBoxEntryBinding(self.obj('combobox_h264_encoding'), self.app.config, 'smartmkvmerge', 'encoder_engine')
+        ComboBoxEntryBinding(self.obj('encoder_engine'), self.app.config, 'smartmkvmerge', 'encoder_engine')
 
         # 4 Cutlist
         EntryBinding(self.obj('entry_server'), self.app.config, 'general', 'server')
@@ -144,7 +148,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         CheckButtonBinding(self.obj('check_use_internal_icons'), self.app.config, 'general', 'use_internal_icons')
         CheckButtonBinding(self.obj('check_hide_archive_buttons'), self.app.config, 'general', 'hide_archive_buttons')
         ComboBoxEntryBinding(self.obj('entry_cut_default'), self.app.config, 'general', 'cut_action',
-                             data='cut_default')
+                             data=['cut_default'])
         CheckButtonBinding(self.obj('check_show_conclusiondialog_after_cutting'), self.app.config, 'general',
                            'show_conclusiondialog_after_cutting')
 
@@ -156,8 +160,13 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         SpinbuttonBinding(self.obj('spinbutton_y'), self.app.config, 'cutinterface', 'resolution_y')
         CheckButtonBinding(self.obj('check_vol_adjust_on'), self.app.config, 'general', 'vol_adjust_on')
         EntryBinding(self.obj('entry_vol_adjust'), self.app.config, 'general', 'vol_adjust')
-        CheckButtonBinding(self.obj('check_alt_time_frame_conv'), self.app.config, 'cutinterface', 'alt_time_frame_conv')
+        CheckButtonBinding(self.obj('check_alt_time_frame_conv'),
+                           self.app.config, 'cutinterface', 'alt_time_frame_conv'),
+        SpinbuttonBinding(self.obj('spinbutton_test_cut_offset_secs'),
+                          self.app.config, 'cutinterface', 'test_cut_offset_secs')
         CheckButtonBinding(self.obj('check_show_tooltips'), self.app.config, 'cutinterface', 'show_tooltips')
+        CheckButtonBinding(self.obj('check_not_force_search_cutlist_by_name'), self.app.config, 'cutinterface',
+                           'not_force_search_cutlist_by_name')
 
         # 8 Programme
         for prog in ['ffmpeg', 'ffprobe', 'ffmsindex', 'x264', 'mediainfo', 'mkvmerge', 'mpv', 'vdub']:
@@ -165,8 +174,8 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         EntryBinding(self.obj('entry_folder_wineprefix'), self.app.config, 'programs', 'wineprefix')
 
         def rename_schema_changed(value):
-            new = self.app.rename_by_schema(self.example_cut_filename, value)
-            self.obj('label_schema').set_label(f"<i>{self.example_filename}</i> wird zu <i>{new}</i>")
+            new_name = self.app.rename_by_schema(self.example_cut_filename, value)
+            self.obj('label_schema').set_label(f"<i>{self.example_filename}</i> wird zu <i>{new_name}</i>")
 
         if not self.app.config.keyring_available:
             self.obj('radioPasswdStoreWallet').set_sensitive(False)
@@ -205,6 +214,12 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         self.obj('label_iconsize').set_sensitive(not self.obj('check_use_internal_icons').get_active())
         self.obj('spinbutton_iconsize').set_sensitive(not self.obj('check_use_internal_icons').get_active())
         self._radio_passwd_store_toggled(self.app.config.get('general', 'passwd_store'))
+        first = 'AAC' in self.app.config.get('smartmkvmerge', 'first_audio_stream')
+        second = 'AAC' in self.app.config.get('smartmkvmerge', 'second_audio_stream')
+        if first or second:
+            self.obj('check_normalize_audio').set_sensitive(True)
+        else:
+            self.obj('check_normalize_audio').set_sensitive(False)
 
         # for prog in ["ffmpeg", "ffprobe", "ffmsindex", 'x264', 'mpv']:
         #     for prefix in ['lbl_prog_', 'entry_prog_', 'btn_prog_', 'lbl_check_']:
@@ -310,24 +325,28 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         keyname = Gdk.keyval_name(event.keyval).upper()
         if event.type == Gdk.EventType.KEY_PRESS:
             if keyname == 'ESCAPE':
-                self.hide()
+                self._on_preferences_button_close_clicked(None)
                 return True
 
-    def _on_preferences_buttonClose_clicked(self, widget, data=None):
+    def _on_preferences_button_close_clicked(self, widget, data=None):
         self.hide()
+        try:
+            # Update settings in Cutinterface
+            self.app.gui.ci_instance.config_update()
+        except AttributeError:
+            pass
 
     def _on_preferences_window_delete_event(self, window, event):
-        self.hide()
-        return True  # don't destroy
+        self._on_preferences_button_close_clicked(None)
+        return True
 
 
-def NewPreferencesWindow(app):
+def new():
     glade_filename = otrvpath.getdatapath('ui', 'PreferencesWindow.glade')
-
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)
     window = builder.get_object("preferences_window")
-    window.app = app
+    # window.app = app
     # window.gui = gui
     return window
 

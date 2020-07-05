@@ -23,6 +23,11 @@
     <property name="step_increment">1</property>
     <property name="page_increment">5</property>
   </object>
+  <object class="GtkAdjustment" id="adj_spinbtn_test_cut_offset_secs">
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
   <object class="GtkAdjustment" id="iconSizeAdjustment">
     <property name="lower">16</property>
     <property name="upper">128</property>
@@ -32,14 +37,14 @@
   </object>
   <object class="GtkAdjustment" id="moviewindowAdjustmentX">
     <property name="lower">384</property>
-    <property name="upper">1280</property>
+    <property name="upper">2560</property>
     <property name="value">800</property>
     <property name="step_increment">1</property>
     <property name="page_increment">100</property>
   </object>
   <object class="GtkAdjustment" id="moviewindowAdjustmentY">
     <property name="lower">216</property>
-    <property name="upper">720</property>
+    <property name="upper">1440</property>
     <property name="value">450</property>
     <property name="step_increment">1</property>
     <property name="page_increment">100</property>
@@ -1508,7 +1513,7 @@ Dies kann man hier dahingehend 채ndern, dass die Zusammenfassung automatisch ge�
                             <property name="can_focus">False</property>
                             <property name="margin_top">5</property>
                             <child>
-                              <object class="GtkCheckButton" id="smkv_normalize">
+                              <object class="GtkCheckButton" id="check_normalize_audio">
                                 <property name="label" translatable="yes">Sound normalisieren</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
@@ -1550,11 +1555,12 @@ Dies kann man hier dahingehend 채ndern, dass die Zusammenfassung automatisch ge�
                             <property name="can_focus">False</property>
                             <child>
                               <object class="GtkLabel" id="lbl_encoding_engine">
+                                <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Welcher Kodierer benutzt werden soll. ffmpeg oder x264</property>
                                 <property name="halign">start</property>
                                 <property name="margin_end">10</property>
-                                <property name="label" translatable="yes">H264 Codec</property>
+                                <property name="label" translatable="yes">Kodierer:</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -1563,7 +1569,8 @@ Dies kann man hier dahingehend 채ndern, dass die Zusammenfassung automatisch ge�
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBoxText" id="combobox_h264_encoding">
+                              <object class="GtkComboBoxText" id="encoder_engine">
+                                <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Welcher Kodierer benutzt werden soll. ffmpeg oder x264</property>
                                 <property name="halign">start</property>
@@ -2376,31 +2383,6 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste 체bernommen.</prop
                     <property name="can_focus">False</property>
                     <property name="column_spacing">30</property>
                     <child>
-                      <object class="GtkLabel" id="lbl_time_frame">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="margin_top">30</property>
-                        <property name="label" translatable="yes">Neue Zeit &lt;-&gt; Frame Umwandlung:</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">6</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkCheckButton" id="check_alt_time_frame_conv">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="margin_top">30</property>
-                        <property name="draw_indicator">True</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">6</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkLabel" id="labelMoviewindowY">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -2417,6 +2399,7 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste 체bernommen.</prop
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="xalign">1</property>
+                        <property name="input_purpose">number</property>
                         <property name="adjustment">moviewindowAdjustmentY</property>
                         <property name="numeric">True</property>
                         <property name="value">450</property>
@@ -2552,6 +2535,7 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste 체bernommen.</prop
                         <property name="can_focus">True</property>
                         <property name="max_width_chars">3</property>
                         <property name="xalign">1</property>
+                        <property name="input_purpose">number</property>
                         <property name="adjustment">adj_spinbtn_seeker</property>
                       </object>
                       <packing>
@@ -2586,6 +2570,86 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste 체bernommen.</prop
                         <property name="left_attach">1</property>
                         <property name="top_attach">2</property>
                       </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="check_alt_time_frame_conv">
+                        <property name="label" translatable="yes"> Neue Zeit &lt;-&gt; Frame Umwandlung</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_top">30</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">6</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="check_show_tooltips">
+                        <property name="label" translatable="yes"> Tooltips anzeigen</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="tooltip_text" translatable="yes">Dies ist der Standardwert. Im Cutinterface kann man die Tooltips "on the fly" ein- und ausblenden.</property>
+                        <property name="halign">start</property>
+                        <property name="margin_top">10</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">8</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="lbl_offset_test_cut">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">Anspielzeit f체r "Schnitt testen"</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">7</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="spinbutton_test_cut_offset_secs">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="xalign">1</property>
+                        <property name="input_purpose">number</property>
+                        <property name="adjustment">adj_spinbtn_test_cut_offset_secs</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">7</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>
@@ -2674,22 +2738,8 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste 체bernommen.</prop
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="lbl_vol_adjust_on">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin_top">30</property>
-                            <property name="label" translatable="yes">Lautst채rkeanhebung aktivieren:</property>
-                            <property name="wrap">True</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
                           <object class="GtkCheckButton" id="check_vol_adjust_on">
+                            <property name="label" translatable="yes">Lautst채rkeanhebung f체r bestimmte Sender aktivieren</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
@@ -2699,8 +2749,11 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste 체bernommen.</prop
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">1</property>
+                            <property name="position">0</property>
                           </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
                         </child>
                       </object>
                       <packing>
@@ -2733,14 +2786,39 @@ Mehrere Anpassungen werden durch Unterstrich(e) getrennt.</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="check_show_tooltips">
-                    <property name="label" translatable="yes">  Tooltips anzeigen</property>
+                  <object class="GtkGrid" id="grid_extra">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="tooltip_text" translatable="yes">Dies ist der Standardwert. Im Cutinterface kann man die Tooltips "on the fly" ein- und ausblenden.</property>
-                    <property name="margin_top">10</property>
-                    <property name="draw_indicator">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_top">40</property>
+                    <child>
+                      <object class="GtkCheckButton" id="check_not_force_search_cutlist_by_name">
+                        <property name="label" translatable="yes">Cutlist-Suche nach Name NICHT erzwingen (f체r den Fall, dass etwas nicht funktioniert)</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_bottom">5</property>
+                        <property name="label" translatable="yes">Tempor채re Optionen:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -3274,6 +3352,24 @@ Mehrere Anpassungen werden durch Unterstrich(e) getrennt.</property>
             <child type="tab">
               <placeholder/>
             </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child type="tab">
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child type="tab">
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child type="tab">
+              <placeholder/>
+            </child>
           </object>
           <packing>
             <property name="expand">True</property>
@@ -3288,13 +3384,13 @@ Mehrere Anpassungen werden durch Unterstrich(e) getrennt.</property>
             <property name="border_width">5</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="buttonClose">
+              <object class="GtkButton" id="button_close">
                 <property name="label">gtk-close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="_on_preferences_buttonClose_clicked" swapped="no"/>
+                <signal name="clicked" handler="_on_preferences_button_close_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>

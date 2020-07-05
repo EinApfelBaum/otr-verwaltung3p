@@ -139,25 +139,38 @@ class RadioButtonsBinding(ConfigBinding):
 
 
 class ComboBoxEntryBinding(ConfigBinding):
-    def __init__(self, widget, config, category, option, data=False):
+    def __init__(self, widget, config, category, option, data=None):
         ConfigBinding.__init__(self, widget, config, category, option, data)
 
         self.data = data
         self.widget.connect('changed', self.on_changed)
 
     def change_value(self, value):
-        if self.data == 'cut_default':
-            self.widget.set_active(value)
+        if self.data is not None:
+            if len(self.data) == 1:
+                if self.data[0] == 'cut_default':
+                    self.widget.set_active(value)
         else:
             self.widget.set_active_id(value)
-        #self.widget.append_text(value)
+        # self.widget.append_text(value)
 
     def on_changed(self, widget):
-        if self.data == 'cut_default':
-            model_dict = {}
-            for row in widget.get_model():
-                model_dict[row[0]] = int(row[1])
+        if self.data is not None:
+            if len(self.data) == 1:
+                if self.data[0] == 'cut_default':
+                    model_dict = {}
+                    for row in widget.get_model():
+                        model_dict[row[0]] = int(row[1])
+                    self.config.set(self.category, self.option, model_dict[widget.get_active_text()])
+            elif len(self.data) == 2:
+                self.config.set(self.category, self.option, widget.get_active_text())
+                if self.data[0] == 'normalize_audio':
+                    first = 'AAC' in self.config.get('smartmkvmerge', 'first_audio_stream')
+                    second = 'AAC' in self.config.get('smartmkvmerge', 'second_audio_stream')
+                    if first or second:
+                        self.data[1].set_sensitive(True)
+                    else:
+                        self.data[1].set_sensitive(False)
 
-            self.config.set(self.category, self.option, model_dict[widget.get_active_text()])
         else:
             self.config.set(self.category, self.option, widget.get_active_text())

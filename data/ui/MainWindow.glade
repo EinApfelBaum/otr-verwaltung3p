@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.2 -->
+<!-- Generated with glade 3.36.0 -->
 <interface>
   <requires lib="gtk+" version="3.16"/>
   <requires lib="MainWindow" version="1.0"/>
@@ -14,9 +14,6 @@
     <signal name="destroy" handler="_on_main_window_destroy" swapped="no"/>
     <signal name="key-press-event" handler="_on_window_key_press_event" swapped="no"/>
     <signal name="window-state-event" handler="_on_main_window_window_state_event" swapped="no"/>
-    <child type="titlebar">
-      <placeholder/>
-    </child>
     <child>
       <object class="GtkBox" id="vbox_main">
         <property name="visible">True</property>
@@ -83,7 +80,7 @@
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Plugins</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="_on_menuEditPlugins_activate" swapped="no"/>
+                        <signal name="activate" handler="_on_menu_edit_plugins_activate" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -93,7 +90,7 @@
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="_on_menuEditPreferences_activate" swapped="no"/>
+                        <signal name="activate" handler="_on_menu_edit_preferences_activate" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -534,6 +531,9 @@
           </packing>
         </child>
       </object>
+    </child>
+    <child type="titlebar">
+      <placeholder/>
     </child>
   </object>
   <object class="GtkTreeStore" id="treestore_files">

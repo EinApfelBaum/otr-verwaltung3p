@@ -333,8 +333,6 @@ class DecodeOrCut(Cut):
                 def download_generator(get_all_qualities):
                     self.download_error = False
 
-                    # Empty the list for reuse
-                    cutlists = []
                     GeneratorTask(cutlists_management.download_cutlists, None, completed).\
                         start(file_conclusion.uncut_video, self.config.get('general', 'server'),
                               self.config.get('general', 'choose_cutlists_by'),
@@ -507,15 +505,15 @@ class DecodeOrCut(Cut):
                         res_num = number
                         local_cutlist = p + "/" + match.group()
 
-            ci_instance = CutinterfaceDialog.new(self.gui)
-            ci_instance.set_transient_for(self.app.gui.main_window)
-            ci_instance.set_modal(True)
+            self.app.gui.ci_instance = CutinterfaceDialog.new(self.gui)
+            self.app.gui.ci_instance.set_transient_for(self.app.gui.main_window)
+            self.app.gui.ci_instance.set_modal(True)
             self.app.gui.main_window.get_window().set_cursor(self.app.gui.main_window.cursor_wait)
-            cutlist = ci_instance.run_(filename, local_cutlist, self.app)
-            ci_instance.destroy()
+            cutlist = self.app.gui.ci_instance.run_(filename, local_cutlist, self.app)
+            self.app.gui.ci_instance.destroy()
             self.app.gui.main_window.get_window().set_cursor(None)
             # MEMORYLEAK
-            del ci_instance
+            del self.app.gui.ci_instance
             gc.collect()
 
             if cutlist.cuts_frames is None or len(cutlist.cuts_frames) == 0:

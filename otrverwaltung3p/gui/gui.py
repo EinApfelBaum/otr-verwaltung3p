@@ -31,6 +31,7 @@ from otrverwaltung3p.constants import Section
 class Gui:
     def __init__(self, app):
         self.app = app
+        self.ci_instance = None
 
         def set_transient_modal(self, instance):
             instance.set_transient_for(self.main_window)
@@ -40,8 +41,8 @@ class Gui:
         self.main_window = MainWindow.new(app)
         self.main_window.post_init()
 
-        self.preferences_window = PreferencesWindow.NewPreferencesWindow(app)
-        self.preferences_window.bind_config(app.config)
+        self.preferences_window = PreferencesWindow.new()
+        self.preferences_window.bind_config(app)
         set_transient_modal(self, self.preferences_window)
 
         self.dialog_archive = ArchiveDialog.NewArchiveDialog()

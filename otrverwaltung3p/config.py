@@ -81,13 +81,13 @@ class Config:
                 value = password
         elif option == 'h264_codec':
             value = 'ffdshow'  # FORCED
-        elif option == 'encoder_engine':
-            value = 'x264'  # FORCED
+        # elif option == 'encoder_engine':
+        #     value = 'x264'  # FORCED
         else:
             value = self.__fields[category][option]
 
         printed_value = "*****" if option in ['email', 'password', 'aes_key', 'server'] else value
-        self.log.debug(f"Get [{category}].[{option}]: {printed_value}")
+        # self.log.debug(f"Get [{category}].[{option}]: {printed_value}")
 
         return value
 

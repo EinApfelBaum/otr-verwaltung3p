@@ -513,8 +513,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             cell.set_property('text', self.humanize_size(model.get_value(iter, self.__SIZE)))
 
     def __tv_files_date(self, column, cell, model, iter, data=None):
-        cell.set_property('text',
-                          time.strftime("%a, %d.%m.%Y, %H:%M", time.localtime(model.get_value(iter, self.__DATE))))
+        cell.set_property('text', time.strftime("%d.%m.%Y, %H:%M", time.localtime(model.get_value(iter, self.__DATE))))
 
     def __tv_files_name(self, column, cell, model, iter, data=None):
         cell.set_property('text', basename(model.get_value(iter, self.__FILENAME)))
@@ -782,10 +781,10 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         about_dialog.run()
         about_dialog.destroy()
 
-    def _on_menuEditPlugins_activate(self, widget, data=None):
+    def _on_menu_edit_plugins_activate(self, widget, data=None):
         self.app.gui.dialog_plugins.run_()
 
-    def _on_menuEditPreferences_activate(self, widget, data=None):
+    def _on_menu_edit_preferences_activate(self, widget, data=None):
         self.app.gui.preferences_window.show()
 
     def _on_main_window_configure_event(self, widget, event, data=None):

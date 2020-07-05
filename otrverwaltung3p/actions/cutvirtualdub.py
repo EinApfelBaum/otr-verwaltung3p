@@ -72,7 +72,7 @@ class CutVirtualdub(Cut):
         else:
             return None, "Wine konnte nicht aufgerufen werden."
 
-        if vformat == Format.HQ:
+        if vformat == Format.HQ or vformat == Format.HQ0:
             if self.config.get('general', 'h264_codec') == 'ffdshow':
                 if dar == "16:9":
                     comp_data = codec.get_comp_data_h264_169()
@@ -88,7 +88,7 @@ class CutVirtualdub(Cut):
             else:
                 return None, "Codec nicht unterstützt. Nur ffdshow, x264vfw und komisar unterstützt."
 
-        elif vformat == Format.HD or vformat == Format.HD2:
+        elif vformat == Format.HD or vformat == Format.HD2 or vformat == Format.HD0:
             if self.config.get('general', 'h264_codec') == 'ffdshow':
                 if dar == "16:9":
                     comp_data = codec.get_comp_data_hd_169()

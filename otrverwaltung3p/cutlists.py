@@ -14,12 +14,15 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-import xml.dom.minidom
-import urllib.request
+import codecs
 import configparser
+import logging
 import os.path
-import http.client
-import logging, codecs
+from pathlib import Path
+import requests
+import urllib.request
+# noinspection PyUnresolvedReferences
+import xml.dom.minidom
 
 from otrverwaltung3p import fileoperations
 
@@ -94,35 +97,22 @@ class Cutlist:
             Returns: error message, otherwise None
         """
 
-        boundary = '----------ThIs_Is_tHe_bouNdaRY_$'
-
-        lines = [
-            '--' + boundary,
-            'Content-Disposition: form-data; name="userid"',
-            '',
-            cutlist_hash,
-            '--' + boundary,
-            'Content-Disposition: form-data; name="userfile[]"; filename="%s"' % self.local_filename,
-            '',
-            open(self.local_filename, 'r').read(),
-            '--' + boundary + '--',
-            '']
-
-        body = '\r\n'.join(lines)
-
-        connection = http.client.HTTPConnection(server.split('/')[2], 80)
-        headers = {'Content-Type': 'multipart/form-data; boundary=%s' % boundary}
-
+        clist = open(self.local_filename, 'r').read()
         try:
-            connection.request('POST', server + "", body, headers)
-        except Exception as error_message:
-            return error_message
+            response = requests.post(
+                server,
+                {"userid": cutlist_hash, "filename": os.path.basename(self.local_filename)},
+                files={"userfile[]": clist}
+            )
+            self.log.debug(f"{response = }")
+            self.log.debug(f"{response.text = }")
 
-        response = connection.getresponse().read().decode('utf-8')
-        if 'erfolgreich' in response:
-            return None
-        else:
-            return response
+            if 'erfolgreich' in response.text:
+                return None
+            else:
+                return response.text
+        except TimeoutError:
+            return "Connection timed out!"
 
     def download(self, server, video_filename):
         """ Downloads a cutlist to the folder where video_filename is.
@@ -130,13 +120,13 @@ class Cutlist:
 
             Returns: error message, otherwise None
         """
-
         self.local_filename = video_filename
+        self.log.debug(f"{video_filename = }")
         count = 0
 
         while os.path.exists(self.local_filename + ".cutlist"):
             count += 1
-            self.local_filename = "%s.%s" % (video_filename, str(count))
+            self.local_filename = f"{video_filename}.{str(count)}"
 
         self.local_filename += ".cutlist"
 
@@ -146,7 +136,7 @@ class Cutlist:
         try:
             self.local_filename, headers = urllib.request.urlretrieve(url, self.local_filename)
         except IOError as error:
-            return "Cutlist konnte nicht heruntergeladen werden (%s)." % error
+            return f"Cutlist konnte nicht heruntergeladen werden ({error})."
 
     def read_from_file(self):
         config_parser = configparser.ConfigParser()
@@ -169,7 +159,7 @@ class Cutlist:
                     self.quality = value
 
         except Exception as e:
-            self.log.error("Exception: {0}".format(e))
+            self.log.error(f"Exception: {e}")
             self.log.error("Malformed cutlist: ".format(self.local_filename))
 
     def read_cuts(self):
@@ -194,19 +184,18 @@ class Cutlist:
             for count in range(noofcuts):
                 cut = "Cut" + str(count)
 
-                if config_parser.has_option(cut, "StartFrame") and \
-                                                config_parser.has_option(cut, "DurationFrames"):
+                if config_parser.has_option(cut, "StartFrame") and config_parser.has_option(cut, "DurationFrames"):
                     start_frame = int(config_parser.get(cut, "StartFrame"))
                     duration_frames = int(config_parser.get(cut, "DurationFrames"))
                     if duration_frames > 0:
                         self.cuts_frames.append((start_frame, duration_frames))
-                        self.log.info("Append frames: {0}, {1}".format(start_frame, duration_frames))
+                        self.log.info(f"Append frames: {start_frame}, {duration_frames}")
 
                 start_second = float(config_parser.get(cut, "Start"))
                 duration_seconds = float(config_parser.get(cut, "Duration"))
                 if duration_seconds > 0:
                     self.cuts_seconds.append((start_second, duration_seconds))
-                    self.log.info("Append seconds:  {0}, {1}".format(start_second, duration_seconds))
+                    self.log.info(f"Append seconds:  {start_second}, {duration_seconds}")
 
         except configparser.NoSectionError as message:
             return "Fehler in Cutlist: " + str(message)
@@ -219,12 +208,12 @@ class Cutlist:
             Returns: True for success.
         """
 
-        url = "%srate.php?rate=%s&rating=%s" % (server, self.id, rating)
+        url = f"{server}rate.php?rate={self.id}&rating={rating}"
 
         try:
-            self.log.debug("Rate URL: {}".format(url))
+            self.log.debug(f"Rate URL: {url}".replace(server.split('/')[3], '<FRED>'))
             message = urllib.request.urlopen(url).read()
-            self.log.debug("Rate message: {}".format(message))
+            self.log.debug(f"Rate message: {message}".replace(server.split('/')[3], '<FRED>'))
 
             if "Cutlist wurde bewertet. Vielen Dank!" in message:
                 return True, message
@@ -235,64 +224,55 @@ class Cutlist:
 
     def write_local_cutlist(self, uncut_video, intended_app_name, my_rating):
         """ Writes a cutlist file to the instance's local_filename. """
-
+        self.log.debug("Function starts")
         try:
-            cutlist = codecs.open(self.local_filename, 'w', 'UTF-8')
+            with codecs.open(self.local_filename, 'w', 'UTF-8') as cutlist:
 
-            cutlist.writelines([
-                "[General]\n",
-                "Application=%s\n" % self.app,
-                "Version=%s\n" % self.intended_version,
-                "FramesPerSecond=%.2f\n" % self.fps,
-                "IntendedCutApplicationName=%s\n" % intended_app_name,
-                "IntendedCutApplication=%s\n" % self.intended_app,
-                "VDUseSmartRendering=%s\n" % str(int(self.smart)),
-                "VDSmartRenderingCodecFourCC=0x53444646\n",
-                "comment1=The following parts of the movie will be kept, the rest will be cut out.\n",
-                "comment2=All values are given in seconds.\n",
-                "NoOfCuts=%s\n" % str(len(self.cuts_frames)),
-                "ApplyToFile=%s\n" % os.path.basename(uncut_video),
-                "OriginalFileSizeBytes=%s\n" % str(fileoperations.get_size(uncut_video)),
-                "\n",
-                "[Info]\n",
-                "Author=%s\n" % self.author,
-                "RatingByAuthor=%s\n" % str(self.ratingbyauthor),
-                "EPGError=%s\n" % str(int(self.wrong_content)),
-                "ActualContent=%s\n" % str(self.actualcontent),
-                "MissingBeginning=%s\n" % str(int(self.missing_beginning)),
-                "MissingEnding=%s\n" % str(int(self.missing_ending)),
-                "MissingVideo=0\n",
-                "MissingAudio=0\n",
-                "OtherError=%s\n" % str(int(self.other_error)),
-                "OtherErrorDescription=%s\n" % str(self.othererrordescription),
-                "SuggestedMovieName=%s\n" % str(self.suggested_filename),
-                "UserComment=%s\n" % str(self.usercomment),
-                "\n"
-            ])
-
-            for count, (start_frame, duration_frames) in enumerate(self.cuts_frames):
                 cutlist.writelines([
-                    "[Cut%i]\n" % count,
-                    "Start=%.2f\n" % (start_frame / self.fps),
-                    "StartFrame=%i\n" % start_frame,
-                    "Duration=%.2f\n" % (duration_frames / self.fps),
-                    "DurationFrames=%i\n" % duration_frames,
+                    "[General]\n",
+                    f"Application={self.app}\n",
+                    f"Version={self.intended_version}\n",
+                    f"FramesPerSecond={self.fps:.2f}\n",
+                    f"IntendedCutApplicationName={intended_app_name}\n",
+                    f"IntendedCutApplication={self.intended_app}\n",
+                    f"VDUseSmartRendering={str(int(self.smart))}\n",
+                    "VDSmartRenderingCodecFourCC=0x53444646\n",
+                    "comment1=The following parts of the movie will be kept, the rest will be cut out.\n",
+                    "comment2=All values are given in seconds.\n",
+                    f"NoOfCuts={str(len(self.cuts_frames))}\n",
+                    f"ApplyToFile={Path(uncut_video).name}\n",
+                    f"OriginalFileSizeBytes={str(fileoperations.get_size(uncut_video))}\n",
+                    "\n",
+                    "[Info]\n",
+                    f"Author={self.author}\n",
+                    f"RatingByAuthor={str(self.ratingbyauthor)}\n",
+                    f"EPGError={str(int(self.wrong_content))}\n",
+                    f"ActualContent={str(self.actualcontent)}\n",
+                    f"MissingBeginning={str(int(self.missing_beginning))}\n",
+                    f"MissingEnding={str(int(self.missing_ending))}\n",
+                    "MissingVideo=0\n",
+                    "MissingAudio=0\n",
+                    f"OtherError={str(int(self.other_error))}\n",
+                    f"OtherErrorDescription={str(self.othererrordescription)}\n",
+                    f"SuggestedMovieName={str(self.suggested_filename)}\n",
+                    f"UserComment={str(self.usercomment)}\n",
                     "\n"
                 ])
 
+                for count, (start_frame, duration_frames) in enumerate(self.cuts_frames):
+                    cutlist.writelines([
+                        f"[Cut{count}]\n",
+                        f"Start={start_frame / self.fps:.2f}\n",
+                        f"StartFrame={start_frame}\n",
+                        f"Duration={duration_frames / self.fps:.2f}\n",
+                        f"DurationFrames={duration_frames}\n",
+                        "\n"
+                    ])
         except IOError:
-            self.log.warning("Konnte Cutlist-Datei nicht erstellen: " + self.local_filename)
-            # finally:
-            #    cutlist.close()
+            self.log.warning(f"Konnte Cutlist-Datei nicht erstellen: {self.local_filename}")
 
 
-#
-#
 # Other methods
-#
-#
-#
-
 def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq,
                       error_cb=None, cutlist_found_cb=None, get_all_qualities=None):
     """ Downloads all cutlists for the given file.
@@ -307,60 +287,83 @@ def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq,
     """
 
     llog = logging.getLogger(__name__)
-    global extension
+
+    baseurl = f"{server}getxml.php"
     if choose_cutlists_by == 0:  # by size
-        size = fileoperations.get_size(filename)
-        urls = ["%sgetxml.php?ofsb=%s" % (server, str(size)),
-                # siehe http://www.otrforum.com/showthread.php?t=59666
-                "%sgetxml.php?ofsb=%s" % (server, str((size + 2 * 1024 ** 3) % (4 * 1024 ** 3)
-                                                                                - 2 * 1024 ** 3))]
+        size1 = fileoperations.get_size(filename)
+        # siehe http://www.otrforum.com/showthread.php?t=59666 :
+        size2 = (size1 + 2 * 1024 ** 3) % (4 * 1024 ** 3) - 2 * 1024 ** 3
+        params = [{"ofsb": str(size1)},
+                  {"ofsb": str(size2)}]
+        # urls = [baseurl + f"?ofsb={str(size1)}",
+        #         baseurl + f"?ofsb={str(size2)}"]
 
     else:  # by name
-        if "/" in filename:
-            root, extension = os.path.splitext(os.path.basename(filename))
-        else:
-            root = filename
-
+        root = Path(filename).stem
+        extension = Path(filename).suffix
         if cutlist_mp4_as_hq and extension == '.mp4':
             root += ".HQ"
 
         if get_all_qualities:
-            for q in [".HQ", ".HD"]:
-                if q in root:
-                    root = root.replace(q, '')
+            for quality in [".HQ", ".HD"]:
+                if quality in root:
+                    root = root.replace(quality, '')
 
-        urls = ["%sgetxml.php?name=%s" % (server, root)]
+        params = [{"name": root}]
+        urls = [baseurl + f"?name={root}"]
 
     cutlists = []
 
-    for url in urls:
-        llog.debug("Download from : {}".format(url))
+    # for url in urls:
+    for param in params:
         try:
-            handle = urllib.request.urlopen(url)
-        except IOError:
-            if error_cb: error_cb("Verbindungsprobleme")
+            # resp = urllib.request.urlopen(url)
+            resp = requests.get(baseurl, params=param)
+            llog.debug(f"Download from: {resp.url}".replace(server.split('/')[3], '<FRED>'))
+        except TimeoutError:
+            if error_cb:
+                error_cb("Verbindungsprobleme")
             return "Verbindungsprobleme", None
 
         try:
-            dom_cutlists = xml.dom.minidom.parse(handle)
-            handle.close()
+            # noinspection PyUnresolvedReferences
+            dom_cutlists = xml.dom.minidom.parseString(resp.text)
             dom_cutlists = dom_cutlists.getElementsByTagName('cutlist')
-        except:
-            if error_cb: error_cb("Keine Cutlists gefunden")
-            return "Keine Cutlists gefunden", None
+
+            # import xml.etree.ElementTree as Et
+            # tree_cutlists = Et.fromstring(resp.text)
+        except Exception as e:
+            if error_cb:
+                error_cb("Keine Cutlists gefunden")
+            return f"Keine Cutlists gefunden ({e})", None
+
+        # Homo ludens
+        # for cutlist in range(int(tree_cutlists.attrib["count"])):
+        #     c = Cutlist()
+        #     for tagg in range(len(tree_cutlists[cutlist])):
+        #         exec(f"c.{tree_cutlists[cutlist][tagg].tag} = "
+        #              f"'{tree_cutlists[cutlist][tagg].text}'".replace('c.cuts', 'c.countcuts'))
+        #     for key, value in qualities.items():
+        #         if key in c.filename_original:
+        #             c.quality = value
+        #         ids = [cutlist.id for cutlist in cutlists]
+        #         if c.id not in ids:
+        #             if cutlist_found_cb:
+        #                 cutlist_found_cb(c)
+        #             cutlists.append(c)
 
         for cutlist in dom_cutlists:
 
             c = Cutlist()
 
             c.id = __read_value(cutlist, "id")
-            c.author = __read_value(cutlist, "author")
-            c.ratingbyauthor = __read_value(cutlist, "ratingbyauthor")
             c.rating = __read_value(cutlist, "rating")
             c.ratingcount = __read_value(cutlist, "ratingcount")
-            c.countcuts = __read_value(cutlist, "cuts")
+            c.author = __read_value(cutlist, "author")
+            c.ratingbyauthor = __read_value(cutlist, "ratingbyauthor")
             c.actualcontent = __read_value(cutlist, "actualcontent")
             c.usercomment = __read_value(cutlist, "usercomment")
+            c.countcuts = __read_value(cutlist, "cuts")
             c.filename = __read_value(cutlist, "filename")
             c.withframes = __read_value(cutlist, "withframes")
             c.withtime = __read_value(cutlist, "withtime")
@@ -376,7 +379,8 @@ def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq,
 
             ids = [cutlist.id for cutlist in cutlists]
             if c.id not in ids:
-                if cutlist_found_cb: cutlist_found_cb(c)
+                if cutlist_found_cb:
+                    cutlist_found_cb(c)
 
                 cutlists.append(c)
 
@@ -397,7 +401,7 @@ def __read_value(cutlist_element, node_name):
                     bad_string = bad_string.replace(key, value)
             return bad_string  # hopefully not bad anymore
     except Exception as e:
-        llog.debug("Exception: ".format(e))
+        llog.debug(f"Exception: {e}")
         return ''
 
     llog.debug(f"Reading node {node_name} failed. Returning empty string.")
