@@ -1,5 +1,4 @@
-#### 1.0.0b8-WIP
-
+### 1.0.0b8
 * Fixes problems with new HD format
 
 ##### Cutinterface (CI):
@@ -11,12 +10,23 @@
 * New button ">A": Play to next marker A
 * New button ">A|B>": Test selected cut
 * The settings can now be opened from the CI and changes take effect
-  immediatley.
+  immediately in the CI.
 * The length of the video after the cut is now displayed.
 
 ##### Hauptfenster:
 * New contextmenu item "Manuell schneiden" (Section "Ungeschnitten")
+* Readds Plugin "Manuell schneiden"
 
+### 1.0.0b7, 2020-06-08
+* Fixes HD videos are cut with wrong encoding parameters
+* Cut video will not be moved to archive if cut was cancelled (conclusions.py)
+* Fixes bug in fileoperations.py
+
+### 1.0.0b6, 2020-06-01
+* Fixes an error in setup.py not copying data/plugins/mediainfo.svg
+
+### 1.0.0b5, 2020-05-29
+* Fixes bug with auto-renaming
 
 ### 1.0.0b4, 2020-05-23
 * Implements cutting of new HD format. Old otr-files are cut without vdub.

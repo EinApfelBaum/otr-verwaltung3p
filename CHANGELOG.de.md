@@ -1,4 +1,4 @@
-#### 1.0.0b8-WIP
+### 1.0.0b8
 
 * Behebt Probleme beim Schneiden des neuen HD-Formates
 
@@ -19,11 +19,11 @@
 * Kontextmenü (Sektion "Ungeschnitten") erweitert um "Manuell schneiden"
 * Das Plugin "Manuell schneiden" ist wieder da.
 
-#### 1.0.0b4, 2020-05-23
+### 1.0.0b4, 2020-05-23
 * Das neue HD-Format kann geschnitten werden. Alte otr-Dateien können ohne
   vdub geschnitten werden.
 
-#### 1.0.0b3, 2020-03-18
+### 1.0.0b3, 2020-03-18
 
 ##### Hauptfenster:
 * Neue Spalte "Aufnahmedatum" in der Dateiansicht
@@ -64,7 +64,7 @@
 * Speicherorte: Pfade sind manuell editierbar
 * Die meisten Hilfetexte sind jetzt Tooltips
 
-#### 1.0.0-beta002, 2020-02-03
+### 1.0.0-beta002, 2020-02-03
 
 * Pythonpfad für debianoide Systeme korrigiert
 * mpv-Parameter für die Version 0.32.0+ angepasst
@@ -79,7 +79,7 @@
   wiederholtes Öffnen des CutinterfaceDialogs ensteht
 * Das Plugin Mediainfo ist jetzt standardmäßig deaktiviert
 
-#### 1.0.0-beta001, 2020-01-28
+### 1.0.0-beta001, 2020-01-28
 
 * Option zur Erhöhung der Lautstärke für bestimmte Sender im Cutinterface
   und mpv hinzugefügt
@@ -109,13 +109,13 @@
 * Der Button "Eine Datei ist fertig" ist jetzt farbig. YAY :)
 * CutinterfaceDialog: Schnittmarkierung verbessert
 
-#### 3.3.2-A, 2019-03-09
+### 3.3.2-A, 2019-03-09
 
 * Behebt die AES-Verschlüsselung und die dbus.glib deprecated Meldungen.
 * AddDownloadDialog: libtorrent deaktiviert. Fixes #80
 * "Am Ende automatisch mp4 erzeugen" funktioniert wieder.
 
-#### 3.3.1-A, 2018-08-04
+### 3.3.1-A, 2018-08-04
 
 ##### Einstellungen-Cutlist:
 * Neue Option "Vorgeschlagene Dateinamen der Cutlist ignorieren", einschließlich
@@ -129,13 +129,13 @@
 * Neue Optionen: Icon-Größe einstellen, interne Icons verwenden.
 * Plugin Geschnittenes Abspielen funktioniert jetzt mit mpv
 
-#### 3.3.0-A, 2018-07-29
+### 3.3.0-A, 2018-07-29
 
 * CutinterfaceDialog verwendet jetzt den gtksink von gstreamer für die
   Videoausgabe. Behebt "CutInterface with black screen"
 * Option zum Einstellen des Video-Sinks von CutinterfaceDialog.player entfernt
 
-#### 3.2.5-A, 2018-07-23
+### 3.2.5-A, 2018-07-23
 
 * Option zum Festlegen des Video-Sinks von CutinterfaceDialog.player hinzufügen
 * Das Schneiden von mp4 mit smartMkvMerge sollte nun zuverlässig funktionieren.

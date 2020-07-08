@@ -46,7 +46,7 @@ class Play(Plugin):
 
     def disable(self):
         self.gui.main_window.remove_toolbutton(self.toolbutton)
-        self.gui.main_window.builder.get_object('treeview_files').disconnect(self.row_activate_id)
+        # self.gui.main_window.builder.get_object('treeview_files').disconnect(self.row_activate_id)
 
     # plugin methods
     def start_player(self):
