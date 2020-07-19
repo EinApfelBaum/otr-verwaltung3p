@@ -17,7 +17,8 @@
 import subprocess, time
 import os.path
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 from otrverwaltung3p.pluginsystem import Plugin
@@ -33,9 +34,12 @@ class ConvertToMP3(Plugin):
     Configurable = False
 
     def enable(self):
-        self.toolbutton = self.gui.main_window.add_toolbutton(Gtk.Image.new_from_file(self.get_path('music.png')),
-                                                              'In MP3 umwandeln', [Section.VIDEO_CUT])
-        self.toolbutton.connect('clicked', self.on_converttomp3_clicked)
+        self.toolbutton = self.gui.main_window.add_toolbutton(
+            Gtk.Image.new_from_file(self.get_path("music.png")),
+            "In MP3 umwandeln",
+            [Section.VIDEO_CUT],
+        )
+        self.toolbutton.connect("clicked", self.on_converttomp3_clicked)
 
     def disable(self):
         self.gui.main_window.remove_toolbutton(self.toolbutton)
@@ -56,15 +60,37 @@ class ConvertToMP3(Plugin):
                 subprocess.Popen("ffmpeg", stdout=null, stderr=null)
                 null.close()
 
-                self.gui.main_window.change_status(0, "Datei %s wird umgewandelt..." % (filenames))
+                self.gui.main_window.change_status(
+                    0, "Datei %s wird umgewandelt..." % (filenames)
+                )
 
                 subprocess.call(
-                    ['ffmpeg', '-y', '-i', filenames, '-vn', '-ar', '44100', '-ac', '2', '-ab', '320k', '-f', 'mp3',
-                     filenames + '.mp3'])
+                    [
+                        "ffmpeg",
+                        "-y",
+                        "-i",
+                        filenames,
+                        "-vn",
+                        "-ar",
+                        "44100",
+                        "-ac",
+                        "2",
+                        "-ab",
+                        "320k",
+                        "-f",
+                        "mp3",
+                        filenames + ".mp3",
+                    ]
+                )
 
-                self.gui.main_window.change_status(0, "Erfolgreich %s umgewandelt." % (filenames))
-                self.app.gui.message_info_box("Die Datei %s.mp3 wurde erfolgreich erstellt!" % (filenames))
+                self.gui.main_window.change_status(
+                    0, "Erfolgreich %s umgewandelt." % (filenames)
+                )
+                self.app.gui.message_info_box(
+                    "Die Datei %s.mp3 wurde erfolgreich erstellt!" % (filenames)
+                )
 
             except OSError:
                 self.app.gui.message_error_box(
-                    "FFMPEG ist nicht installiert! Bitte installieren Sie FFMPEG um das Plugin nutzen zu können!")
+                    "FFMPEG ist nicht installiert! Bitte installieren Sie FFMPEG um das Plugin nutzen zu können!"
+                )

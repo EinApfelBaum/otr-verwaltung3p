@@ -115,9 +115,9 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             ]
         else:
             toolbar_buttons = [
-                ('decodeandcut', ['dialog-password', 'edit-cut-symbolic'],
+                ('decodeandcut', 'edit-cut',
                  "Dekodieren und Schneiden", Action.DECODEANDCUT),
-                ('decode', 'dialog-password', 'Dekodieren', Action.DECODE),
+                ('decode', 'rotation-locked-symbolic', 'Dekodieren', Action.DECODE),
                 ('delete', 'user-trash', "In den Müll verschieben", Action.DELETE),
                 ('archive', 'system-file-manager', "Archivieren", Action.ARCHIVE),
                 ('cut', 'edit-cut', "Schneiden", Action.CUT),
@@ -130,7 +130,14 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.__toolbar_buttons = {}
         for key, image_name, text, action in toolbar_buttons:
             if self.app.config.get('general', 'use_internal_icons'):
-                image = Gtk.Image.new_from_file(otrvpath.get_image_path(image_name))
+                # image = Gtk.Image.new_from_file(otrvpath.get_image_path(image_name))
+                image = Gtk.Image.new_from_pixbuf(
+                    GdkPixbuf.Pixbuf.new_from_file_at_size(
+                        otrvpath.get_image_path(image_name),
+                        self.app.config.get("general", "icon_size"),
+                        self.app.config.get("general", "icon_size"),
+                    )
+                )
             else:
                 # Gtk.IconSize.LARGE_TOOLBAR
                 if type(image_name) is list:  # It's a list so we create an emblemed icon
@@ -139,14 +146,14 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                                                 Gio.ThemedIcon.new(image_name[0]),
                                                 Gio.Emblem.new(Gio.ThemedIcon.new(image_name[1]))),
                                                 self.app.config.get('general', 'icon_size'))
-                    except:
-                        pass
+                    except Exception as e:
+                        self.log.info(f"{e}")
                 else:
                     try:
                         image = Gtk.Image.new_from_pixbuf(Gtk.IconTheme.get_default().load_icon(image_name,
                                                           self.app.config.get('general', 'icon_size'), 0))
-                    except:
-                        pass
+                    except Exception as e:
+                        self.log.info(f"{e}")
 
             image.show()
 

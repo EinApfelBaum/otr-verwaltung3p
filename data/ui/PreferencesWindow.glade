@@ -1518,6 +1518,7 @@ Dies kann man hier dahingehend ändern, dass die Zusammenfassung automatisch ge�
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
+                                <property name="tooltip_text" translatable="yes">Diese Option ist nur verfügbar, wenn eine oder mehrere Audio-Tracks nach AAC umgewandelt werden sollen.</property>
                                 <property name="halign">start</property>
                                 <property name="draw_indicator">True</property>
                               </object>
@@ -2815,9 +2816,6 @@ Mehrere Anpassungen werden durch Unterstrich(e) getrennt.</property>
                         <property name="left_attach">0</property>
                         <property name="top_attach">0</property>
                       </packing>
-                    </child>
-                    <child>
-                      <placeholder/>
                     </child>
                   </object>
                   <packing>

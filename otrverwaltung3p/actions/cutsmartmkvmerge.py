@@ -416,11 +416,11 @@ class CutSmartMkvmerge(Cut):
             return None, 'beim Schreiben des geschnittenen MKVs...' + processing_errors
 
         # remove all temporary files
-        for n in self.video_files + self.audio_files:
-            if os.path.isfile(n.lstrip('+')):
-                os.remove(n.lstrip('+'))
-            if os.path.isfile(os.path.join(self.workingdir, 'x264.index')):
-                os.remove(os.path.join(self.workingdir, 'x264.index'))
+        # for n in self.video_files + self.audio_files:
+        #     if os.path.isfile(n.lstrip('+')):
+        #         os.remove(n.lstrip('+'))
+        #     if os.path.isfile(os.path.join(self.workingdir, 'x264.index')):
+        #         os.remove(os.path.join(self.workingdir, 'x264.index'))
 
         # mux to mp4
         if self.config.get('smartmkvmerge', 'remux_to_mp4'):
@@ -492,7 +492,7 @@ class CutSmartMkvmerge(Cut):
                     return None, 'Fehler beim Erstellen der MP4' + processing_errors
                 """
 
-            args = [self.config.get_program('ffmpeg'), '-i', cut_video, '-c', 'copy']
+            args = [self.config.get_program('ffmpeg'), '-i', cut_video, '-map', '0:v', '-map', '0:a', '-c', 'copy']
             tmp_video = cut_video
             cut_video = os.path.splitext(self.generate_filename(filename, 1))[0] + ".mp4"
             args.append(cut_video)

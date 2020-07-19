@@ -15,8 +15,9 @@
 # END LICENSE
 
 from gi import require_version
-require_version('Gtk', '3.0')
-from gi.repository import Gtk, GdkPixbuf
+
+require_version("Gtk", "3.0")
+from gi.repository import GdkPixbuf, Gtk
 
 from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p.constants import Action, Cut_action, Section
@@ -32,21 +33,25 @@ class CutManually(Plugin):
     def enable(self):
         self.relevant_sections = [Section.VIDEO_UNCUT, Section.VIDEO_CUT]
 
-        if self.app.config.get('general', 'use_internal_icons'):
+        if self.app.config.get("general", "use_internal_icons"):
             image = Gtk.Image.new_from_pixbuf(
                 GdkPixbuf.Pixbuf.new_from_file_at_size(
-                    otrvpath.get_image_path('cut.png'),
+                    otrvpath.get_image_path("cut.png"),
                     self.app.config.get("general", "icon_size"),
                     self.app.config.get("general", "icon_size"),
                 )
             )
         else:
-            image = Gtk.Image.new_from_pixbuf(Gtk.IconTheme.get_default().
-                                              load_icon('edit-cut',
-                                              self.app.config.get('general', 'icon_size'), 0))
+            image = Gtk.Image.new_from_pixbuf(
+                Gtk.IconTheme.get_default().load_icon(
+                    "edit-cut", self.app.config.get("general", "icon_size"), 0
+                )
+            )
 
-        self.toolbutton = self.gui.main_window.add_toolbutton(image, 'Manuell schneiden', self.relevant_sections)
-        self.toolbutton.connect('clicked', self.on_cut_clicked)
+        self.toolbutton = self.gui.main_window.add_toolbutton(
+            image, "Manuell schneiden", self.relevant_sections
+        )
+        self.toolbutton.connect("clicked", self.on_cut_clicked)
 
         # self.row_activate_id = self.gui.main_window.builder.get_object(
         #     'treeview_files').connect('row-activated', self.on_row_activated)
