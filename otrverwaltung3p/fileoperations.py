@@ -17,13 +17,14 @@
 """ Stellt Methoden für Dateioperationen bereit.
 Zeigt bei Fehlern einen gtk.MessageDialog an."""
 
-from os.path import join, basename, exists, dirname, splitext
 import logging
 import os
 import shutil
+from os.path import basename, exists, join, splitext
 
 from gi import require_version
-require_version('Gtk', '3.0')
+
+require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 
@@ -39,7 +40,8 @@ def __error(message_text):
         Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
         Gtk.MessageType.ERROR,
         Gtk.ButtonsType.OK,
-        message_text)
+        message_text,
+    )
 
     dialog.run()
     dialog.destroy()
@@ -69,14 +71,18 @@ def rename_file(old_filename, new_filename, error_cb=__error):
     """ Benennt eine Datei um. Wenn die Datei bereits existiert, wird der neue Name um eine Zahl erweitert. """
 
     if old_filename == new_filename:
-        handle_error(error_cb, f"Umbenennen: Die beiden Dateinamen stimmen überein! ({old_filename})")
+        handle_error(
+            error_cb, f"Umbenennen: Die beiden Dateinamen stimmen überein! ({old_filename})",
+        )
         return
     new_filename = make_unique_filename(new_filename)
     log.debug(f"Rename {old_filename} to {new_filename}")
     try:
         os.rename(old_filename, new_filename)
     except Exception as e:
-        handle_error(error_cb, f"Fehler beim Umbenennen von {old_filename} nach {new_filename} ({e}).")
+        handle_error(
+            error_cb, f"Fehler beim Umbenennen von {old_filename} nach {new_filename} ({e}).",
+        )
         return
     return new_filename
 
@@ -92,14 +98,17 @@ def move_file(filename, target, error_cb=__error):
     try:
         os.rename(filename, new_filename)
     except OSError as e:
+        log.debug(f"{e}")
         try:
             shutil.move(filename, target)
         except Exception as e:
-            handle_error(error_cb, f"Fehler beim Verschieben von {filename} nach {target} ({e}). ")
+            handle_error(
+                error_cb, f"Fehler beim Verschieben von {filename} nach {target} ({e}). ",
+            )
             return filename
 
-    if os.path.isfile(filename + '.cutlist'):
-        os.remove(filename + '.cutlist')
+    if os.path.isfile(filename + ".cutlist"):
+        os.remove(filename + ".cutlist")
     return new_filename
 
 

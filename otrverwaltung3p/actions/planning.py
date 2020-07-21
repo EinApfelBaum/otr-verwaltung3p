@@ -16,7 +16,7 @@
 
 import gi
 
-gi.require_version('Gtk', '3.0')
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 import time
 import webbrowser
@@ -49,7 +49,7 @@ class Edit(BaseAction):
         self.__gui = gui
 
     def do(self, broadcast_iters, cut_action=None):
-        model = self.__gui.main_window.builder.get_object('treeview_planning').get_model()
+        model = self.__gui.main_window.builder.get_object("treeview_planning").get_model()
         broadcast = model.get_value(broadcast_iters[0], 0)
 
         if self.__gui.dialog_planning.run_edit(broadcast) == Gtk.ResponseType.OK:
@@ -77,7 +77,7 @@ class Remove(BaseAction):
             message = "Es sind %s Sendungen ausgewählt. Sollen diese Sendungen " % len(broadcast_iters)
 
         if self.__gui.question_box(message + "gelöscht werden?"):
-            model = self.__gui.main_window.builder.get_object('treeview_planning').get_model()
+            model = self.__gui.main_window.builder.get_object("treeview_planning").get_model()
             planning_items = [model.get_value(iter, 0) for iter in broadcast_iters]
 
             # remove rows
@@ -100,13 +100,13 @@ class Search(BaseAction):
         self.__gui = gui
 
     def do(self, broadcast_iters, cut_action=None):
-        model = self.__gui.main_window.builder.get_object('treeview_planning').get_model()
+        model = self.__gui.main_window.builder.get_object("treeview_planning").get_model()
         for broadcast_iter in broadcast_iters:
             broadcast = model.get_value(broadcast_iter, 0)
 
             # build string: Titanic_08.12.24_20-15_pro7_
-            string = broadcast.title.replace(' ', '_') + ' '
+            string = broadcast.title.replace(" ", "_") + " "
             string += time.strftime("%y.%m.%d_%H-%M", time.localtime(broadcast.datetime)) + "_"
             string += broadcast.station + "_"
 
-            webbrowser.open(self.__app.config.get('general', 'otrkey_search') + string)
+            webbrowser.open(self.__app.config.get("general", "otrkey_search") + string)

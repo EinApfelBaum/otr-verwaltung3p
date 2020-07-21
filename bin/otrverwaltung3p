@@ -32,6 +32,7 @@ from pathlib import Path
 
 try:
     from gi import require_version
+
     require_version("Gtk", "3.0")
     from gi.repository import Gtk, Gdk
 except Exception as e:
@@ -56,12 +57,8 @@ logging.getLogger("urllib3").setLevel(logging.WARNING)
 def parse_opts():
     usage = "usage: %prog [options]"
     oparse = optparse.OptionParser(usage=usage)
-    oparse.add_option(
-        "-v", "--verbose", action="store_true", help="Verbose messages", default=False
-    )
-    oparse.add_option(
-        "-d", "--debug", action="store_true", help="Debug messages", default=False
-    )
+    oparse.add_option("-v", "--verbose", action="store_true", help="Verbose messages", default=False)
+    oparse.add_option("-d", "--debug", action="store_true", help="Debug messages", default=False)
     # oparse.add_option("-l", "--link", help="Add a link")
 
     opt, _ = oparse.parse_args()
@@ -268,10 +265,7 @@ class App:
                 "resume_on_startup": True,
                 "wget_opts": ["-v"],
             },
-            "plugins": {
-                "config": {},  # used as plugin config storage
-                "enabled": "Play:Mkv",
-            },
+            "plugins": {"config": {}, "enabled": "Play:Mkv"},  # used as plugin config storage
             "programs": {
                 "aria2c": "intern-aria2c",
                 "decoder": "intern-easydecoder",
@@ -290,7 +284,7 @@ class App:
                 "x264": "x264",
             },
             "smartmkvmerge": {
-                "encoder_engine": "x264",  # 'x264' or 'ffmpeg' possible
+                "encoder_engine": "ffmpeg",  # 'x264' or 'ffmpeg' possible
                 "first_audio_stream": "originale MP3 Spur kopieren",
                 "normalize_audio": False,
                 "remux_to_mp4": False,
@@ -333,9 +327,7 @@ class App:
 
         self.regex_cut_video = re.compile(".*(avi|mp4|mkv|wmv|ac3)$")
 
-        self.regex_rec_date = re.compile(
-            r".*(([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}).*"
-        )
+        self.regex_rec_date = re.compile(r".*(([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}).*")
 
         # only for DirectoryMonitor
         regex_otrkey = r".*\.otrkey$"
@@ -347,9 +339,7 @@ class App:
         self.gui = self.__gui
 
         if self.config.get("general", "window_settings"):
-            maximize, width, height = self.config.get(
-                "general", "window_settings"
-            ).split(",")
+            maximize, width, height = self.config.get("general", "window_settings").split(",")
             if int(maximize):
                 self.gui.main_window.maximize()
             self.gui.main_window.resize(int(width), int(height))
@@ -367,9 +357,7 @@ class App:
             download.from_json(json_download)
             self.gui.main_window.treeview_download.add_objects(download)
 
-            if self.config.get(
-                "downloader", "resume_on_startup"
-            ) and download.information["status"] in [
+            if self.config.get("downloader", "resume_on_startup") and download.information["status"] in [
                 DownloadStatus.RUNNING,
                 DownloadStatus.SEEDING,
             ]:
@@ -385,11 +373,7 @@ class App:
             plugin_paths = otrvpath.get_plugin_paths()
 
         self.plugin_system = PluginSystem(
-            self,
-            self.gui,
-            plugin_paths,
-            self.config.get("plugins", "enabled"),
-            self.config.get("plugins", "config"),
+            self, self.gui, plugin_paths, self.config.get("plugins", "enabled"), self.config.get("plugins", "config"),
         )
 
         # Show Section VIDEO_UNCUT by default if path exists
@@ -477,9 +461,7 @@ class App:
 
         if Path(fpath).is_dir():
             files += [
-                join(fpath, file_)
-                for file_ in os.listdir(fpath)
-                if file_.endswith(".otrkey") and self.search(file_)
+                join(fpath, file_) for file_ in os.listdir(fpath) if file_.endswith(".otrkey") and self.search(file_)
             ]
         return files
 
@@ -535,9 +517,7 @@ class App:
             return files
         if Path(fpath).is_dir():
             files += [
-                join(fpath, file_)
-                for file_ in os.listdir(fpath)
-                if file_.endswith(".otrkey") and self.search(file_)
+                join(fpath, file_) for file_ in os.listdir(fpath) if file_.endswith(".otrkey") and self.search(file_)
             ]
         return files
 
@@ -549,9 +529,7 @@ class App:
     # recursive function for archive to add folders and files with a tree structure
     def __tree(self, parent=None, path=None):
         if parent is not None:
-            folder = self.gui.main_window.treeview_files.get_model().get_value(
-                parent, 0
-            )
+            folder = self.gui.main_window.treeview_files.get_model().get_value(parent, 0)
         else:  # base path (archive directory)
             folder = path
 
@@ -581,9 +559,7 @@ class App:
             schema = self.config.get("general", "rename_schema")
 
         if self.regex_rename_video.match(filename):
-            filename, extension = splitext(
-                filename
-            )  # preserve file extension (avi or mkv)
+            filename, extension = splitext(filename)  # preserve file extension (avi or mkv)
 
             parts = filename.split("_")
             parts.reverse()
@@ -764,9 +740,7 @@ class App:
             Action.DELETE,
             Action.ARCHIVE,
         ]:
-            filenames = (
-                self.filenames_locked
-            ) = self.gui.main_window.get_selected_filenames()
+            filenames = self.filenames_locked = self.gui.main_window.get_selected_filenames()
 
             if len(filenames) == 0:
                 if self.config.get("general", "ask_if_all"):
@@ -782,12 +756,7 @@ class App:
                     return
             else:
                 # at least one file is selected, so we remember the position of the first of the selected files
-                (
-                    _,
-                    selected_rows,
-                ) = (
-                    self.gui.main_window.treeview_files.get_selection().get_selected_rows()
-                )
+                (_, selected_rows,) = self.gui.main_window.treeview_files.get_selection().get_selected_rows()
                 try:
                     self.last_marked_row = selected_rows[0][0]
                 except IndexError:
@@ -807,19 +776,12 @@ class App:
             Action.DOWNLOAD_STOP,
             Action.DOWNLOAD_REMOVE,
         ]:
-            (
-                model,
-                selected_rows,
-            ) = (
-                self.gui.main_window.treeview_download.get_selection().get_selected_rows()
-            )
+            (model, selected_rows,) = self.gui.main_window.treeview_download.get_selection().get_selected_rows()
 
             if len(selected_rows) == 0:
                 return
 
-            downloads = [
-                model.get_value(model.get_iter(path), 0) for path in selected_rows
-            ]
+            downloads = [model.get_value(model.get_iter(path), 0) for path in selected_rows]
             action.do(downloads)
 
         elif chosen_action == Action.NEW_FOLDER:
@@ -843,14 +805,8 @@ class App:
             model_length = len(self.gui.main_window.treeview_files.get_model())
             self.log.debug(f"last_marked_row model length: {model_length}")
             self.log.debug(f"last_marked_row: {self.last_marked_row}")
-            self.last_marked_row = (
-                model_length - 1
-                if self.last_marked_row > model_length
-                else self.last_marked_row
-            )
-            self.gui.main_window.treeview_files.get_selection().select_path(
-                Gtk.TreePath(self.last_marked_row)
-            )
+            self.last_marked_row = model_length - 1 if self.last_marked_row > model_length else self.last_marked_row
+            self.gui.main_window.treeview_files.get_selection().select_path(Gtk.TreePath(self.last_marked_row))
 
     def play_file(self, filename):
         uri = Path(filename).as_uri()
@@ -858,18 +814,10 @@ class App:
 
     def __show(self, cuts, video_filename, edl_subtitles_cb):
         video_filename_dirname = Path(video_filename).parent
-        f_edl = open(
-            Path.joinpath(video_filename_dirname, ".tmp.edl"), "w", newline="\n"
-        )
-        f_mpv_edl = open(
-            Path.joinpath(video_filename_dirname, ".tmp_mpv.edl"), "w", newline="\n"
-        )
-        f_sub = open(
-            Path.joinpath(video_filename_dirname, ".tmp.sub"), "w", newline="\n"
-        )
-        f_mpv_sub = open(
-            Path.joinpath(video_filename_dirname, ".tmp_mpv.sub"), "w", newline="\n"
-        )
+        f_edl = open(Path.joinpath(video_filename_dirname, ".tmp.edl"), "w", newline="\n")
+        f_mpv_edl = open(Path.joinpath(video_filename_dirname, ".tmp_mpv.edl"), "w", newline="\n")
+        f_sub = open(Path.joinpath(video_filename_dirname, ".tmp.sub"), "w", newline="\n")
+        f_mpv_sub = open(Path.joinpath(video_filename_dirname, ".tmp_mpv.sub"), "w", newline="\n")
 
         # get cuts in seconds
 
@@ -892,10 +840,7 @@ class App:
             if shutil.which(prog):
                 cmdfound = True
                 if not subprocess.call(
-                    prog,
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.STDOUT,
+                    prog, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
                 ):
                     plays = True
                 else:
@@ -944,9 +889,7 @@ class App:
                     mpv_vol_max = 130.0
                     if self.config.get("general", "vol_adjust_on"):
                         mpv_vol_max = self.config.get("general", "mpv_vol_max")
-                        vol_adjust = re.findall(
-                            "[a-z.0-9,]+", self.config.get("general", "vol_adjust")
-                        )
+                        vol_adjust = re.findall("[a-z.0-9,]+", self.config.get("general", "vol_adjust"))
                         if vol_adjust:
                             # get station name from video filename
                             parts = video_filename.split("_")
@@ -987,8 +930,7 @@ class App:
             play_with(self.playprog[1])
         else:
             self.gui.message_error_box(
-                "Zum Anzeigen der Schnitte sind weder mpv noch mplayer installiert bzw."
-                " funktionieren nicht."
+                "Zum Anzeigen der Schnitte sind weder mpv noch mplayer installiert bzw." " funktionieren nicht."
             )
             return
 
@@ -1024,9 +966,7 @@ class App:
                 f_edl.write(f"{end + after_cut_show} ")
 
                 f_mpv_edl.write(f"{video_filename}, {start}, {pre_cut_show}\n")
-                f_mpv_edl.write(
-                    f"{video_filename}, {end - after_cut_show}, {after_cut_show}\n"
-                )
+                f_mpv_edl.write(f"{video_filename}, {end - after_cut_show}, {after_cut_show}\n")
 
                 if count == 0:
                     for second in range(pre_cut_show):
@@ -1039,10 +979,7 @@ class App:
                                 self.format_seconds(start - pre_cut_show + second + 1),
                             )
                         )
-                        f_sub.write(
-                            "Sendung beginnt in %s Sekunden...\n\n"
-                            % str(pre_cut_show - second)
-                        )
+                        f_sub.write("Sendung beginnt in %s Sekunden...\n\n" % str(pre_cut_show - second))
                 else:
                     for second in range(pre_cut_show):
                         sub_count += 1
@@ -1054,10 +991,7 @@ class App:
                                 self.format_seconds(start - pre_cut_show + second + 1),
                             )
                         )
-                        f_sub.write(
-                            "Werbung #%i endet in %s Sekunden...\n\n"
-                            % (count, str(pre_cut_show - second))
-                        )
+                        f_sub.write("Werbung #%i endet in %s Sekunden...\n\n" % (count, str(pre_cut_show - second)))
 
                 if count == (len(cuts) - 1):
                     for second in range(pre_cut_show):
@@ -1070,10 +1004,7 @@ class App:
                                 self.format_seconds(end - pre_cut_show + second + 1),
                             )
                         )
-                        f_sub.write(
-                            "Sendung endet in %s Sekunden...\n\n"
-                            % str(pre_cut_show - second)
-                        )
+                        f_sub.write("Sendung endet in %s Sekunden...\n\n" % str(pre_cut_show - second))
                 else:
                     for second in range(pre_cut_show):
                         sub_count += 1
@@ -1086,23 +1017,16 @@ class App:
                             )
                         )
                         f_sub.write(
-                            "Werbung #%i beginnt in %s Sekunden...\n\n"
-                            % (count + 1, str(pre_cut_show - second))
+                            "Werbung #%i beginnt in %s Sekunden...\n\n" % (count + 1, str(pre_cut_show - second))
                         )
 
                 # mpv_sub
                 for second in range(pre_cut_show):
                     sub_mpv_count += 1
                     f_mpv_sub.write(f"{sub_mpv_count}\n")
-                    cut_sec = (
-                        count * (after_cut_show + pre_cut_show) + pre_cut_show + second
-                    )
-                    f_mpv_sub.write(
-                        f"{self.format_seconds(cut_sec)} --> {self.format_seconds(cut_sec + 1)}\n"
-                    )
-                    f_mpv_sub.write(
-                        f"Schnitt {count + 1} beginnt in {after_cut_show - second} Sekunden...\n\n"
-                    )
+                    cut_sec = count * (after_cut_show + pre_cut_show) + pre_cut_show + second
+                    f_mpv_sub.write(f"{self.format_seconds(cut_sec)} --> {self.format_seconds(cut_sec + 1)}\n")
+                    f_mpv_sub.write(f"Schnitt {count + 1} beginnt in {after_cut_show - second} Sekunden...\n\n")
 
             f_edl.write("50000 0")
 
@@ -1127,16 +1051,12 @@ class App:
             f_mpv_edl.write("# mpv EDL v0\n")
 
             for count, (start, duration) in enumerate(cuts):
-                f_edl.write(
-                    f"{after_cut_show + length} {length + duration - pre_cut_show} 0\n"
-                )
+                f_edl.write(f"{after_cut_show + length} {length + duration - pre_cut_show} 0\n")
                 if length == 0 or duration > pre_cut_show:
                     f_mpv_edl.write(f"{video_filename}, {length}, {pre_cut_show}\n")
                 length += duration
                 if duration > pre_cut_show:
-                    f_mpv_edl.write(
-                        f"{video_filename}, {length - after_cut_show}, {after_cut_show}\n"
-                    )
+                    f_mpv_edl.write(f"{video_filename}, {length - after_cut_show}, {after_cut_show}\n")
 
                 # vor dem schnitt:
                 for second in range(pre_cut_show):
@@ -1152,19 +1072,11 @@ class App:
                         f"{self.format_seconds((pre_cut_show + after_cut_show) * count + pre_cut_show + second + 1)}\n"
                     )
                     if count == len(cuts) - 1:
-                        f_sub.write(
-                            f"Sendung endet in {pre_cut_show - second} Sekunden...\n\n"
-                        )
-                        f_mpv_sub.write(
-                            f"Sendung endet in {pre_cut_show - second} Sekunden...\n\n"
-                        )
+                        f_sub.write(f"Sendung endet in {pre_cut_show - second} Sekunden...\n\n")
+                        f_mpv_sub.write(f"Sendung endet in {pre_cut_show - second} Sekunden...\n\n")
                     else:
-                        f_sub.write(
-                            f"Schnitt in {pre_cut_show - second} Sekunden...\n\n"
-                        )
-                        f_mpv_sub.write(
-                            f"Schnitt in {pre_cut_show - second}s Sekunden...\n\n"
-                        )
+                        f_sub.write(f"Schnitt in {pre_cut_show - second} Sekunden...\n\n")
+                        f_mpv_sub.write(f"Schnitt in {pre_cut_show - second}s Sekunden...\n\n")
 
         error = cutlist.read_cuts()
 
@@ -1203,32 +1115,20 @@ class App:
 
             if self.config.get("general", "email") == "":
                 errstr = errstr + "- setze eine E-Mail-Adresse für den OTR-Account\n"
-            if (
-                self.config.get("general", "password") == ""
-                and not self.config.get("general", "passwd_store") == 2
-            ):
-                errstr = (
-                    errstr + "- setze ein Passwort für den OTR-Account (optional)\n"
-                )
+            if self.config.get("general", "password") == "" and not self.config.get("general", "passwd_store") == 2:
+                errstr = errstr + "- setze ein Passwort für den OTR-Account (optional)\n"
             if not os.path.exists(self.config.get("general", "folder_new_otrkeys")):
                 errstr = errstr + "- definiere einen Ordner für .otrkey Dateien\n"
             if not os.path.exists(self.config.get("general", "folder_archive")):
                 errstr = errstr + "- definiere einen Ordner für archivierte Dateien\n"
             if not os.path.exists(self.config.get("general", "folder_cut_avis")):
-                errstr = (
-                    errstr + "- definiere einen Ordner für geschnitte .avi Dateien\n"
-                )
+                errstr = errstr + "- definiere einen Ordner für geschnitte .avi Dateien\n"
             if not os.path.exists(self.config.get("general", "folder_uncut_avis")):
-                errstr = (
-                    errstr
-                    + "- definiere einen Ordner für ungeschnittene .avi Dateien\n"
-                )
+                errstr = errstr + "- definiere einen Ordner für ungeschnittene .avi Dateien\n"
             if not os.path.exists(self.config.get("general", "folder_trash_avis")):
                 errstr = errstr + '- definiere einen "Müll"-Ordner für .avi Dateien\n'
             if not os.path.exists(self.config.get("general", "folder_trash_otrkeys")):
-                errstr = (
-                    errstr + '- definiere einen "Müll"-Ordner für .otrkey Dateien\n'
-                )
+                errstr = errstr + '- definiere einen "Müll"-Ordner für .otrkey Dateien\n'
 
             errstr = self.check_program_paths(error_str=errstr)
 
@@ -1269,9 +1169,7 @@ class App:
             row[0].stop()
 
         # write to config
-        self.config.set(
-            "general", "planned_items", self.planned_broadcasts.get_config()
-        )
+        self.config.set("general", "planned_items", self.planned_broadcasts.get_config())
         enabled, config = self.plugin_system.get_config()
         self.config.set("plugins", "enabled", enabled)
         self.config.set("plugins", "config", config)
@@ -1301,10 +1199,7 @@ class App:
         fatal = False
         for prog in progs:
             if not os.path.exists(self.config.get_program(prog)):
-                if (
-                    self.config.get_program(prog) in ["intern-easydecoder", "otrtool"]
-                    and sys.platform == "linux"
-                ):
+                if self.config.get_program(prog) in ["intern-easydecoder", "otrtool"] and sys.platform == "linux":
                     pass
                 else:
                     prog_path = shutil.which(prog)

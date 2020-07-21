@@ -43,14 +43,10 @@ class CutManually(Plugin):
             )
         else:
             image = Gtk.Image.new_from_pixbuf(
-                Gtk.IconTheme.get_default().load_icon(
-                    "edit-cut", self.app.config.get("general", "icon_size"), 0
-                )
+                Gtk.IconTheme.get_default().load_icon("edit-cut", self.app.config.get("general", "icon_size"), 0)
             )
 
-        self.toolbutton = self.gui.main_window.add_toolbutton(
-            image, "Manuell schneiden", self.relevant_sections
-        )
+        self.toolbutton = self.gui.main_window.add_toolbutton(image, "Manuell schneiden", self.relevant_sections)
         self.toolbutton.connect("clicked", self.on_cut_clicked)
 
         # self.row_activate_id = self.gui.main_window.builder.get_object(

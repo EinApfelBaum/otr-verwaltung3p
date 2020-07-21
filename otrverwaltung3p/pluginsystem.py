@@ -66,7 +66,7 @@ class PluginSystem:
     def __init__(self, app, gui, plugin_paths, enabled_plugins, plugins_config):
         self.log = logging.getLogger(self.__class__.__name__)
         self.plugins = {}  # value : plugin instance
-        self.enabled_plugins = [plugin for plugin in enabled_plugins.split(':') if plugin]  # list of names
+        self.enabled_plugins = [plugin for plugin in enabled_plugins.split(":") if plugin]  # list of names
 
         self.log.info("Paths to search: {}".format(plugin_paths))
 
@@ -92,8 +92,9 @@ class PluginSystem:
                     if not hasattr(plugin_module, plugin_name):
                         continue
 
-                    self.plugins[plugin_name] = getattr(plugin_module, plugin_name)(app, gui, os.path.dirname(
-                        plugin_module.__file__))
+                    self.plugins[plugin_name] = getattr(plugin_module, plugin_name)(
+                        app, gui, os.path.dirname(plugin_module.__file__)
+                    )
 
                     if plugin_name in plugins_config:
                         self.plugins[plugin_name].Config.update(plugins_config[plugin_name])
@@ -101,7 +102,7 @@ class PluginSystem:
                     self.log.info("Found: {}".format(plugin_name))
 
         for plugin in self.enabled_plugins:
-            if not plugin in self.plugins.keys():
+            if plugin not in self.plugins.keys():
                 self.log.error("Error: Plugin >{}< not found.".format(plugin))
                 self.enabled_plugins.remove(plugin)
             else:

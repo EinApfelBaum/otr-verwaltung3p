@@ -16,7 +16,7 @@
 
 import gi
 
-gi.require_version('Gtk', '3.0')
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 import os.path
 from otrverwaltung3p.gui import AddDownloadDialog
@@ -32,12 +32,14 @@ def add_download(via_link, app, gui, link=None):
         link = link.replace("otr://", "")
 
     # TODO: implment another type of download
-    #dialog = AddDownloadDialog.NewAddDownloadDialog(gui, app.config, via_link, link)
-    dialog = Gtk.MessageDialog(gui.main_window,
-                                 Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                 Gtk.MessageType.INFO,
-                                 Gtk.ButtonsType.OK,
-                                 "Wird überarbeitet.")
+    # dialog = AddDownloadDialog.NewAddDownloadDialog(gui, app.config, via_link, link)
+    dialog = Gtk.MessageDialog(
+        gui.main_window,
+        Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+        Gtk.MessageType.INFO,
+        Gtk.ButtonsType.OK,
+        "Wird überarbeitet.",
+    )
     dialog.run()
     # if dialog.run() == Gtk.ResponseType.OK:
     #     options = dialog.get_download_options()
@@ -126,10 +128,12 @@ class Remove(BaseAction):
         else:
             question = "Sollen %i Downloads wirklich entfernt werden?" % downloads_count
 
-        dialog = Gtk.MessageDialog(self.__gui.main_window, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO,
-                                   question)
+        dialog = Gtk.MessageDialog(
+            self.__gui.main_window, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, question,
+        )
         checkbutton = Gtk.CheckButton(
-            'Die heruntergeladene Datei in den Müll verschieben\n(Fertige Downloads werden nicht verschoben)')
+            "Die heruntergeladene Datei in den Müll verschieben\n(Fertige Downloads werden nicht verschoben)"
+        )
         checkbutton.set_active(True)
         checkbutton.show()
         dialog.vbox.pack_end(checkbutton, False, False, 0)
@@ -144,29 +148,34 @@ class Remove(BaseAction):
                     refs.append(Gtk.TreeRowReference.new(model, row.path))
 
                     files = [
-                        os.path.join(row[0].information['output'], row[0].filename + '.torrent'),
-                        os.path.join(row[0].information['output'], row[0].filename + '.aria2'),
-                        os.path.join(row[0].information['output'], row[0].filename + '.cutlist'),
-                        os.path.join(self.__app.config.get('general', 'folder_trash_otrkeys'),
-                                     row[0].filename + '.segments'),
+                        os.path.join(row[0].information["output"], row[0].filename + ".torrent"),
+                        os.path.join(row[0].information["output"], row[0].filename + ".aria2"),
+                        os.path.join(row[0].information["output"], row[0].filename + ".cutlist"),
+                        os.path.join(
+                            self.__app.config.get("general", "folder_trash_otrkeys"), row[0].filename + ".segments",
+                        ),
                     ]
 
                     for file in files:
                         if os.path.exists(file):
                             fileoperations.remove_file(file, None)
 
-                    if checkbutton.get_active() and not row[0].information['status'] in [DownloadStatus.FINISHED,
-                                                                                         DownloadStatus.SEEDING]:
-                        otrkey = os.path.join(row[0].information['output'], row[0].filename)
+                    if checkbutton.get_active() and not row[0].information["status"] in [
+                        DownloadStatus.FINISHED,
+                        DownloadStatus.SEEDING,
+                    ]:
+                        otrkey = os.path.join(row[0].information["output"], row[0].filename)
                         # move otrkey to trash
                         if os.path.exists(otrkey):
-                            fileoperations.move_file(otrkey, self.__app.config.get('general', 'folder_trash_otrkeys'),
-                                                     None)
+                            fileoperations.move_file(
+                                otrkey, self.__app.config.get("general", "folder_trash_otrkeys"), None,
+                            )
                         # move avi file of otrdecoder to trash
                         avi_file = os.path.splitext(otrkey)[0]
                         if os.path.exists(avi_file):
-                            fileoperations.move_file(avi_file, self.__app.config.get('general', 'folder_trash_avis'),
-                                                     None)
+                            fileoperations.move_file(
+                                avi_file, self.__app.config.get("general", "folder_trash_avis"), None,
+                            )
 
                     row[0].stop()
 

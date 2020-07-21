@@ -1,8 +1,8 @@
 import binascii, urllib, socket, random, struct
 from otrverwaltung3p.bcode import bdecode
-#from urlparse import urlparse, urlunsplit
-from urllib import parse, request
 
+# from urlparse import urlparse, urlunsplit
+from urllib import parse, request
 
 
 def scrape(tracker, hashes):
@@ -41,8 +41,8 @@ def scrape_udp(parsed_tracker, hashes):
     print("Scraping UDP: %s for %s hashes" % (parsed_tracker.geturl(), len(hashes)))
     if len(hashes) > 74:
         raise RuntimeError("Only 74 hashes can be scraped on a UDP tracker due to UDP limitations")
-    transaction_id = "\x00\x00\x04\x12\x27\x10\x19\x70";
-    connection_id = "\x00\x00\x04\x17\x27\x10\x19\x80";
+    transaction_id = "\x00\x00\x04\x12\x27\x10\x19\x70"
+    connection_id = "\x00\x00\x04\x17\x27\x10\x19\x80"
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(8)
     conn = (socket.gethostbyname(parsed_tracker.hostname), parsed_tracker.port)
@@ -69,12 +69,12 @@ def scrape_http(parsed_tracker, hashes):
     qs = parse.urlencode(qs)
     pt = parsed_tracker
     url = parse.urlunsplit((pt.scheme, pt.netloc, pt.path, qs, pt.fragment))
-    handle = request.urlopen(url);
+    handle = request.urlopen(url)
     if handle.getcode() != 200:
         raise RuntimeError("%s status code returned" % handle.getcode())
     decoded = bdecode(handle.read())
     ret = {}
-    for hash, stats in decoded['files'].iteritems():
+    for hash, stats in decoded["files"].iteritems():
         nice_hash = binascii.b2a_hex(hash)
         s = stats["downloaded"]
         p = stats["incomplete"]
@@ -100,8 +100,10 @@ def udp_parse_connection_response(buf, sent_transaction_id):
 
     res_transaction_id = struct.unpack_from("!i", buf, 4)[0]  # next 4 bytes is transaction id
     if res_transaction_id != sent_transaction_id:
-        raise RuntimeError("Transaction ID doesnt match in connection response! Expected %s, got %s"
-                           % (sent_transaction_id, res_transaction_id))
+        raise RuntimeError(
+            "Transaction ID doesnt match in connection response! Expected %s, got %s"
+            % (sent_transaction_id, res_transaction_id)
+        )
 
     if action == 0x0:
         connection_id = struct.unpack_from("!q", buf, 8)[0]  # unpack 8 bytes from byte 8, should be the connection_id
@@ -131,11 +133,14 @@ def udp_parse_scrape_response(buf, sent_transaction_id, hashes):
     action = struct.unpack_from("!i", buf)[0]  # first 4 bytes is action
     res_transaction_id = struct.unpack_from("!i", buf, 4)[0]  # next 4 bytes is transaction id
     if res_transaction_id != sent_transaction_id:
-        raise RuntimeError("Transaction ID doesnt match in scrape response! Expected %s, got %s"
-                           % (sent_transaction_id, res_transaction_id))
+        raise RuntimeError(
+            "Transaction ID doesnt match in scrape response! Expected %s, got %s"
+            % (sent_transaction_id, res_transaction_id)
+        )
     if action == 0x2:
         ret = {}
-        offset = 8;  # next 4 bytes after action is transaction_id, so data doesnt start till byte 8
+        offset = 8
+        # next 4 bytes after action is transaction_id, so data doesnt start till byte 8
         for hash in hashes:
             seeds = struct.unpack_from("!i", buf, offset)[0]
             offset += 4

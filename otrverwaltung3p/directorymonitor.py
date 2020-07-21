@@ -13,26 +13,27 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-import os
 from gi.repository import Gio
 
-from otrverwaltung3p.constants import Section
 
 class DirectoryMonitor:
     def __init__(self, app, monitored_dir, section, file_regex):
         self.app = app
-        self.section = section
-        self.monitored_dir = Gio.File.new_for_path(monitored_dir)
         self.file_regex = file_regex
+        self.monitor = None
+        self.monitored_dir = Gio.File.new_for_path(monitored_dir)
+        self.section = section
 
     def start(self):
         self.monitor = self.monitored_dir.monitor_directory(Gio.FileMonitorFlags.NONE, None)
-        self.monitor.connect('changed', self.directory_changed)
+        self.monitor.connect("changed", self.directory_changed)
 
     def directory_changed(self, monitor, file1, file2, event_type):
         if self.app.section == self.section:
-            unwanted_event_types = [Gio.FileMonitorEvent.ATTRIBUTE_CHANGED,
-                                    Gio.FileMonitorEvent.CHANGES_DONE_HINT]
+            unwanted_event_types = [
+                Gio.FileMonitorEvent.ATTRIBUTE_CHANGED,
+                Gio.FileMonitorEvent.CHANGES_DONE_HINT,
+            ]
             # ~ unwanted_file_extensions = ['.cutlist', '.txt', '.ac3']
             filename_ok = False if file1 is None else self.file_regex.match(file1.get_basename())
 

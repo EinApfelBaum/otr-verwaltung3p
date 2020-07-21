@@ -41,15 +41,11 @@ class Play(Plugin):
         else:
             image = Gtk.Image.new_from_pixbuf(
                 Gtk.IconTheme.get_default().load_icon(
-                    "media-playback-start",
-                    self.app.config.get("general", "icon_size"),
-                    0,
+                    "media-playback-start", self.app.config.get("general", "icon_size"), 0,
                 )
             )
 
-        self.toolbutton = self.gui.main_window.add_toolbutton(
-            image, "Abspielen", self.relevant_sections
-        )
+        self.toolbutton = self.gui.main_window.add_toolbutton(image, "Abspielen", self.relevant_sections)
         self.toolbutton.connect("clicked", self.on_play_clicked)
 
         # self.row_activate_id = self.gui.main_window.builder.get_object('treeview_files').connect(

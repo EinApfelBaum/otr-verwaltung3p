@@ -1,13 +1,13 @@
 import gi
-gi.require_version('Gtk', '3.0')
-gi.require_version('Gst', '1.0')
+
+gi.require_version("Gtk", "3.0")
+gi.require_version("Gst", "1.0")
 from gi.repository import Gtk, GObject, Gst
 
 GObject.threads_init()
 import threading
+
 Gst.init(None)
-
-
 
 
 class KeySeekElement(Gst.Element):
@@ -17,38 +17,30 @@ class KeySeekElement(Gst.Element):
         "KeySeekElement plugin",
         "KeySeekElement.py",
         "gst.Element, that implements seeks to next or previous Keyframe",
-        "Jan Schole <jan581984@web.de>")
+        "Jan Schole <jan581984@web.de>",
+    )
 
     _keyseeksrctemplate = Gst.PadTemplate.new(
-        'keyseek-src',
-        Gst.PadDirection.SRC,
-        Gst.PadPresence.ALWAYS,
-        Gst.Caps.new_any())
+        "keyseek-src", Gst.PadDirection.SRC, Gst.PadPresence.ALWAYS, Gst.Caps.new_any()
+    )
 
     _secondsrctemplate = Gst.PadTemplate.new(
-        'secondary-src',
-        Gst.PadDirection.SRC,
-        Gst.PadPresence.ALWAYS,
-        Gst.Caps.new_any())
+        "secondary-src", Gst.PadDirection.SRC, Gst.PadPresence.ALWAYS, Gst.Caps.new_any(),
+    )
 
     _keyseeksinktemplate = Gst.PadTemplate.new(
-        'keyseek-sink',
-        Gst.PadDirection.SINK,
-        Gst.PadPresence.ALWAYS,
-        Gst.Caps.new_any())
+        "keyseek-sink", Gst.PadDirection.SINK, Gst.PadPresence.ALWAYS, Gst.Caps.new_any(),
+    )
 
     _secondsinktemplate = Gst.PadTemplate.new(
-        'secondary-sink',
-        Gst.PadDirection.SINK,
-        Gst.PadPresence.ALWAYS,
-        Gst.Caps.new_any()
+        "secondary-sink", Gst.PadDirection.SINK, Gst.PadPresence.ALWAYS, Gst.Caps.new_any(),
     )
 
     __gsttemplates__ = (
         _keyseeksrctemplate,
         _secondsrctemplate,
         _keyseeksinktemplate,
-        _secondsinktemplate
+        _secondsinktemplate,
     )
 
     def __init__(self, *args, **kwargs):
@@ -81,41 +73,39 @@ class KeySeekElement(Gst.Element):
         self.buf_result = Gst.FlowReturn.OK
 
         # create pads data handling functions
-        self.keyseeksrcpad = Gst.Pad.new_from_template(self._keyseeksrctemplate, 'keyseek-src')
+        self.keyseeksrcpad = Gst.Pad.new_from_template(self._keyseeksrctemplate, "keyseek-src")
         self.keyseeksrcpad.set_event_function_full(self._handle_src_event)
         self.keyseeksrcpad.set_link_function_full(self._link_src)
         self.keyseeksrcpad.set_query_function_full(self._handle_query)
         self.add_pad(self.keyseeksrcpad)
 
-        self.keyseeksinkpad = Gst.Pad.new_from_template(self._keyseeksinktemplate, 'keyseek-sink')
+        self.keyseeksinkpad = Gst.Pad.new_from_template(self._keyseeksinktemplate, "keyseek-sink")
         self.keyseeksinkpad.set_chain_function_full(self._chain)
         self.keyseeksinkpad.set_event_function_full(self._handle_sink_event)
         self.add_pad(self.keyseeksinkpad)
 
-        self.secondsrcpad = Gst.Pad.new_from_template(self._secondsrctemplate, 'secondary-src')
+        self.secondsrcpad = Gst.Pad.new_from_template(self._secondsrctemplate, "secondary-src")
         self.secondsrcpad.set_event_function_full(self._handle_audio_event)
         self.secondsrcpad.set_query_function_full(self._handle_query)
         self.add_pad(self.secondsrcpad)
 
-        self.secondsinkpad = Gst.Pad.new_from_template(self._secondsinktemplate, 'secondary-sink')
+        self.secondsinkpad = Gst.Pad.new_from_template(self._secondsinktemplate, "secondary-sink")
         self.secondsinkpad.set_event_function_full(self._handle_audio_event)
         self.secondsinkpad.set_chain_function_full(self._audio_chain)
         self.secondsinkpad.set_query_function_full(self._handle_query)
         self.add_pad(self.secondsinkpad)
 
-        #self.keyseeksinkpad.set_getcaps_function(self._getcaps)
-        #self.keyseeksinkpad.set_setcaps_function(self._setcaps)
-        #self.keyseeksinkpad.set_activatepush_function(self._sink_activate_push)
+        # self.keyseeksinkpad.set_getcaps_function(self._getcaps)
+        # self.keyseeksinkpad.set_setcaps_function(self._setcaps)
+        # self.keyseeksinkpad.set_activatepush_function(self._sink_activate_push)
 
+        # self.keyseeksrcpad.set_activatepush_function(self._src_activate_push)
+        # self.keyseeksrcpad.set_getcaps_function(self._getcaps)
 
-        #self.keyseeksrcpad.set_activatepush_function(self._src_activate_push)
-        #self.keyseeksrcpad.set_getcaps_function(self._getcaps)
+        # self.secondsinkpad.set_getcaps_function(self._getcaps)
+        # self.secondsinkpad.set_setcaps_function(self._setcaps)
 
-        #self.secondsinkpad.set_getcaps_function(self._getcaps)
-        #self.secondsinkpad.set_setcaps_function(self._setcaps)
-
-        #self.secondsrcpad.set_getcaps_function(self._getcaps)
-
+        # self.secondsrcpad.set_getcaps_function(self._getcaps)
 
     # common functions for audio and video
     def _get_otherpad(self, pad):
@@ -177,8 +167,15 @@ class KeySeekElement(Gst.Element):
             print("Restrict!")
             new_pos = duration - 1
             self.restrict = True
-        seek_event = Gst.Event.new_seek(self.rate, self.format, Gst.SeekFlags.KEY_UNIT | Gst.SeekFlags.FLUSH,
-                                        Gst.SeekType.SET, new_pos, Gst.SeekType.NONE, 0)
+        seek_event = Gst.Event.new_seek(
+            self.rate,
+            self.format,
+            Gst.SeekFlags.KEY_UNIT | Gst.SeekFlags.FLUSH,
+            Gst.SeekType.SET,
+            new_pos,
+            Gst.SeekType.NONE,
+            0,
+        )
         # print "Doing keyseek to time %i" % (new_pos)
         res = self.keyseeksinkpad.push_event(seek_event)
         if not res:
@@ -235,16 +232,25 @@ class KeySeekElement(Gst.Element):
         if self.running:
             if self.stored_buf != None:
                 # print "Got Buffer with timestamp %i and forward_seek %r and backward_seek %r at position %i and segment position %i" % (self.stored_buf.timestamp,self.forward_seek,self.backward_seek,self.position, self.seg_position)
-                if self.restrict or (self.forward_seek and (self.stored_buf.timestamp > self.position)) or (
-                            self.backward_seek and (self.stored_buf.timestamp < self.position)):
+                if (
+                    self.restrict
+                    or (self.forward_seek and (self.stored_buf.timestamp > self.position))
+                    or (self.backward_seek and (self.stored_buf.timestamp < self.position))
+                ):
                     self.position = self.stored_buf.timestamp
                     self.forward_seek = False
                     self.backward_seek = False
                     self.step = 0
                     self.restrict = False
-                    seek_event = Gst.Event.new_seek(self.rate, self.format,
-                                                    Gst.SeekFlags.CCURATE | Gst.SeekFlags.FLUSH, Gst.SeekType.SET,
-                                                    self.position, Gst.SeekType.NONE, 0)
+                    seek_event = Gst.Event.new_seek(
+                        self.rate,
+                        self.format,
+                        Gst.SeekFlags.CCURATE | Gst.SeekFlags.FLUSH,
+                        Gst.SeekType.SET,
+                        self.position,
+                        Gst.SeekType.NONE,
+                        0,
+                    )
                     res = self.secondsinkpad.push_event(seek_event)
                     if not res:
                         print("Secondary-seek failed")
@@ -280,7 +286,14 @@ class KeySeekElement(Gst.Element):
                     self.qlock.release()
             else:
                 if self.stored_event.type == Gst.EventType.SEGMENT:
-                    self.update, self.rate, self.format, self.start, self.stop, self.seg_position = self.stored_event.parse_new_segment()
+                    (
+                        self.update,
+                        self.rate,
+                        self.format,
+                        self.start,
+                        self.stop,
+                        self.seg_position,
+                    ) = self.stored_event.parse_new_segment()
                     # print "Received Segment with update=%r, rate=%r, format=%i, start=%i, stop=%i, position=%i" % (self.update,self.rate,self.format,self.start,self.stop,self.seg_position)
                     if (not self.forward_seek) and (not self.backward_seek):
                         # print "Forwarding segment"
@@ -307,8 +320,9 @@ class KeySeekElement(Gst.Element):
 
     def _push_segment(self):
         # print "Pushing Segment with update=%r, rate=%r, format=%i, start=%i, stop=%i, position=%i" % (self.update,self.rate,self.format,self.start,self.stop,self.seg_position)
-        new_segment_event = Gst.Event.new_new_segment(False, self.rate, self.format, self.start, self.stop,
-                                                      self.seg_position)
+        new_segment_event = Gst.Event.new_new_segment(
+            False, self.rate, self.format, self.start, self.stop, self.seg_position
+        )
         self.keyseeksrcpad.push_event(new_segment_event)
 
     def _chain(self, pad, parent, buf):
@@ -367,7 +381,7 @@ class KeySeekElement(Gst.Element):
         self.gui_wait.acquire()
         if event.type == Gst.EventType.CUSTOM_UPSTREAM:
             # print event.get_structure().get_name()
-            if event.get_structure().get_name() == 'forward':
+            if event.get_structure().get_name() == "forward":
                 self.forward_seek = True
                 self.backward_seek = False
                 self._seek_step(0)

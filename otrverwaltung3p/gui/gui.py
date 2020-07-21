@@ -16,16 +16,25 @@
 
 import os
 
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GdkPixbuf
+from gi import require_version
 
-from otrverwaltung3p.gui import MainWindow, PreferencesWindow, ArchiveDialog, ConclusionDialog, CutDialog, \
-    EmailPasswordDialog, RenameDialog, PlanningDialog, PluginsDialog
+require_version("Gtk", "3.0")
+from gi.repository import GdkPixbuf, Gtk
 
 from otrverwaltung3p import path as otrvpath
-from otrverwaltung3p.directorymonitor import DirectoryMonitor
 from otrverwaltung3p.constants import Section
+from otrverwaltung3p.directorymonitor import DirectoryMonitor
+from otrverwaltung3p.gui import (
+    ArchiveDialog,
+    ConclusionDialog,
+    CutDialog,
+    EmailPasswordDialog,
+    MainWindow,
+    PlanningDialog,
+    PluginsDialog,
+    PreferencesWindow,
+    RenameDialog,
+)
 
 
 class Gui:
@@ -67,17 +76,16 @@ class Gui:
         set_transient_modal(self, self.dialog_plugins)
 
         for window in [self.main_window]:
-            window.set_icon(GdkPixbuf.Pixbuf.new_from_file(otrvpath.get_image_path('icon.png')))
+            window.set_icon(GdkPixbuf.Pixbuf.new_from_file(otrvpath.get_image_path("icon.png")))
 
     def run(self):
         # DirectoryMonitor
         monitors = []
-        monitored = [[self.app.config.get('general', 'folder_uncut_avis'), Section.VIDEO_UNCUT,
-                      self.app.regex_uncut_video],
-                     [self.app.config.get('general', 'folder_cut_avis'), Section.VIDEO_CUT,
-                      self.app.regex_cut_video],
-                     [self.app.config.get('general', 'folder_new_otrkeys'), Section.OTRKEY,
-                      self.app.regex_otrkey]]
+        monitored = [
+            [self.app.config.get("general", "folder_uncut_avis"), Section.VIDEO_UNCUT, self.app.regex_uncut_video],
+            [self.app.config.get("general", "folder_cut_avis"), Section.VIDEO_CUT, self.app.regex_cut_video],
+            [self.app.config.get("general", "folder_new_otrkeys"), Section.OTRKEY, self.app.regex_otrkey],
+        ]
 
         for folder, section, regex in monitored:
             if os.path.exists(folder):
@@ -101,7 +109,7 @@ class Gui:
         elif type(cb) == Gtk.ComboBox:
             cell = Gtk.CellRendererText()
             cb.pack_start(cell, True)
-            cb.add_attribute(cell, 'text', 0)
+            cb.add_attribute(cell, "text", 0)
 
     #
     # Dialogs
@@ -128,10 +136,11 @@ class Gui:
         return result == Gtk.ResponseType.YES
 
     def __get_dialog(self, message_type, message_buttons, message_text):
-        dialog = Gtk.MessageDialog(self.main_window,
-                                 Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                 message_type,
-                                 message_buttons,
-                                 )
+        dialog = Gtk.MessageDialog(
+            self.main_window,
+            Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+            message_type,
+            message_buttons,
+        )
         dialog.set_markup(message_text)
         return dialog

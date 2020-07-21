@@ -15,11 +15,10 @@
 # END LICENSE
 
 import base64
-import time
 
 
 class ConfigBinding:
-    def __init__(self, widget, config, category, option, data=''):
+    def __init__(self, widget, config, category, option, data=""):
         self.widget = widget
         self.config = config
         self.category = category
@@ -40,9 +39,9 @@ class TextbufferBinding(ConfigBinding):
         ConfigBinding.__init__(self, widget, config, category, option)
 
         # add signal
-        self.widget.connect('changed', self.on_changed)
+        self.widget.connect("changed", self.on_changed)
 
-        self.button = obj('btn_snippets_save')
+        self.button = obj("btn_snippets_save")
 
     def change_value(self, value):
         self.widget.props.text = value
@@ -56,7 +55,7 @@ class CheckButtonBinding(ConfigBinding):
         ConfigBinding.__init__(self, widget, config, category, option)
 
         # add signal
-        self.widget.connect('toggled', self.on_toggled)
+        self.widget.connect("toggled", self.on_toggled)
 
     def change_value(self, value):
         self.widget.set_active(value)
@@ -71,16 +70,16 @@ class EntryBinding(ConfigBinding):
         ConfigBinding.__init__(self, widget, config, category, option)
 
         # add signal
-        self.widget.connect('changed', self.on_changed)
+        self.widget.connect("changed", self.on_changed)
 
     def change_value(self, value):
         if self.encode:
             if not value:
-                self.widget.set_text('')
+                self.widget.set_text("")
             else:
                 try:
-                    value.decode('utf-8')
-                    self.widget.set_text(base64.b64decode(value.decode('utf-8')).decode('utf-8'))
+                    value.decode("utf-8")
+                    self.widget.set_text(base64.b64decode(value.decode("utf-8")).decode("utf-8"))
                 except AttributeError:
                     self.widget.set_text(value)
         else:
@@ -88,7 +87,9 @@ class EntryBinding(ConfigBinding):
 
     def on_changed(self, widget, data=None):
         if self.encode:
-            self.config.set(self.category, self.option, base64.b64encode(self.widget.get_text().encode()))
+            self.config.set(
+                self.category, self.option, base64.b64encode(self.widget.get_text().encode()),
+            )
         else:
             self.config.set(self.category, self.option, self.widget.get_text())
 
@@ -98,7 +99,7 @@ class SpinbuttonBinding(ConfigBinding):
         ConfigBinding.__init__(self, widget, config, category, option)
 
         # add signal
-        self.widget.connect('value_changed', self.on_value_changed)
+        self.widget.connect("value_changed", self.on_value_changed)
 
     def change_value(self, value):
         self.widget.set_value(value)
@@ -112,8 +113,8 @@ class FileChooserFolderBinding(ConfigBinding):
         ConfigBinding.__init__(self, widget, config, category, option)
 
         # add signal
-        self.widget.connect('current-folder-changed', self.on_folder_changed)
-        self.widget.connect('selection-changed', self.on_folder_changed)
+        self.widget.connect("current-folder-changed", self.on_folder_changed)
+        self.widget.connect("selection-changed", self.on_folder_changed)
 
     def change_value(self, value):
         if self.widget.get_filename() != value:
@@ -128,7 +129,7 @@ class RadioButtonsBinding(ConfigBinding):
         ConfigBinding.__init__(self, widgets, config, category, option)
 
         for index, radiobutton in enumerate(widgets):
-            radiobutton.connect('toggled', self.on_toggled, index)
+            radiobutton.connect("toggled", self.on_toggled, index)
 
     def change_value(self, value):
         self.widget[value].set_active(True)
@@ -143,12 +144,12 @@ class ComboBoxEntryBinding(ConfigBinding):
         ConfigBinding.__init__(self, widget, config, category, option, data)
 
         self.data = data
-        self.widget.connect('changed', self.on_changed)
+        self.widget.connect("changed", self.on_changed)
 
     def change_value(self, value):
         if self.data is not None:
             if len(self.data) == 1:
-                if self.data[0] == 'cut_default':
+                if self.data[0] == "cut_default":
                     self.widget.set_active(value)
         else:
             self.widget.set_active_id(value)
@@ -157,16 +158,16 @@ class ComboBoxEntryBinding(ConfigBinding):
     def on_changed(self, widget):
         if self.data is not None:
             if len(self.data) == 1:
-                if self.data[0] == 'cut_default':
+                if self.data[0] == "cut_default":
                     model_dict = {}
                     for row in widget.get_model():
                         model_dict[row[0]] = int(row[1])
                     self.config.set(self.category, self.option, model_dict[widget.get_active_text()])
             elif len(self.data) == 2:
                 self.config.set(self.category, self.option, widget.get_active_text())
-                if self.data[0] == 'normalize_audio':
-                    first = 'AAC' in self.config.get('smartmkvmerge', 'first_audio_stream')
-                    second = 'AAC' in self.config.get('smartmkvmerge', 'second_audio_stream')
+                if self.data[0] == "normalize_audio":
+                    first = "AAC" in self.config.get("smartmkvmerge", "first_audio_stream")
+                    second = "AAC" in self.config.get("smartmkvmerge", "second_audio_stream")
                     if first or second:
                         self.data[1].set_sensitive(True)
                     else:

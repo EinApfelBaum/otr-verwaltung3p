@@ -14,9 +14,9 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-import gi
+from gi import require_version
 
-gi.require_version('Gtk', '3.0')
+require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 
@@ -33,7 +33,7 @@ class BetterTreeView(Gtk.TreeView):
         # append the columns
         for text, attribute, callback in columns:
             renderer_left = Gtk.CellRendererText()
-            renderer_left.set_property('xalign', 0.0)
+            renderer_left.set_property("xalign", 0.0)
             col = Gtk.TreeViewColumn(text, renderer_left)
 
             if callback:
@@ -46,7 +46,7 @@ class BetterTreeView(Gtk.TreeView):
 
     def __standard_callback(self, column, cell, model, iter, attribute):
         obj = model.get_value(iter, 0)
-        cell.set_property('text', getattr(obj, attribute))
+        cell.set_property("text", getattr(obj, attribute))
 
     def add_objects(self, *args):
         for obj in args:

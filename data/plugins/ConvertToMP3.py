@@ -35,9 +35,7 @@ class ConvertToMP3(Plugin):
 
     def enable(self):
         self.toolbutton = self.gui.main_window.add_toolbutton(
-            Gtk.Image.new_from_file(self.get_path("music.png")),
-            "In MP3 umwandeln",
-            [Section.VIDEO_CUT],
+            Gtk.Image.new_from_file(self.get_path("music.png")), "In MP3 umwandeln", [Section.VIDEO_CUT],
         )
         self.toolbutton.connect("clicked", self.on_converttomp3_clicked)
 
@@ -60,9 +58,7 @@ class ConvertToMP3(Plugin):
                 subprocess.Popen("ffmpeg", stdout=null, stderr=null)
                 null.close()
 
-                self.gui.main_window.change_status(
-                    0, "Datei %s wird umgewandelt..." % (filenames)
-                )
+                self.gui.main_window.change_status(0, "Datei %s wird umgewandelt..." % (filenames))
 
                 subprocess.call(
                     [
@@ -83,12 +79,8 @@ class ConvertToMP3(Plugin):
                     ]
                 )
 
-                self.gui.main_window.change_status(
-                    0, "Erfolgreich %s umgewandelt." % (filenames)
-                )
-                self.app.gui.message_info_box(
-                    "Die Datei %s.mp3 wurde erfolgreich erstellt!" % (filenames)
-                )
+                self.gui.main_window.change_status(0, "Erfolgreich %s umgewandelt." % (filenames))
+                self.app.gui.message_info_box("Die Datei %s.mp3 wurde erfolgreich erstellt!" % (filenames))
 
             except OSError:
                 self.app.gui.message_error_box(

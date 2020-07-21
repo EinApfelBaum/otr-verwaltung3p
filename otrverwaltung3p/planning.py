@@ -14,7 +14,8 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-class PlanningItem():
+
+class PlanningItem:
     def __init__(self, title, datetime, station):
         self.title = title
         self.datetime = datetime
@@ -32,9 +33,9 @@ class Planning(list):
 
     def read_config(self, config_data):
         global values
-        for item in config_data.split(';'):
+        for item in config_data.split(";"):
             try:
-                values = item.split(',')
+                values = item.split(",")
 
                 if len(values) == 5:  # compability
                     values = [values[1], values[2], values[3]]
@@ -43,12 +44,12 @@ class Planning(list):
 
                 self.append(values[0], int(values[1]), values[2])
             except AssertionError:
-                #print("Assertion failed: ", values)
+                # print("Assertion failed: ", values)
                 continue
 
     def get_config(self):
-        string = ''
+        string = ""
         for broadcast in self:
-            string += "%s,%i,%s;" % (broadcast.title, broadcast.datetime, broadcast.station)
+            string += "%s,%i,%s;" % (broadcast.title, broadcast.datetime, broadcast.station,)
 
         return string

@@ -53,15 +53,11 @@ class CutPlay(Plugin):
         else:
             image = Gtk.Image.new_from_pixbuf(
                 Gtk.IconTheme.get_default().load_icon(
-                    "media-playback-start",
-                    self.app.config.get("general", "icon_size"),
-                    0,
+                    "media-playback-start", self.app.config.get("general", "icon_size"), 0,
                 )
             )
 
-        self.toolbutton = self.gui.main_window.add_toolbutton(
-            image, "Geschnitten abspielen", [Section.VIDEO_UNCUT]
-        )
+        self.toolbutton = self.gui.main_window.add_toolbutton(image, "Geschnitten abspielen", [Section.VIDEO_UNCUT])
         self.toolbutton.connect("clicked", self.on_cut_play_clicked)
 
     def disable(self):
@@ -92,9 +88,7 @@ class CutPlay(Plugin):
         # make mplayer edl
         # http://www.mplayerhq.hu/DOCS/HTML/en/edl.html
         # [Begin Second] [End Second] [0=Skip/1=Mute]
-        edl_filename = os.path.join(
-            self.app.config.get("general", "folder_uncut_avis"), ".tmp.edl"
-        )
+        edl_filename = os.path.join(self.app.config.get("general", "folder_uncut_avis"), ".tmp.edl")
         with open(edl_filename, "w") as f:
             f.write("0 %s 0\n" % (cutlist.cuts_seconds[0][0] - 1))
             for count, (start, duration) in enumerate(cutlist.cuts_seconds):
@@ -102,9 +96,7 @@ class CutPlay(Plugin):
                 if count + 1 == len(cutlist.cuts_seconds):
                     f.write("%s 50000 0\n" % end)
                 else:
-                    f.write(
-                        "%s %s 0\n" % (end, (cutlist.cuts_seconds[count + 1][0] - 1))
-                    )
+                    f.write("%s %s 0\n" % (end, (cutlist.cuts_seconds[count + 1][0] - 1)))
 
         # make mpv edl
         # https://github.com/mpv-player/mpv-player.github.io/blob/master/guides/edl-playlists.rst
@@ -119,10 +111,7 @@ class CutPlay(Plugin):
             if shutil.which(prog):
                 cmdfound = True
                 if not subprocess.call(
-                    prog,
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.STDOUT,
+                    prog, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
                 ):
                     plays = True
                 else:
@@ -134,14 +123,7 @@ class CutPlay(Plugin):
 
         def play_with(prog):
             if prog == "mplayer":
-                self.p = subprocess.Popen(
-                    [
-                        self.app.config.get_program("mplayer"),
-                        "-edl",
-                        edl_filename,
-                        filename,
-                    ]
-                )
+                self.p = subprocess.Popen([self.app.config.get_program("mplayer"), "-edl", edl_filename, filename,])
             elif prog == "mpv":
                 self.p = subprocess.Popen([self.app.config.get_program("mpv"), edlurl])
 
@@ -156,8 +138,7 @@ class CutPlay(Plugin):
             play_with(self.playprog[1])
         else:
             self.gui.message_error_box(
-                "Zum Anzeigen der Schnitte sind weder mpv noch mplayer "
-                "installiert bzw. funktionieren nicht."
+                "Zum Anzeigen der Schnitte sind weder mpv noch mplayer " "installiert bzw. funktionieren nicht."
             )
             return
 

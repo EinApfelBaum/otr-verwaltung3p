@@ -7,22 +7,19 @@ import gst
 class ReStamp(gst.Element):
     """ Helper element to resets timestamps for buffers except for keyframes """
 
-    _src_padtemplate = gst.PadTemplate('src',
-                                       gst.PAD_SRC,
-                                       gst.PAD_ALWAYS,
-                                       gst.caps_new_any())
+    _src_padtemplate = gst.PadTemplate("src", gst.PAD_SRC, gst.PAD_ALWAYS, gst.caps_new_any())
 
     def __init__(self, sink_templ):
         gst.Element.__init__(self)
         self.bytestream = True
         # Sinkpad should have the same template and caps as the wrapped decoder
-        self.sinkpad = gst.Pad(sink_templ, 'sink')
+        self.sinkpad = gst.Pad(sink_templ, "sink")
         self.add_pad(self.sinkpad)
         self.sinkpad.set_chain_function(self._chain)
         self.sinkpad.set_setcaps_function(self._setcaps)
         self.sinkpad.set_getcaps_function(self._getcaps)
         # Srcpad is only internal -> any caps
-        self.srcpad = gst.Pad(self._src_padtemplate, 'src')
+        self.srcpad = gst.Pad(self._src_padtemplate, "src")
         self.add_pad(self.srcpad)
 
     def _setcaps(self, pad, caps):
@@ -66,9 +63,9 @@ class DecoderWrapper(gst.Bin):
                     element = ReStamp(templ)
                     self.add(element)
                     element.link(self.decoder)
-                    self.add_pad(gst.GhostPad(templ.name_template, element.get_pad('sink')))
+                    self.add_pad(gst.GhostPad(templ.name_template, element.get_pad("sink")))
                 elif templ.direction == gst.PAD_SRC:
-                    self.add_pad(gst.GhostPad(templ.name_template, self.decoder.get_pad(templ.name_template)))
+                    self.add_pad(gst.GhostPad(templ.name_template, self.decoder.get_pad(templ.name_template),))
 
 
 gobject.type_register(DecoderWrapper)
@@ -81,10 +78,11 @@ class H264DecWrapper(DecoderWrapper):
         "ffdec_h264wrapper plugin",
         "Codec/Decoder/Video",
         "Wrapper for ffdec_h264, that deletes all timestamps except for keyframes",
-        "Jan Schole <jan581984@web.de>")
+        "Jan Schole <jan581984@web.de>",
+    )
 
     # The decoder to wrap:
-    __decoder_factory__ = gst.element_factory_find('ffdec_h264')
+    __decoder_factory__ = gst.element_factory_find("ffdec_h264")
 
     # Copy the pad-templates from the decoder:
     __gsttemplates__ = tuple([templ.get() for templ in __decoder_factory__.get_static_pad_templates()])
@@ -96,4 +94,4 @@ class H264DecWrapper(DecoderWrapper):
 
 
 gobject.type_register(H264DecWrapper)
-gst.element_register(H264DecWrapper, 'ffdec_h264wrapper', gst.RANK_PRIMARY + 1)
+gst.element_register(H264DecWrapper, "ffdec_h264wrapper", gst.RANK_PRIMARY + 1)

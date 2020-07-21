@@ -14,10 +14,12 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-import gi
-from gi.repository import Gtk, GdkPixbuf, Pango
 import os
-gi.require_version('Gtk', '3.0')
+
+from gi import require_version
+
+require_version("Gtk", "3.0")
+from gi.repository import GdkPixbuf, Gtk, Pango
 
 
 class FolderChooserComboBox(Gtk.ComboBox):
@@ -35,20 +37,20 @@ class FolderChooserComboBox(Gtk.ComboBox):
 
         cell = Gtk.CellRendererText()
         self.pack_start(cell, False)
-        self.add_attribute(cell, 'text', 2)
+        self.add_attribute(cell, "text", 2)
 
         cell = Gtk.CellRendererPixbuf()
-        cell.set_property('xpad', 5)
+        cell.set_property("xpad", 5)
         self.pack_start(cell, False)
-        self.add_attribute(cell, 'pixbuf', self.COL_PIXBUF)
+        self.add_attribute(cell, "pixbuf", self.COL_PIXBUF)
 
         cell = Gtk.CellRendererText()
-        cell.set_property('ellipsize', Pango.EllipsizeMode.END)
+        cell.set_property("ellipsize", Pango.EllipsizeMode.END)
         self.pack_start(cell, True)
-        self.add_attribute(cell, 'text', self.COL_NAME)
+        self.add_attribute(cell, "text", self.COL_NAME)
 
     def __separator(self, model, iter, data=None):
-        return (model.get_value(iter, self.COL_NAME) == '-')
+        return model.get_value(iter, self.COL_NAME) == "-"
 
     def get_active_path(self):
         iter = self.get_active_iter()
@@ -58,7 +60,7 @@ class FolderChooserComboBox(Gtk.ComboBox):
             return ""
 
     def fill(self, path):
-        image = Gtk.IconTheme.get_default().load_icon('folder', 16, Gtk.IconLookupFlags.USE_BUILTIN)
+        image = Gtk.IconTheme.get_default().load_icon("folder", 16, Gtk.IconLookupFlags.USE_BUILTIN)
 
         self.liststore.clear()
 
@@ -68,12 +70,13 @@ class FolderChooserComboBox(Gtk.ComboBox):
             self.set_row_separator_func(self.__separator)
 
         # root folder
-        self.liststore.append([path.split('/')[-1], image, "", path])
+        self.liststore.append([path.split("/")[-1], image, "", path])
 
         fill_up = "—"
         for root, dirs, files in os.walk(path):
-            directory = root[len(path) + 1:].split('/')
+            directory = root[len(path) + 1 :].split("/")
 
-            if not directory[0]: continue
+            if not directory[0]:
+                continue
 
             self.liststore.append([directory[-1], image, fill_up * len(directory), root])

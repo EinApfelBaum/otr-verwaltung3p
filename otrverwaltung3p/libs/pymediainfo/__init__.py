@@ -22,6 +22,7 @@ try:
 except DistributionNotFound:
     pass
 
+
 class Track(object):
     """
     An object associated with a media file track.
@@ -47,32 +48,34 @@ class Track(object):
 
     All available attributes can be obtained by calling :func:`to_data`.
     """
+
     def __getattribute__(self, name):
         try:
             return object.__getattribute__(self, name)
         except:
             pass
         return None
+
     def __init__(self, xml_dom_fragment):
         self.xml_dom_fragment = xml_dom_fragment
-        self.track_type = xml_dom_fragment.attrib['type']
+        self.track_type = xml_dom_fragment.attrib["type"]
         for el in self.xml_dom_fragment:
-            node_name = el.tag.lower().strip().strip('_')
-            if node_name == 'id':
-                node_name = 'track_id'
+            node_name = el.tag.lower().strip().strip("_")
+            if node_name == "id":
+                node_name = "track_id"
             node_value = el.text
             other_node_name = "other_%s" % node_name
             if getattr(self, node_name) is None:
                 setattr(self, node_name, node_value)
             else:
                 if getattr(self, other_node_name) is None:
-                    setattr(self, other_node_name, [node_value, ])
+                    setattr(self, other_node_name, [node_value,])
                 else:
                     getattr(self, other_node_name).append(node_value)
 
-        for o in [d for d in self.__dict__.keys() if d.startswith('other_')]:
+        for o in [d for d in self.__dict__.keys() if d.startswith("other_")]:
             try:
-                primary = o.replace('other_', '')
+                primary = o.replace("other_", "")
                 setattr(self, primary, int(getattr(self, primary)))
             except:
                 for v in getattr(self, o):
@@ -83,8 +86,10 @@ class Track(object):
                         break
                     except:
                         pass
+
     def __repr__(self):
-        return("<Track track_id='{0}', track_type='{1}'>".format(self.track_id, self.track_type))
+        return "<Track track_id='{0}', track_type='{1}'>".format(self.track_id, self.track_type)
+
     def to_data(self):
         """
         Returns a dict representation of the track attributes.
@@ -101,7 +106,7 @@ class Track(object):
         """
         data = {}
         for k, v in self.__dict__.items():
-            if k != 'xml_dom_fragment':
+            if k != "xml_dom_fragment":
                 data[k] = v
         return data
 
@@ -127,6 +132,7 @@ class MediaInfo(object):
 
     :param str xml: XML output obtained from MediaInfo
     """
+
     def __init__(self, xml):
         self.xml_dom = MediaInfo._parse_xml_data_into_dom(xml)
 
@@ -136,6 +142,7 @@ class MediaInfo(object):
             return ET.fromstring(xml_data.encode("utf-8"))
         except:
             return None
+
     @staticmethod
     def _get_library(library_file=None):
         os_is_nt = os.name in ("nt", "dos", "os2", "ce")
@@ -153,6 +160,7 @@ class MediaInfo(object):
                 return CDLL("libmediainfo.dylib")
         else:
             return CDLL("libmediainfo.so.0")
+
     @classmethod
     def can_parse(cls, library_file=None):
         """
@@ -165,6 +173,7 @@ class MediaInfo(object):
             return True
         except:
             return False
+
     @classmethod
     def parse(cls, filename, library_file=None, cover_data=False):
         """
@@ -193,7 +202,7 @@ class MediaInfo(object):
         # Define arguments and return types
         lib.MediaInfo_Inform.restype = c_wchar_p
         lib.MediaInfo_New.argtypes = []
-        lib.MediaInfo_New.restype  = c_void_p
+        lib.MediaInfo_New.restype = c_void_p
         lib.MediaInfo_Option.argtypes = [c_void_p, c_wchar_p, c_wchar_p]
         lib.MediaInfo_Option.restype = c_wchar_p
         lib.MediaInfo_Inform.argtypes = [c_void_p, c_size_t]
@@ -201,7 +210,7 @@ class MediaInfo(object):
         lib.MediaInfo_Open.argtypes = [c_void_p, c_wchar_p]
         lib.MediaInfo_Open.restype = c_size_t
         lib.MediaInfo_Delete.argtypes = [c_void_p]
-        lib.MediaInfo_Delete.restype  = None
+        lib.MediaInfo_Delete.restype = None
         lib.MediaInfo_Close.argtypes = [c_void_p]
         lib.MediaInfo_Close.restype = None
         # Obtain the library version
@@ -222,8 +231,7 @@ class MediaInfo(object):
         # Fix for https://github.com/sbraz/pymediainfo/issues/22
         # Python 2 does not change LC_CTYPE
         # at startup: https://bugs.python.org/issue6203
-        if (sys.version_info < (3,) and os.name == "posix"
-                and locale.getlocale() == (None, None)):
+        if sys.version_info < (3,) and os.name == "posix" and locale.getlocale() == (None, None):
             locale.setlocale(locale.LC_CTYPE, locale.getdefaultlocale())
         lib.MediaInfo_Option(None, "Inform", xml_option)
         lib.MediaInfo_Option(None, "Complete", "1")
@@ -233,12 +241,14 @@ class MediaInfo(object):
         lib.MediaInfo_Close(handle)
         lib.MediaInfo_Delete(handle)
         return cls(xml)
+
     def _populate_tracks(self):
         if self.xml_dom is None:
             return
         iterator = "getiterator" if sys.version_info < (2, 7) else "iter"
         for xml_track in getattr(self.xml_dom, iterator)("track"):
             self._tracks.append(Track(xml_track))
+
     @property
     def tracks(self):
         """
@@ -257,16 +267,18 @@ class MediaInfo(object):
         if len(self._tracks) == 0:
             self._populate_tracks()
         return self._tracks
+
     def to_data(self):
         """
         Returns a dict representation of the object's :py:class:`Tracks <Track>`.
 
         :rtype: dict
         """
-        data = {'tracks': []}
+        data = {"tracks": []}
         for track in self.tracks:
-            data['tracks'].append(track.to_data())
+            data["tracks"].append(track.to_data())
         return data
+
     def to_json(self):
         """
         Returns a json representation of the object's :py:class:`Tracks <Track>`.

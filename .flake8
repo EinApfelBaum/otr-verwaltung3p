@@ -1,0 +1,17 @@
+[flake8]
+ignore = C901,E41,E203,E226,E266,E302,E401,E402,E501,F401,F403,W503
+max-line-length = 119
+exclude =
+    data/*,
+    otrverwaltung3p/actions/cutavidemux.py,
+    otrverwaltung3p/actions/download.py,
+    otrverwaltung3p/actions/planning.py,
+    otrverwaltung3p/bcode.py,
+    otrverwaltung3p/downloader.py,
+    otrverwaltung3p/elements/*,
+    otrverwaltung3p/gui/AddDownloadDialog.py,
+    otrverwaltung3p/gui/PlanningDialog.py
+    otrverwaltung3p/libs/*,
+    otrverwaltung3p/scraper.py,
+
+select = B,C,E,F,W,T4,B9

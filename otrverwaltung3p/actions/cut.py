@@ -17,21 +17,24 @@ import bisect
 import gc
 import logging
 import os
-import psutil
 import re
 import shlex
 import subprocess
 import sys
+
 from gi import require_version
+
 require_version("Gtk", "3.0")
 require_version("Gst", "1.0")
-from gi.repository import Gtk, Gst
+from gi.repository import Gst, Gtk
 
-from otrverwaltung3p.libs.pymediainfo import MediaInfo
-from otrverwaltung3p.actions.baseaction import BaseAction
-from otrverwaltung3p.constants import Format, Program
 from otrverwaltung3p import fileoperations
 from otrverwaltung3p import path as otrvpath
+from otrverwaltung3p.actions.baseaction import BaseAction
+from otrverwaltung3p.constants import Format, Program
+from otrverwaltung3p.libs.pymediainfo import MediaInfo
+
+import psutil
 
 Gst.init(None)
 
@@ -74,9 +77,7 @@ class Cut(BaseAction):
             codeccore = -1
             return codeccore
         else:
-            match = re.search(
-                r"core [0-9]{2,3}", self.media_info.tracks[1].writing_library
-            )
+            match = re.search(r"core [0-9]{2,3}", self.media_info.tracks[1].writing_library)
             if match is not None:
                 codeccore = int(match.group(0).split(" ")[1])
             else:
@@ -234,7 +235,6 @@ class Cut(BaseAction):
 
         config_value = programs[vformat]
 
-        codec_core = self.get_codeccore(filename)
         if sys.platform == "linux":
             vdub = otrvpath.get_internal_virtualdub_path("vdub.exe")
         else:
@@ -258,7 +258,7 @@ class Cut(BaseAction):
                     ),
                     False,
                 )
-        x264_codec = self.config.get("general", "h264_codec")
+
         if "avidemux" in config_value:
             return Program.AVIDEMUX, config_value, ac3
         elif "intern-VirtualDub" in config_value:
@@ -278,10 +278,7 @@ class Cut(BaseAction):
         else:
             return (
                 -2,
-                (
-                    f"Programm '{config_value}' konnte nicht bestimmt werden. "
-                    "Es wird nur VirtualDub unterstützt."
-                ),
+                (f"Programm '{config_value}' konnte nicht bestimmt werden. " "Es wird nur VirtualDub unterstützt."),
                 False,
             )
 
@@ -291,9 +288,7 @@ class Cut(BaseAction):
         if forceavi == 1:
             extension = ".avi"
         new_name = root + "-cut" + extension
-        cut_video = os.path.join(
-            self.config.get("general", "folder_cut_avis"), new_name
-        )
+        cut_video = os.path.join(self.config.get("general", "folder_cut_avis"), new_name)
         return cut_video
 
     def mux_ac3(self, filename, cut_video, ac3_file, cutlist):
@@ -341,9 +336,7 @@ class Cut(BaseAction):
         if return_value != 0 and return_value != 1:
             return None, None, str(return_value)
 
-        if (
-            len(cutlist.cuts_seconds) == 1
-        ):  # Only the second fragment is needed. Delete the rest.
+        if len(cutlist.cuts_seconds) == 1:  # Only the second fragment is needed. Delete the rest.
             fileoperations.rename_file(root + "-002.mka", root + ".mka")
             fileoperations.remove_file(root + "-001.mka")
             if os.path.isfile(root + "-003.mka"):
@@ -352,17 +345,12 @@ class Cut(BaseAction):
         else:  # Concatenating every second fragment.
             command = [mkvmerge, "-o", root + ".mka", root + "-002.mka"]
             command[len(command) :] = [
-                "+" + root + "-%03d.mka" % (2 * n)
-                for n in range(2, len(cutlist.cuts_seconds) + 1)
+                "+" + root + "-%03d.mka" % (2 * n) for n in range(2, len(cutlist.cuts_seconds) + 1)
             ]
             #            return_value = subprocess.call(command)
             try:
                 blocking_process = subprocess.Popen(
-                    command,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    universal_newlines=True,
-                    env=my_env,
+                    command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, env=my_env,
                 )
             except OSError as e:
                 return None, e.strerror + ": " + mkvmerge
@@ -370,9 +358,7 @@ class Cut(BaseAction):
             if return_value != 0:  # There should be no warnings here
                 return None, None, str(return_value)
 
-            for n in range(
-                1, 2 * len(cutlist.cuts_seconds) + 2
-            ):  # Delete all temporary audio fragments
+            for n in range(1, 2 * len(cutlist.cuts_seconds) + 2):  # Delete all temporary audio fragments
                 if os.path.isfile(root + "-%03d.mka" % n):
                     fileoperations.remove_file(root + "-%03d.mka" % n)
 
@@ -419,9 +405,7 @@ class Cut(BaseAction):
         """
         try:
             process = subprocess.Popen(
-                [self.config.get_program("ffmpeg"), "-i", filename],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                [self.config.get_program("ffmpeg"), "-i", filename], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             )
         except OSError:
             self.log.debug("Leave function")
@@ -458,11 +442,7 @@ class Cut(BaseAction):
             if m:
                 if "Duration" == m.group(1):
                     try:
-                        seconds = (
-                            float(m.group(2)) * 3600
-                            + float(m.group(3)) * 60
-                            + float(m.group(4))
-                        )
+                        seconds = float(m.group(2)) * 3600 + float(m.group(3)) * 60 + float(m.group(4))
                     except ValueError:
                         self.log.debug("Leave function")
                         error = "Dauer des Film konnte nicht ausgelesen werden."
@@ -484,14 +464,10 @@ class Cut(BaseAction):
 
         if seconds != 0 and fps is not None and sar is not None and dar is not None:
             max_frames = seconds * fps
-            self.log.debug(
-                f"fps: {fps}, dar: {dar}, sar: {sar}, max_frames: {max_frames}, ac3_stream: {ac3_stream}, "
-            )
+            self.log.debug(f"fps: {fps}, dar: {dar}, sar: {sar}, max_frames: {max_frames}, ac3_stream: {ac3_stream}, ")
             return fps, dar, sar, max_frames, ac3_stream, None
 
-        error = (
-            "Es konnten keine Video Infos der zu bearbeitenden Datei ausgelesen werden."
-        )
+        error = "Es konnten keine Video Infos der zu bearbeitenden Datei ausgelesen werden."
         return None, None, None, None, None, error
 
     def get_keyframes_from_file(self, filename, vformat):
@@ -500,9 +476,7 @@ class Cut(BaseAction):
         if not os.path.isfile(filename + ".ffindex_track00.kf.txt"):
             try:
                 command = [self.config.get_program("ffmsindex"), "-f", "-k", filename]
-                process = subprocess.Popen(
-                    command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-                )
+                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 self.show_indexing_progress(process)
             except OSError:
                 return None, "ffmsindex konnte nicht aufgerufen werden."
@@ -519,6 +493,7 @@ class Cut(BaseAction):
         try:
             index = open(filename_keyframes, "r")
         except (IOError, TypeError) as e:
+            self.log.debug(f"{e}")
             return None, "Keyframe File von ffmsindex konnte nicht geöffnet werden."
 
         index.readline()  # Skip the first line, it is a comment
@@ -550,9 +525,7 @@ class Cut(BaseAction):
                     "-k",
                     filename,
                 ]
-                process = subprocess.Popen(
-                    command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-                )
+                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 self.show_indexing_progress(process)
             except OSError:
                 return None, "ffmsindex konnte nicht aufgerufen werden."
@@ -569,6 +542,7 @@ class Cut(BaseAction):
         try:
             index = open(filename_timecodes, "r")
         except (IOError, TypeError) as e:
+            self.log.debug(f"{e}")
             return (
                 None,
                 None,
@@ -578,9 +552,7 @@ class Cut(BaseAction):
         try:
             frame_timecode = {}
             for line_num, line in enumerate(index):
-                frame_timecode[line_num] = int(
-                    round(float(line.replace("\n", "").strip()), 2) / 1000 * Gst.SECOND
-                )
+                frame_timecode[line_num] = int(round(float(line.replace("\n", "").strip()), 2) / 1000 * Gst.SECOND)
         except ValueError:
             return None, None, "Timecodes konnten nicht ermittelt werden."
         finally:
@@ -596,9 +568,7 @@ class Cut(BaseAction):
         if os.path.isfile(filename + ".ffindex"):
             fileoperations.remove_file(filename + ".ffindex")
 
-        self.log.debug(
-            f"Number of frames (frame_timecode dict): {list(frame_timecode.keys())[-1] + 1}"
-        )
+        self.log.debug(f"Number of frames (frame_timecode dict): {list(frame_timecode.keys())[-1] + 1}")
         return frame_timecode, timecode_frame, None
 
     def show_indexing_progress(self, process):
@@ -606,24 +576,24 @@ class Cut(BaseAction):
         self.log.debug("Function start")
         first_run = True
         while True:
-            l = ""
+            line = ""
             while True:
                 c = process.stdout.read(1).decode("utf-8")
                 if c == "\r" or c == "\n":
                     break
-                l += c
+                line += c
 
-            if not l or "done" in l:
+            if not line or "done" in line:
                 self.log.debug("Outer while break")
                 break
 
             try:
-                if first_run and "Indexing" in l:
+                if first_run and "Indexing" in line:
                     first_run = False
                     self.app.gui.main_window.set_tasks_text("Datei wird indiziert")
 
-                if len(l) > 25 and l[25].isdigit():
-                    progress = int(l[25:].replace("%", ""))
+                if len(line) > 25 and line[25].isdigit():
+                    progress = int(line[25:].replace("%", ""))
                     # update progress
                     self.app.gui.main_window.set_tasks_progress(progress)
 
@@ -633,45 +603,6 @@ class Cut(BaseAction):
                 pass
 
         return
-
-    def time_to_frame(self, nanoseconds):
-        """ Searches in dict self.timecode_frame for the nearest timecode
-        for the variable 'position' (in nanoseconds) and returns the frame number.
-        """
-        if nanoseconds in self.timecode_frame:
-            return self.timecode_frame[nanoseconds]
-        else:
-            nearest_position = self.find_closest(self.timecode_frame, nanoseconds)
-            # ~ self.log.debug("nearest_position: {}".format(nearest_position))
-            return self.timecode_frame[nearest_position]
-
-    def frame_to_time(self, frame_number):
-        """Returns the time (nanoseconds) for frame_number."""
-        if frame_number in self.frame_timecode:
-            return self.frame_timecode[frame_number]
-        else:
-            if frame_number < 0:
-                return 0
-            else:
-                return self.videolength
-
-    @staticmethod
-    def find_closest(find_in, position):
-        """ Assumes find_in (key_list) is sorted. Returns closest value to position.
-        If two numbers are equally close, return the smaller one.
-        """
-        key_list = list(find_in.keys())
-        pos = bisect.bisect_left(key_list, position)
-        if pos == 0:
-            return key_list[0]
-        if pos == len(key_list):
-            return key_list[-1]
-        before = key_list[pos - 1]
-        after = key_list[pos]
-        if after - position < position - before:
-            return after
-        else:
-            return before
 
     def get_keyframe_in_front_of_frame(self, keyframes, frame):
         """Find keyframe less-than to frame."""
@@ -796,34 +727,27 @@ class Cut(BaseAction):
                             ]  # test for float
                             profile = [
                                 "--profile",
-                                line.strip()
-                                .split("@L")[0]
-                                .split(":")[1]
-                                .lower()
-                                .lstrip(),
+                                line.strip().split("@L")[0].split(":")[1].lower().lstrip(),
                             ]
-                        except ValueError as e:
+                        except (ValueError, IndexError) as e:
+                            self.log.debug(f"{e}")
                             continue
-                        except IndexError as e:
-                            continue
+
                         x264_opts.extend(profile)
                         x264_opts.extend(level)
                     elif "Frame rate" in line:
                         try:
                             fps = ["--fps", str(float(line.strip().split(" ")[3]))]
                             self.log.debug("FPS: {}".format(fps))
-                        except ValueError as e:
-                            continue
-                        except IndexError as e:
+                        except (ValueError, IndexError) as e:
+                            self.log.debug(f"{e}")
                             continue
                         x264_opts.extend(fps)
                 else:
                     break
         return x264_opts, x264_core
 
-    def complete_ffmpeg_opts(
-        self, ffmpeg_codec_options, filename, quality=None, vformat=None
-    ):
+    def complete_ffmpeg_opts(self, ffmpeg_codec_options, filename, quality=None, vformat=None):
         fps, dar, sar, max_frames, ac3_stream, error = self.analyse_mediafile(filename)
         codec = None
         codec_core = None
@@ -861,9 +785,7 @@ class Cut(BaseAction):
 
             level = [
                 "-level",
-                self.media_info.tracks[1]
-                .format_profile.split("@L")[1]
-                .replace(".", ""),
+                self.media_info.tracks[1].format_profile.split("@L")[1].replace(".", ""),
             ]
             ffmpeg_commandline.extend(level)
         except IndexError:
@@ -890,9 +812,8 @@ class Cut(BaseAction):
                         codec = "libx264"
                         try:
                             codec_core = int(line.strip().split(" ")[30])
-                        except ValueError as e:
-                            continue
-                        except IndexError as e:
+                        except (ValueError, IndexError) as e:
+                            self.log.debug(f"{e}")
                             continue
                     elif "Matrix coefficients" in line and "709" in line:
                         ffmpeg_codec_options.extend(bt709)
@@ -906,15 +827,10 @@ class Cut(BaseAction):
                             ]  # test for float
                             profile = [
                                 "-profile:v",
-                                line.strip()
-                                .split("@L")[0]
-                                .split(":")[1]
-                                .lower()
-                                .lstrip(),
+                                line.strip().split("@L")[0].split(":")[1].lower().lstrip(),
                             ]
-                        except ValueError as e:
-                            continue
-                        except IndexError as e:
+                        except (ValueError, IndexError) as e:
+                            self.log.debug(f"{e}")
                             continue
                         ffmpeg_commandline.extend(profile)
                         ffmpeg_commandline.extend(level)
@@ -1003,15 +919,9 @@ class Cut(BaseAction):
                 elif "time=" in line:
                     m = re.search(time_match, line)
                     if m:
-                        sec = (
-                            float(m.group(1)) * 3600
-                            + float(m.group(2)) * 60
-                            + float(m.group(3))
-                        )
+                        sec = float(m.group(1)) * 3600 + float(m.group(2)) * 60 + float(m.group(3))
                         if max_sec >= 1.0:
-                            self.app.gui.main_window.set_tasks_progress(
-                                int(sec / max_sec * 100)
-                            )
+                            self.app.gui.main_window.set_tasks_progress(int(sec / max_sec * 100))
                 elif "%" in line:
                     m = re.search(progress_match, line)
                     if m:
@@ -1029,11 +939,7 @@ class Cut(BaseAction):
                 elif "Duration" in line:
                     m = re.search(time_match, line)
                     if m:
-                        max_sec = (
-                            float(m.group(1)) * 3600
-                            + float(m.group(2)) * 60
-                            + float(m.group(3))
-                        )
+                        max_sec = float(m.group(1)) * 3600 + float(m.group(2)) * 60 + float(m.group(3))
                 # elif "video_copy" in line and ".mkv' has been opened for writing" in line:
                 elif all(x in line.lower() for x in ["video_copy", ".mkv' has been opened for writing"]):
                     self.app.gui.main_window.set_tasks_text("Splitte Video")
@@ -1109,9 +1015,7 @@ class Cut(BaseAction):
 
         # cpuset may restrict the number of *available* processors
         try:
-            m = re.search(
-                r"(?m)^Cpus_allowed:\s*(.*)$", open("/proc/self/status").read()
-            )
+            m = re.search(r"(?m)^Cpus_allowed:\s*(.*)$", open("/proc/self/status").read())
             if m:
                 res = bin(int(m.group(1).replace(",", ""), 16)).count("1")
                 if res > 0:

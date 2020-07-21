@@ -14,20 +14,23 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-from base64 import b64decode, b64encode
 import json
 import logging
 import os.path
 import sys
+from base64 import b64decode, b64encode
 
 try:
     import keyring
+
     keyring_available = True
-    if sys.platform == 'win32':
+    if sys.platform == "win32":
         from keyring.backends import Windows
+
         keyring.set_keyring(Windows.WinVaultKeyring())
-    elif sys.platform == 'darwin':
+    elif sys.platform == "darwin":
         from keyring.backends import OS_X
+
         keyring.set_keyring(keyring.backends.OS_X.Keyring())
 except ImportError:
     keyring = None
@@ -35,9 +38,9 @@ except ImportError:
     OS_X = None
     keyring_available = False
 
+from otrverwaltung3p import fileoperations
 from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p.libs import pyaes
-from otrverwaltung3p import fileoperations
 
 
 class Config:
@@ -57,16 +60,20 @@ class Config:
         self.__callbacks[category].setdefault(option, []).append(callback)
 
     def set(self, category, option, value):
-        printed_value = "*****" if option in ['email', 'password', 'aes_key', 'server'] else value
+        printed_value = "*****" if option in ["email", "password", "aes_key", "server"] else value
         self.log.debug(f"Set [{category}].[{option}] to {printed_value}")
         try:
             for callback in self.__callbacks[category][option]:
                 callback(value)
         except KeyError:
             pass
-        if option == 'password' and self.__fields['general']['passwd_store'] == 1 and value is not None \
-                and self.keyring_available:
-            keyring.set_password("otr-verwaltung3p", self.__fields['general']['email'], value)
+        if (
+            option == "password"
+            and self.__fields["general"]["passwd_store"] == 1
+            and value is not None
+            and self.keyring_available
+        ):
+            keyring.set_password("otr-verwaltung3p", self.__fields["general"]["email"], value)
             self.log.debug("Writing password to keyring")
         else:
             self.__fields[category][option] = value
@@ -75,18 +82,18 @@ class Config:
         """ Gets a configuration option. """
         value = ""
 
-        if option == 'password' and self.__fields['general']['passwd_store'] == 1 and self.keyring_available:
-            password = keyring.get_password("otr-verwaltung3p", self.__fields['general']['email'])
+        if option == "password" and self.__fields["general"]["passwd_store"] == 1 and self.keyring_available:
+            password = keyring.get_password("otr-verwaltung3p", self.__fields["general"]["email"])
             if password is not None:
                 value = password
-        elif option == 'h264_codec':
-            value = 'ffdshow'  # FORCED
+        elif option == "h264_codec":
+            value = "ffdshow"  # FORCED
         # elif option == 'encoder_engine':
         #     value = 'x264'  # FORCED
         else:
             value = self.__fields[category][option]
 
-        printed_value = "*****" if option in ['email', 'password', 'aes_key', 'server'] else value
+        # printed_value = "*****" if option in ["email", "password", "aes_key", "server"] else value
         # self.log.debug(f"Get [{category}].[{option}]: {printed_value}")
 
         return value
@@ -102,16 +109,18 @@ class Config:
                 pass
 
             with open(self.__config_file, "w") as config_file:
-                if self.__fields['general']['passwd_store'] == 0:  # Store password in conf
-                    if len(str(self.__fields['general']['password'])) > 0:
-                        key = b64decode(self.__fields['general']['aes_key'].encode('UTF-8'))
+                if self.__fields["general"]["passwd_store"] == 0:  # Store password in conf
+                    if len(str(self.__fields["general"]["password"])) > 0:
+                        key = b64decode(self.__fields["general"]["aes_key"].encode("UTF-8"))
                         enc_aes = pyaes.AESModeOfOperationCTR(key)
-                        cipher_text = enc_aes.encrypt(self.__fields['general']['password'])
-                        self.__fields['general']['password'] = b64encode(cipher_text).decode('UTF-8')
+                        cipher_text = enc_aes.encrypt(self.__fields["general"]["password"])
+                        self.__fields["general"]["password"] = b64encode(cipher_text).decode("UTF-8")
                 else:  # Password will not be stored or stored in keyring/wallet
-                    self.__fields['general']['password'] = ''
+                    self.__fields["general"]["password"] = ""
                 self.log.debug("Writing to {0}".format(self.__config_file))
-                json.dump(self.__fields, config_file, ensure_ascii=False, sort_keys=True, indent=4)
+                json.dump(
+                    self.__fields, config_file, ensure_ascii=False, sort_keys=True, indent=4,
+                )
 
             os.chmod(self.__config_file, 0o600)
         except IOError as message:
@@ -121,7 +130,7 @@ class Config:
     def load(self):
         """ Reads an existing configuration file. """
         try:
-            with open(self.__config_file, 'r') as config:
+            with open(self.__config_file, "r") as config:
                 json_config = json.load(config)
         except json.decoder.JSONDecodeError:
             fileoperations.rename_file(self.__config_file, self.__config_file + ".bak")
@@ -133,15 +142,15 @@ class Config:
         for category, options in self.__fields.items():
             for option, value in options.items():
                 try:
-                    if category == 'general' and option == 'password':
-                        if json_config['general']['passwd_store'] == 0:
+                    if category == "general" and option == "password":
+                        if json_config["general"]["passwd_store"] == 0:
                             if len(str(json_config[category][option])) > 0:
-                                key = b64decode(self.__fields['general']['aes_key'].encode('UTF-8'))
+                                key = b64decode(self.__fields["general"]["aes_key"].encode("UTF-8"))
                                 decrypt_aes = pyaes.AESModeOfOperationCTR(key)
-                                bdec = b64decode(json_config[category][option].encode('UTF-8'))
-                                plain_text = decrypt_aes.decrypt(bdec).decode('UTF-8')
+                                bdec = b64decode(json_config[category][option].encode("UTF-8"))
+                                plain_text = decrypt_aes.decrypt(bdec).decode("UTF-8")
                                 self.set(category, option, plain_text)
-                    elif category == 'general' and option == 'server':
+                    elif category == "general" and option == "server":
                         # Check for trailing slash in url
                         serverurl = json_config[category][option].strip()
                         if not serverurl.endswith("/"):
@@ -158,12 +167,12 @@ class Config:
             either the pure config value or the internal version,
             if the config value contains 'intern' """
 
-        value = self.__fields['programs'][program]
+        value = self.__fields["programs"][program]
         self.log.debug(f"program value: {value}")
         intern_program = otrvpath.get_tools_path(value)
         self.log.debug(f"intern_program: {intern_program}")
 
-        if 'intern-' in value:
+        if "intern-" in value:
             if os.path.isfile(intern_program):
                 return intern_program
 

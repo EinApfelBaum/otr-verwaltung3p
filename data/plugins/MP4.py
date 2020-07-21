@@ -66,70 +66,38 @@ class MP4(Plugin):
         def on_checkbutton_toggled(widget, data=None):
             self.Config[data] = widget.get_active()
             if data == "EncodeAudioToAAC":
-                checkbutton_encode_only_first_audio.set_sensitive(
-                    self.Config["EncodeAudioToAAC"]
-                )
-                checkbutton_downmix_stereo.set_sensitive(
-                    self.Config["EncodeAudioToAAC"]
-                )
-                checkbutton_normalize_audio.set_sensitive(
-                    self.Config["EncodeAudioToAAC"]
-                )
+                checkbutton_encode_only_first_audio.set_sensitive(self.Config["EncodeAudioToAAC"])
+                checkbutton_downmix_stereo.set_sensitive(self.Config["EncodeAudioToAAC"])
+                checkbutton_normalize_audio.set_sensitive(self.Config["EncodeAudioToAAC"])
 
         # checkbutton for dumping media files
-        checkbutton_dump_avis = Gtk.CheckButton(
-            "Originaldatei automatisch in Mülleimer verschieben?"
-        )
-        dialog.vbox.pack_start(
-            checkbutton_dump_avis, expand=False, fill=False, padding=0
-        )
+        checkbutton_dump_avis = Gtk.CheckButton("Originaldatei automatisch in Mülleimer verschieben?")
+        dialog.vbox.pack_start(checkbutton_dump_avis, expand=False, fill=False, padding=0)
         checkbutton_dump_avis.connect("toggled", on_checkbutton_toggled, "DumpAVIs")
 
         # checkbutton encode audio aac
         checkbutton_encode_audio = Gtk.CheckButton("Audiospuren zu AAC umwandeln?")
-        dialog.vbox.pack_start(
-            checkbutton_encode_audio, expand=False, fill=False, padding=0
-        )
-        checkbutton_encode_audio.connect(
-            "toggled", on_checkbutton_toggled, "EncodeAudioToAAC"
-        )
+        dialog.vbox.pack_start(checkbutton_encode_audio, expand=False, fill=False, padding=0)
+        checkbutton_encode_audio.connect("toggled", on_checkbutton_toggled, "EncodeAudioToAAC")
 
         # checkbutton encode first audio only
-        checkbutton_encode_only_first_audio = Gtk.CheckButton(
-            "AAC: nur erste Audiospur kodieren?"
-        )
+        checkbutton_encode_only_first_audio = Gtk.CheckButton("AAC: nur erste Audiospur kodieren?")
         checkbutton_encode_only_first_audio.set_margin_left(margin)
-        dialog.vbox.pack_start(
-            checkbutton_encode_only_first_audio, expand=False, fill=False, padding=0
-        )
-        checkbutton_encode_only_first_audio.connect(
-            "toggled", on_checkbutton_toggled, "EncodeOnlyFirstAudioToAAC"
-        )
+        dialog.vbox.pack_start(checkbutton_encode_only_first_audio, expand=False, fill=False, padding=0)
+        checkbutton_encode_only_first_audio.connect("toggled", on_checkbutton_toggled, "EncodeOnlyFirstAudioToAAC")
 
         # checkbutton down mix first audio stream
-        checkbutton_downmix_stereo = Gtk.CheckButton(
-            "AAC: erste Audiospur automatisch auf " "Stereo downmixen?"
-        )
+        checkbutton_downmix_stereo = Gtk.CheckButton("AAC: erste Audiospur automatisch auf " "Stereo downmixen?")
         checkbutton_downmix_stereo.set_margin_left(margin)
-        dialog.vbox.pack_start(
-            checkbutton_downmix_stereo, expand=False, fill=False, padding=0
-        )
-        checkbutton_downmix_stereo.connect(
-            "toggled", on_checkbutton_toggled, "DownMixStereo"
-        )
+        dialog.vbox.pack_start(checkbutton_downmix_stereo, expand=False, fill=False, padding=0)
+        checkbutton_downmix_stereo.connect("toggled", on_checkbutton_toggled, "DownMixStereo")
 
         # checkbutton encode normalize aac
-        checkbutton_normalize_audio = Gtk.CheckButton(
-            "AAC: Audio bei Konvertierung normalisieren?"
-        )
+        checkbutton_normalize_audio = Gtk.CheckButton("AAC: Audio bei Konvertierung normalisieren?")
         checkbutton_normalize_audio.set_margin_left(margin)
-        dialog.vbox.pack_start(
-            checkbutton_normalize_audio, expand=False, fill=False, padding=0
-        )
+        dialog.vbox.pack_start(checkbutton_normalize_audio, expand=False, fill=False, padding=0)
 
-        checkbutton_normalize_audio.connect(
-            "toggled", on_checkbutton_toggled, "NormalizeAudio"
-        )
+        checkbutton_normalize_audio.connect("toggled", on_checkbutton_toggled, "NormalizeAudio")
 
         # checkbutton remove other audio streams than ac3_stream
         checkbutton_remove_other_audio_streams_than_ac3 = Gtk.CheckButton(
@@ -137,10 +105,7 @@ class MP4(Plugin):
             " Dadurch wird die AC3 Spur automatisch zur ersten Audiospur."
         )
         dialog.vbox.pack_start(
-            checkbutton_remove_other_audio_streams_than_ac3,
-            expand=False,
-            fill=False,
-            padding=0,
+            checkbutton_remove_other_audio_streams_than_ac3, expand=False, fill=False, padding=0,
         )
         checkbutton_remove_other_audio_streams_than_ac3.connect(
             "toggled", on_checkbutton_toggled, "RemoveOtherAudioStreamsThanAC3"
@@ -150,22 +115,14 @@ class MP4(Plugin):
         checkbutton_dont_optimize = Gtk.CheckButton(
             "MP4 nicht mit MP4Box optimieren. Schneller erzeugt, aber nicht so kompatible Dateien"
         )
-        dialog.vbox.pack_start(
-            checkbutton_dont_optimize, expand=False, fill=False, padding=0
-        )
-        checkbutton_dont_optimize.connect(
-            "toggled", on_checkbutton_toggled, "DontOptimizeMP4"
-        )
+        dialog.vbox.pack_start(checkbutton_dont_optimize, expand=False, fill=False, padding=0)
+        checkbutton_dont_optimize.connect("toggled", on_checkbutton_toggled, "DontOptimizeMP4")
 
         # current config
         checkbutton_dump_avis.set_active(self.Config["DumpAVIs"])
         checkbutton_encode_audio.set_active(self.Config["EncodeAudioToAAC"])
-        checkbutton_encode_only_first_audio.set_active(
-            self.Config["EncodeOnlyFirstAudioToAAC"]
-        )
-        checkbutton_encode_only_first_audio.set_sensitive(
-            self.Config["EncodeAudioToAAC"]
-        )
+        checkbutton_encode_only_first_audio.set_active(self.Config["EncodeOnlyFirstAudioToAAC"])
+        checkbutton_encode_only_first_audio.set_sensitive(self.Config["EncodeAudioToAAC"])
         checkbutton_downmix_stereo.set_active(self.Config["DownMixStereo"])
         checkbutton_downmix_stereo.set_sensitive(self.Config["EncodeAudioToAAC"])
         checkbutton_normalize_audio.set_active(self.Config["NormalizeAudio"])
@@ -194,9 +151,7 @@ class MP4(Plugin):
             for count, filename in enumerate(filenames):
                 # analyse file
                 cutter = Cut(self.app, self.gui)
-                fps, dar, sar, max_frames, ac3_stream, error = cutter.analyse_mediafile(
-                    filename
-                )
+                fps, dar, sar, max_frames, ac3_stream, error = cutter.analyse_mediafile(filename)
                 if fps == None:
                     self.errors[filename] = error
                     continue
@@ -207,9 +162,7 @@ class MP4(Plugin):
 
                 if os.path.splitext(filename)[1] != ".mkv":
 
-                    mkvpass_file = fileoperations.make_unique_filename(
-                        os.path.splitext(filename)[0] + "_remux.mkv"
-                    )
+                    mkvpass_file = fileoperations.make_unique_filename(os.path.splitext(filename)[0] + "_remux.mkv")
                     try:
                         p = subprocess.Popen(
                             [
@@ -279,9 +232,7 @@ class MP4(Plugin):
                 # ffmpeg pass
                 yield 1, count
                 self.progress = 0
-                ffmpegpass_file = fileoperations.make_unique_filename(
-                    os.path.splitext(filename)[0] + "_remux.mp4"
-                )
+                ffmpegpass_file = fileoperations.make_unique_filename(os.path.splitext(filename)[0] + "_remux.mp4")
 
                 if self.Config["EncodeAudioToAAC"]:
                     if self.Config["EncodeOnlyFirstAudioToAAC"]:
@@ -368,9 +319,7 @@ class MP4(Plugin):
                 args[8:8] = map
 
                 try:
-                    p = subprocess.Popen(
-                        args, stderr=subprocess.PIPE, universal_newlines=True
-                    )
+                    p = subprocess.Popen(args, stderr=subprocess.PIPE, universal_newlines=True)
                 except OSError:
                     self.errors[filename] = "FFMPEG (intern) wurde nicht gefunden!"
                     if os.path.exists(mkvpass_file) and filename != mkvpass_file:
@@ -400,28 +349,22 @@ class MP4(Plugin):
                     if self.Config["DumpAVIs"]:
                         yield 3, self.success
                         new_filename = os.path.join(
-                            self.app.config.get("general", "folder_trash_avis"),
-                            os.path.basename(filename),
+                            self.app.config.get("general", "folder_trash_avis"), os.path.basename(filename),
                         )
                         if os.path.exists(new_filename):
                             fileoperations.remove_file(new_filename)
                         fileoperations.move_file(
-                            filename,
-                            self.app.config.get("general", "folder_trash_avis"),
+                            filename, self.app.config.get("general", "folder_trash_avis"),
                         )
                 else:
-                    self.errors[
-                        filename
-                    ] = "Fehler beim Erzeugen der MP4 Datei durch FFMPEG"
+                    self.errors[filename] = "Fehler beim Erzeugen der MP4 Datei durch FFMPEG"
                     if os.path.exists(ffmpegpass_file):
                         fileoperations.remove_file(ffmpegpass_file)
                     continue
 
                 # mp4box - last turn
                 self.progress = 0
-                mp4boxpass_file = fileoperations.make_unique_filename(
-                    os.path.splitext(filename)[0] + ".mp4"
-                )
+                mp4boxpass_file = fileoperations.make_unique_filename(os.path.splitext(filename)[0] + ".mp4")
 
                 if self.Config["DontOptimizeMP4"]:
                     os.rename(ffmpegpass_file, mp4boxpass_file)
@@ -476,15 +419,12 @@ class MP4(Plugin):
                 if exit_code == 0:
                     self.success += 1
                 else:
-                    self.errors[
-                        filename
-                    ] = "Fehler beim Erzeugen der MP4 Datei durch MP4Box"
+                    self.errors[filename] = "Fehler beim Erzeugen der MP4 Datei durch MP4Box"
 
         def loop(state, argument):
             if state == 0:
                 self.gui.main_window.set_tasks_text(
-                    "Extrahiere Streams aus Inputdatei ... %s/%s"
-                    % (str(argument + 1), str(len(filenames)))
+                    "Extrahiere Streams aus Inputdatei ... %s/%s" % (str(argument + 1), str(len(filenames)))
                 )
             elif state == 1:
                 self.gui.main_window.set_tasks_text(
@@ -492,23 +432,19 @@ class MP4(Plugin):
                 )
             elif state == 2:
                 self.gui.main_window.set_tasks_text(
-                    "MP4 optimieren (importiere Stream) ...  %s/%s"
-                    % (str(argument + 1), str(len(filenames)))
+                    "MP4 optimieren (importiere Stream) ...  %s/%s" % (str(argument + 1), str(len(filenames)))
                 )
             elif state == 3:
                 self.gui.main_window.set_tasks_text(
-                    "Originaldatei in Mülleimer verschieben ... %s/%s"
-                    % (str(argument + 1), str(len(filenames)))
+                    "Originaldatei in Mülleimer verschieben ... %s/%s" % (str(argument + 1), str(len(filenames)))
                 )
             elif state == 5:
                 self.gui.main_window.set_tasks_text(
-                    "Normalisierungswert berechnen ... %s/%s"
-                    % (str(argument + 1), str(len(filenames)))
+                    "Normalisierungswert berechnen ... %s/%s" % (str(argument + 1), str(len(filenames)))
                 )
             elif state == 6:
                 self.gui.main_window.set_tasks_text(
-                    "MP4 optimieren (schreibe MP4) ... %s/%s"
-                    % (str(argument + 1), str(len(filenames)))
+                    "MP4 optimieren (schreibe MP4) ... %s/%s" % (str(argument + 1), str(len(filenames)))
                 )
             else:
                 self.gui.main_window.set_tasks_progress(argument)
@@ -516,19 +452,13 @@ class MP4(Plugin):
         def complete():
             if len(self.errors) == 0:
                 self.gui.main_window.change_status(
-                    0,
-                    "Erfolgreich %s/%s Dateien umgewandelt."
-                    % (str(self.success), str(len(filenames))),
+                    0, "Erfolgreich %s/%s Dateien umgewandelt." % (str(self.success), str(len(filenames))),
                 )
             else:
                 self.gui.main_window.change_status(
                     0,
                     "Erfolgreich %s/%s Dateien umgewandelt. (Fehler: %s)"
-                    % (
-                        str(self.success),
-                        str(len(filenames)),
-                        " ".join(self.errors.values()),
-                    ),
+                    % (str(self.success), str(len(filenames)), " ".join(self.errors.values()),),
                 )
 
             self.gui.main_window.set_tasks_visible(False)
@@ -547,16 +477,7 @@ class MP4(Plugin):
 
         try:
             process1 = subprocess.Popen(
-                [
-                    otrvpath.get_tools_path("intern-ffmpeg"),
-                    "-loglevel",
-                    "quiet",
-                    "-i",
-                    filename,
-                    "-f",
-                    "sox",
-                    "-",
-                ],
+                [otrvpath.get_tools_path("intern-ffmpeg"), "-loglevel", "quiet", "-i", filename, "-f", "sox", "-",],
                 stdout=subprocess.PIPE,
             )
         except OSError:

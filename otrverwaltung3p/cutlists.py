@@ -18,34 +18,50 @@ import codecs
 import configparser
 import logging
 import os.path
-from pathlib import Path
-import requests
 import urllib.request
+
 # noinspection PyUnresolvedReferences
 import xml.dom.minidom
+from pathlib import Path
 
 from otrverwaltung3p import fileoperations
+
+import requests
 
 # UTF-8 Encoding Debugging
 # see https://www.i18nqa.com/debug/utf8-debug.html
 # wrong_right_chars = {"Ã€" : "À", "Ã"  : "Á", "Ã‚" : "Â", "Ãƒ" : "Ã", "Ã„" : "Ä", "Ã…" : "Å",
-                     # "Ã†" : "Æ", "Ã‡" : "Ç", "Ãˆ" : "È", "Ã‰" : "É", "ÃŠ" : "Ê", "Ã‹" : "Ë",
-                     # "ÃŒ" : "Ì", "Ã"  : "Í", "ÃŽ" : "Î", "Ã"  : "Ï", "Ã"  : "Ð", "Ã‘" : "Ñ",
-                     # "Ã’" : "Ò", "Ã“" : "Ó", "Ã”" : "Ô", "Ã•" : "Õ", "Ã–" : "Ö", "Ã—" : "×",
-                     # "Ã˜" : "Ø", "Ã™" : "Ù", "Ãš" : "Ú", "Ã›" : "Û", "Ãœ" : "Ü", "Ã"  : "Ý",
-                     # "Ãž" : "Þ", "ÃŸ" : "ß", "Ã " : "à", "Ã¡" : "á", "Ã¢" : "â", "Ã£" : "ã",
-                     # "Ã¤" : "ä", "Ã¥" : "å", "Ã¦" : "æ", "Ã§" : "ç", "Ã¨" : "è", "Ã©" : "é",
-                     # "Ãª" : "ê", "Ã«" : "ë", "Ã¬" : "ì", "Ã­"  : "í", "Ã®" : "î", "Ã¯" : "ï",
-                     # "Ã°" : "ð", "Ã±" : "ñ", "Ã²" : "ò", "Ã³" : "ó", "Ã´" : "ô", "Ãµ" : "õ",
-                     # "Ã¶" : "ö", "Ã·" : "÷", "Ã¸" : "ø", "Ã¹" : "ù", "Ãº" : "ú", "Ã»" : "û",
-                     # "Ã¼" : "ü", "Ã½" : "ý", "Ã¾" : "þ", "Ã¿" : "ÿ"}
+# "Ã†" : "Æ", "Ã‡" : "Ç", "Ãˆ" : "È", "Ã‰" : "É", "ÃŠ" : "Ê", "Ã‹" : "Ë",
+# "ÃŒ" : "Ì", "Ã"  : "Í", "ÃŽ" : "Î", "Ã"  : "Ï", "Ã"  : "Ð", "Ã‘" : "Ñ",
+# "Ã’" : "Ò", "Ã“" : "Ó", "Ã”" : "Ô", "Ã•" : "Õ", "Ã–" : "Ö", "Ã—" : "×",
+# "Ã˜" : "Ø", "Ã™" : "Ù", "Ãš" : "Ú", "Ã›" : "Û", "Ãœ" : "Ü", "Ã"  : "Ý",
+# "Ãž" : "Þ", "ÃŸ" : "ß", "Ã " : "à", "Ã¡" : "á", "Ã¢" : "â", "Ã£" : "ã",
+# "Ã¤" : "ä", "Ã¥" : "å", "Ã¦" : "æ", "Ã§" : "ç", "Ã¨" : "è", "Ã©" : "é",
+# "Ãª" : "ê", "Ã«" : "ë", "Ã¬" : "ì", "Ã­"  : "í", "Ã®" : "î", "Ã¯" : "ï",
+# "Ã°" : "ð", "Ã±" : "ñ", "Ã²" : "ò", "Ã³" : "ó", "Ã´" : "ô", "Ãµ" : "õ",
+# "Ã¶" : "ö", "Ã·" : "÷", "Ã¸" : "ø", "Ã¹" : "ù", "Ãº" : "ú", "Ã»" : "û",
+# "Ã¼" : "ü", "Ã½" : "ý", "Ã¾" : "þ", "Ã¿" : "ÿ"}
 
-wrong_right_chars = {"Ã„": "Ä", "Ã¤": "ä", "Ã–": "Ö", "Ã¶": "ö", "Ãœ": "Ü",
-                     "Ã¼": "ü", "ÃŸ": "ß", "Ã ": "à", "Ã¡": "á", "Ã¢": "â",
-                     "Ã§": "ç", "Ã©": "é", "Ã¨": "è", "Ãª": "ê", "Ã´": "ô",
-                     "Ã«": "ë"}
+wrong_right_chars = {
+    "Ã„": "Ä",
+    "Ã¤": "ä",
+    "Ã–": "Ö",
+    "Ã¶": "ö",
+    "Ãœ": "Ü",
+    "Ã¼": "ü",
+    "ÃŸ": "ß",
+    "Ã ": "à",
+    "Ã¡": "á",
+    "Ã¢": "â",
+    "Ã§": "ç",
+    "Ã©": "é",
+    "Ã¨": "è",
+    "Ãª": "ê",
+    "Ã´": "ô",
+    "Ã«": "ë",
+}
 
-qualities = {'.mpg.mp4': 'MP4', '.mpg.avi': 'AVI', '.HQ.avi': 'HQ', '.HD.avi': 'HD'}
+qualities = {".mpg.mp4": "MP4", ".mpg.avi": "AVI", ".HQ.avi": "HQ", ".HD.avi": "HD"}
 
 
 class Cutlist:
@@ -54,41 +70,41 @@ class Cutlist:
         self.log = logging.getLogger(self.__class__.__name__)
         # cutlist.at xml-output
         self.id = 0
-        self.author = ''
+        self.author = ""
         self.ratingbyauthor = 0
         self.rating = 0
         self.ratingcount = 0
         self.countcuts = 0  # !!!
-        self.actualcontent = ''
-        self.usercomment = ''
-        self.filename = ''
+        self.actualcontent = ""
+        self.usercomment = ""
+        self.filename = ""
         self.withframes = 0
         self.withtime = 0
-        self.duration = ''
-        self.errors = ''
-        self.othererrordescription = ''
+        self.duration = ""
+        self.errors = ""
+        self.othererrordescription = ""
         self.downloadcount = 0
-        self.autoname = ''
-        self.filename_original = ''
+        self.autoname = ""
+        self.filename_original = ""
 
         # additions in cutlist file
         self.wrong_content = 0
         self.missing_beginning = 0
         self.missing_ending = 0
         self.other_error = 0
-        self.suggested_filename = ''
-        self.intended_app = ''
-        self.intended_version = ''
+        self.suggested_filename = ""
+        self.intended_app = ""
+        self.intended_version = ""
         self.smart = 0
         self.fps = 0
 
         # own additions
-        self.app = 'OTR-Verwaltung3p'
+        self.app = "OTR-Verwaltung3p"
         self.errors = False
         self.cuts_seconds = []  # (start, duration) list
         self.cuts_frames = []  # (start, duration) list
         self.local_filename = None
-        self.quality = ''
+        self.quality = ""
 
     def upload(self, server, cutlist_hash):
         """ Uploads a cutlist to cutlist.at "
@@ -97,17 +113,17 @@ class Cutlist:
             Returns: error message, otherwise None
         """
 
-        clist = open(self.local_filename, 'r').read()
+        clist = open(self.local_filename, "r").read()
         try:
             response = requests.post(
                 server,
                 {"userid": cutlist_hash, "filename": os.path.basename(self.local_filename)},
-                files={"userfile[]": clist}
+                files={"userfile[]": clist},
             )
             self.log.debug(f"{response = }")
             self.log.debug(f"{response.text = }")
 
-            if 'erfolgreich' in response.text:
+            if "erfolgreich" in response.text:
                 return None
             else:
                 return response.text
@@ -143,24 +159,24 @@ class Cutlist:
 
         try:
             # configparser now reads local cutlist assuming utf-8 encoding
-            config_parser.read(self.local_filename, encoding='utf-8')
+            config_parser.read(self.local_filename, encoding="utf-8")
 
-            self.filename = config_parser.get('Info', 'SuggestedMovieName')
-            self.author = config_parser.get('Info', 'Author')
-            self.ratingbyauthor = int(config_parser.get('Info', 'RatingByAuthor'))
+            self.filename = config_parser.get("Info", "SuggestedMovieName")
+            self.author = config_parser.get("Info", "Author")
+            self.ratingbyauthor = int(config_parser.get("Info", "RatingByAuthor"))
             self.rating = 0
             self.ratingcount = 0
-            self.usercomment = config_parser.get('Info', 'UserComment')
-            self.countcuts = int(config_parser.get('General', 'NoOfCuts'))
-            self.actualcontent = config_parser.get('Info', 'ActualContent')
-            self.filename_original = config_parser.get('General', 'ApplyToFile')
+            self.usercomment = config_parser.get("Info", "UserComment")
+            self.countcuts = int(config_parser.get("General", "NoOfCuts"))
+            self.actualcontent = config_parser.get("Info", "ActualContent")
+            self.filename_original = config_parser.get("General", "ApplyToFile")
             for key, value in qualities.items():
                 if key in self.filename_original:
                     self.quality = value
 
         except Exception as e:
             self.log.error(f"Exception: {e}")
-            self.log.error("Malformed cutlist: ".format(self.local_filename))
+            self.log.error(f"Malformed cutlist: {self.local_filename}")
 
     def read_cuts(self):
         """ Reads cuts from local_filename.
@@ -174,7 +190,7 @@ class Cutlist:
         config_parser = configparser.ConfigParser()
 
         try:
-            config_parser.read(self.local_filename, encoding='utf-8')
+            config_parser.read(self.local_filename, encoding="utf-8")
         except configparser.ParsingError as message:
             self.log.info("Malformed cutlist: ", message)
 
@@ -211,9 +227,9 @@ class Cutlist:
         url = f"{server}rate.php?rate={self.id}&rating={rating}"
 
         try:
-            self.log.debug(f"Rate URL: {url}".replace(server.split('/')[3], '<FRED>'))
+            self.log.debug(f"Rate URL: {url}".replace(server.split("/")[3], "<FRED>"))
             message = urllib.request.urlopen(url).read()
-            self.log.debug(f"Rate message: {message}".replace(server.split('/')[3], '<FRED>'))
+            self.log.debug(f"Rate message: {message}".replace(server.split("/")[3], "<FRED>"))
 
             if "Cutlist wurde bewertet. Vielen Dank!" in message:
                 return True, message
@@ -226,55 +242,66 @@ class Cutlist:
         """ Writes a cutlist file to the instance's local_filename. """
         self.log.debug("Function starts")
         try:
-            with codecs.open(self.local_filename, 'w', 'UTF-8') as cutlist:
+            with codecs.open(self.local_filename, "w", "UTF-8") as cutlist:
 
-                cutlist.writelines([
-                    "[General]\n",
-                    f"Application={self.app}\n",
-                    f"Version={self.intended_version}\n",
-                    f"FramesPerSecond={self.fps:.2f}\n",
-                    f"IntendedCutApplicationName={intended_app_name}\n",
-                    f"IntendedCutApplication={self.intended_app}\n",
-                    f"VDUseSmartRendering={str(int(self.smart))}\n",
-                    "VDSmartRenderingCodecFourCC=0x53444646\n",
-                    "comment1=The following parts of the movie will be kept, the rest will be cut out.\n",
-                    "comment2=All values are given in seconds.\n",
-                    f"NoOfCuts={str(len(self.cuts_frames))}\n",
-                    f"ApplyToFile={Path(uncut_video).name}\n",
-                    f"OriginalFileSizeBytes={str(fileoperations.get_size(uncut_video))}\n",
-                    "\n",
-                    "[Info]\n",
-                    f"Author={self.author}\n",
-                    f"RatingByAuthor={str(self.ratingbyauthor)}\n",
-                    f"EPGError={str(int(self.wrong_content))}\n",
-                    f"ActualContent={str(self.actualcontent)}\n",
-                    f"MissingBeginning={str(int(self.missing_beginning))}\n",
-                    f"MissingEnding={str(int(self.missing_ending))}\n",
-                    "MissingVideo=0\n",
-                    "MissingAudio=0\n",
-                    f"OtherError={str(int(self.other_error))}\n",
-                    f"OtherErrorDescription={str(self.othererrordescription)}\n",
-                    f"SuggestedMovieName={str(self.suggested_filename)}\n",
-                    f"UserComment={str(self.usercomment)}\n",
-                    "\n"
-                ])
+                cutlist.writelines(
+                    [
+                        "[General]\n",
+                        f"Application={self.app}\n",
+                        f"Version={self.intended_version}\n",
+                        f"FramesPerSecond={self.fps:.2f}\n",
+                        f"IntendedCutApplicationName={intended_app_name}\n",
+                        f"IntendedCutApplication={self.intended_app}\n",
+                        f"VDUseSmartRendering={str(int(self.smart))}\n",
+                        "VDSmartRenderingCodecFourCC=0x53444646\n",
+                        "comment1=The following parts of the movie will be kept, the rest will be cut out.\n",
+                        "comment2=All values are given in seconds.\n",
+                        f"NoOfCuts={str(len(self.cuts_frames))}\n",
+                        f"ApplyToFile={Path(uncut_video).name}\n",
+                        f"OriginalFileSizeBytes={str(fileoperations.get_size(uncut_video))}\n",
+                        "\n",
+                        "[Info]\n",
+                        f"Author={self.author}\n",
+                        f"RatingByAuthor={str(self.ratingbyauthor)}\n",
+                        f"EPGError={str(int(self.wrong_content))}\n",
+                        f"ActualContent={str(self.actualcontent)}\n",
+                        f"MissingBeginning={str(int(self.missing_beginning))}\n",
+                        f"MissingEnding={str(int(self.missing_ending))}\n",
+                        "MissingVideo=0\n",
+                        "MissingAudio=0\n",
+                        f"OtherError={str(int(self.other_error))}\n",
+                        f"OtherErrorDescription={str(self.othererrordescription)}\n",
+                        f"SuggestedMovieName={str(self.suggested_filename)}\n",
+                        f"UserComment={str(self.usercomment)}\n",
+                        "\n",
+                    ]
+                )
 
                 for count, (start_frame, duration_frames) in enumerate(self.cuts_frames):
-                    cutlist.writelines([
-                        f"[Cut{count}]\n",
-                        f"Start={start_frame / self.fps:.2f}\n",
-                        f"StartFrame={start_frame}\n",
-                        f"Duration={duration_frames / self.fps:.2f}\n",
-                        f"DurationFrames={duration_frames}\n",
-                        "\n"
-                    ])
+                    cutlist.writelines(
+                        [
+                            f"[Cut{count}]\n",
+                            f"Start={start_frame / self.fps:.2f}\n",
+                            f"StartFrame={start_frame}\n",
+                            f"Duration={duration_frames / self.fps:.2f}\n",
+                            f"DurationFrames={duration_frames}\n",
+                            "\n",
+                        ]
+                    )
         except IOError:
             self.log.warning(f"Konnte Cutlist-Datei nicht erstellen: {self.local_filename}")
 
 
 # Other methods
-def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq,
-                      error_cb=None, cutlist_found_cb=None, get_all_qualities=None):
+def download_cutlists(
+    filename,
+    server,
+    choose_cutlists_by,
+    cutlist_mp4_as_hq,
+    error_cb=None,
+    cutlist_found_cb=None,
+    get_all_qualities=None,
+):
     """ Downloads all cutlists for the given file.
             filename            - movie filename
             server              - cutlist server
@@ -293,24 +320,23 @@ def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq,
         size1 = fileoperations.get_size(filename)
         # siehe http://www.otrforum.com/showthread.php?t=59666 :
         size2 = (size1 + 2 * 1024 ** 3) % (4 * 1024 ** 3) - 2 * 1024 ** 3
-        params = [{"ofsb": str(size1)},
-                  {"ofsb": str(size2)}]
+        params = [{"ofsb": str(size1)}, {"ofsb": str(size2)}]
         # urls = [baseurl + f"?ofsb={str(size1)}",
         #         baseurl + f"?ofsb={str(size2)}"]
 
     else:  # by name
         root = Path(filename).stem
         extension = Path(filename).suffix
-        if cutlist_mp4_as_hq and extension == '.mp4':
+        if cutlist_mp4_as_hq and extension == ".mp4":
             root += ".HQ"
 
         if get_all_qualities:
             for quality in [".HQ", ".HD"]:
                 if quality in root:
-                    root = root.replace(quality, '')
+                    root = root.replace(quality, "")
 
         params = [{"name": root}]
-        urls = [baseurl + f"?name={root}"]
+        # urls = [baseurl + f"?name={root}"]
 
     cutlists = []
 
@@ -319,7 +345,7 @@ def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq,
         try:
             # resp = urllib.request.urlopen(url)
             resp = requests.get(baseurl, params=param)
-            llog.debug(f"Download from: {resp.url}".replace(server.split('/')[3], '<FRED>'))
+            llog.debug(f"Download from: {resp.url}".replace(server.split("/")[3], "<FRED>"))
         except TimeoutError:
             if error_cb:
                 error_cb("Verbindungsprobleme")
@@ -328,7 +354,7 @@ def download_cutlists(filename, server, choose_cutlists_by, cutlist_mp4_as_hq,
         try:
             # noinspection PyUnresolvedReferences
             dom_cutlists = xml.dom.minidom.parseString(resp.text)
-            dom_cutlists = dom_cutlists.getElementsByTagName('cutlist')
+            dom_cutlists = dom_cutlists.getElementsByTagName("cutlist")
 
             # import xml.etree.ElementTree as Et
             # tree_cutlists = Et.fromstring(resp.text)
@@ -402,10 +428,10 @@ def __read_value(cutlist_element, node_name):
             return bad_string  # hopefully not bad anymore
     except Exception as e:
         llog.debug(f"Exception: {e}")
-        return ''
+        return ""
 
     llog.debug(f"Reading node {node_name} failed. Returning empty string.")
-    return ''
+    return ""
 
 
 def get_best_cutlist(cutlists):

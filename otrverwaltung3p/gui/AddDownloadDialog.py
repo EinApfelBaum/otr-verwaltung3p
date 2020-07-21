@@ -4,8 +4,10 @@
 # END LICENSE
 
 from gi import require_version
-require_version('Gtk', '3.0')
+
+require_version("Gtk", "3.0")
 from gi.repository import Gtk, GdkPixbuf
+
 # import base64
 # ~ import libtorrent as lt
 # import os
@@ -37,15 +39,15 @@ class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
 
         self.cutlists_treeview = CutlistsTreeView()
         self.cutlists_treeview.show()
-        self.cutlists_treeview.get_selection().connect('changed', self.treeview_cutlists_selection_changed)
-        self.builder.get_object('scrolledwindow_cutlists').add(self.cutlists_treeview)
+        self.cutlists_treeview.get_selection().connect("changed", self.treeview_cutlists_selection_changed)
+        self.builder.get_object("scrolledwindow_cutlists").add(self.cutlists_treeview)
 
         animation = GdkPixbuf.PixbufAnimation.new_from_file(otrvpath.get_image_path("spinner.gif"))
-        self.builder.get_object('image_spinner').set_from_animation(animation)
-        self.builder.get_object('image_spinner_download').set_from_animation(animation)
+        self.builder.get_object("image_spinner").set_from_animation(animation)
+        self.builder.get_object("image_spinner_download").set_from_animation(animation)
 
-        selection = self.builder.get_object('treeview_programs').get_selection()
-        selection.connect('changed', self.treeview_programs_selection_changed)
+        selection = self.builder.get_object("treeview_programs").get_selection()
+        selection.connect("changed", self.treeview_programs_selection_changed)
 
     # del_libtorrent ->
     """
@@ -302,7 +304,7 @@ class AddDownloadDialog(Gtk.Dialog, Gtk.Buildable):
 
 
 def new(gui, config, via_link, link=None):
-    glade_filename = otrvpath.getdatapath('ui', 'AddDownloadDialog.glade')
+    glade_filename = otrvpath.getdatapath("ui", "AddDownloadDialog.glade")
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)

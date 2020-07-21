@@ -18,17 +18,25 @@ import logging
 import os
 import re
 
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Pango, Gdk
+from gi import require_version
+
+require_version("Gtk", "3.0")
+from gi.repository import Gdk, Gtk, Pango
 
 from otrverwaltung3p import path as otrvpath
-from otrverwaltung3p.constants import Action, Status, Cut_action
+from otrverwaltung3p.constants import Action, Cut_action, Status
 from otrverwaltung3p.gui.widgets.FolderChooserComboBox import FolderChooserComboBox
 
-replacements = {"Ä": "Ae", "ä": "ae", "Ö": "Oe", "ö": "oe", "Ü": "Ue",
-                "ü": "ue", "ß": "ss"}
-fileextensions = ['.avi', '.mp4', '.mkv']
+replacements = {
+    "Ä": "Ae",
+    "ä": "ae",
+    "Ö": "Oe",
+    "ö": "oe",
+    "Ü": "Ue",
+    "ü": "ue",
+    "ß": "ss",
+}
+fileextensions = [".avi", ".mp4", ".mkv"]
 
 
 class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
@@ -54,7 +62,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     def __init__(self):
         Gtk.Dialog.__init__(self)
         self.log = logging.getLogger(self.__class__.__name__)
-        self.connect('key-press-event', self._do_keypress_event)
+        self.connect("key-press-event", self._do_keypress_event)
 
         self.__file_conclusions = None
         self.__file_conclusions_count = 0
@@ -74,17 +82,17 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         self.builder = builder
         self.builder.connect_signals(self)
 
-        self.obj('check_create_cutlist').modify_font(Pango.FontDescription("bold"))
+        self.obj("check_create_cutlist").modify_font(Pango.FontDescription("bold"))
 
         self.combobox_archive = FolderChooserComboBox(add_empty_entry=True)
-        self.obj('box_archive').pack_end(self.combobox_archive, True, True, 0)
-        self.widget_entry_suggested = self.obj('entry_suggested')
+        self.obj("box_archive").pack_end(self.combobox_archive, True, True, 0)
+        self.widget_entry_suggested = self.obj("entry_suggested")
 
-        for combobox in ['combobox_external_rating', 'combobox_own_rating']:
+        for combobox in ["combobox_external_rating", "combobox_own_rating"]:
             cell = Gtk.CellRendererText()
-            cell.set_property('ellipsize', Pango.EllipsizeMode.END)
+            cell.set_property("ellipsize", Pango.EllipsizeMode.END)
             self.obj(combobox).pack_start(cell, True)
-            self.obj(combobox).add_attribute(cell, 'text', 0)
+            self.obj(combobox).add_attribute(cell, "text", 0)
 
     # Convenience
 
@@ -98,13 +106,13 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         # <<<<<
 
         if len(file_conclusions) == 1:
-            self.obj('button_back').hide()
-            self.obj('button_forward').hide()
-            self.obj('label_count').hide()
+            self.obj("button_back").hide()
+            self.obj("button_forward").hide()
+            self.obj("label_count").hide()
             self.all_file_conclusions_seen = True  # TODO gcurse:WARN_NOT_ALL_SEEN
 
         self.combobox_archive.fill(archive_directory)
-        self.combobox_archive.connect('changed', self._on_combobox_archive_changed)
+        self.combobox_archive.connect("changed", self._on_combobox_archive_changed)
 
         self.show_conclusion(0)
 
@@ -113,7 +121,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         return self.__file_conclusions
 
     def __status_to_s(self, status, message):
-        string = ''
+        string = ""
 
         if status == Status.OK:
             string = "OK"
@@ -136,16 +144,16 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
               if 'Cutlist erstellen' is true. 'self.file_conclusion.cut.rename' holds the value of
               'comboboxentry_rename' (auto-updated by '_on_comboboxentry_rename_changed')
         """
-        if self.obj('check_create_cutlist').get_active():
-            if self.obj('entry_suggested').get_text() == "":
+        if self.obj("check_create_cutlist").get_active():
+            if self.obj("entry_suggested").get_text() == "":
                 edit_fname = self.file_conclusion.cut.rename
                 self.log.debug("edit_fname = {}".format(edit_fname))
                 # If Cancel button is clicked edit_fname is set to False. So check.
                 if edit_fname:
                     for ext in fileextensions:
                         if edit_fname.endswith(ext):
-                            edit_fname = edit_fname.replace(ext, '')
-                    self.obj('entry_suggested').set_text(edit_fname)
+                            edit_fname = edit_fname.replace(ext, "")
+                    self.obj("entry_suggested").set_text(edit_fname)
 
     ###
     # Controls
@@ -167,16 +175,27 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
 
     def _on_button_abort_clicked(self, widget, data=None):
         self.set_entry_suggested_on_close()
-        widgets_hidden = ['button_play_cut', 'box_rating', 'check_delete_uncut', 'box_rename',
-                          'box_archive', 'button_play', 'box_create_cutlist', 'hbox_replace']
+        widgets_hidden = [
+            "button_play_cut",
+            "box_rating",
+            "check_delete_uncut",
+            "box_rename",
+            "box_archive",
+            "button_play",
+            "box_create_cutlist",
+            "hbox_replace",
+        ]
         for widget in widgets_hidden:
             self.obj(widget).hide()
 
         self.file_conclusion.cut.status = Status.NOT_DONE
-        self.obj('check_upload_cutlist').set_active(False)
+        self.obj("check_upload_cutlist").set_active(False)
         self.file_conclusion.cut.rename = False
-        status, message = self.file_conclusion.cut.status, self.file_conclusion.cut.message
-        self.obj('label_cut_status').set_markup(self.__status_to_s(status, message))
+        status, message = (
+            self.file_conclusion.cut.status,
+            self.file_conclusion.cut.message,
+        )
+        self.obj("label_cut_status").set_markup(self.__status_to_s(status, message))
 
         if os.path.isfile(self.file_conclusion.cut_video):
             os.remove(self.file_conclusion.cut_video)
@@ -187,9 +206,11 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
             self.set_entry_suggested_on_close()
             self.app.filenames_locked = []
             self.close()
-        elif self.app.gui.question_box("Es wurden nicht alle Dateien geprüft!\n"
-                                       "Soll der Dialog trotzdem geschlossen werden?\n\n"
-                                       "Auch alle nicht geprüften Dateien werden dann geschnitten!"):
+        elif self.app.gui.question_box(
+            "Es wurden nicht alle Dateien geprüft!\n"
+            "Soll der Dialog trotzdem geschlossen werden?\n\n"
+            "Auch alle nicht geprüften Dateien werden dann geschnitten!"
+        ):
             self.set_entry_suggested_on_close()
             self.app.filenames_locked = []
             self.close()
@@ -201,69 +222,79 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     def show_conclusion(self, new_iter):
         self.conclusion_iter = new_iter
         self.file_conclusion = self.__file_conclusions[self.conclusion_iter]
-        self.obj('label_count').set_text("Zeige Datei %s/%s" % (str(new_iter + 1), len(self.__file_conclusions)))
+        self.obj("label_count").set_text("Zeige Datei %s/%s" % (str(new_iter + 1), len(self.__file_conclusions)))
 
         # basic show/hide
         action = self.file_conclusion.action
         self.show_all()
         widgets_hidden = []
         if action == Action.DECODE:
-            self.obj('box_buttons').show()  # hide all except play button
-            widgets_hidden = ['image_cut', 'label_cut', 'label_cut_status', 'button_play_cut',
-                              'box_rating', 'check_delete_uncut', 'box_rename', 'box_archive',
-                              'hbox_replace', ]
+            self.obj("box_buttons").show()  # hide all except play button
+            widgets_hidden = [
+                "image_cut",
+                "label_cut",
+                "label_cut_status",
+                "button_play_cut",
+                "box_rating",
+                "check_delete_uncut",
+                "box_rename",
+                "box_archive",
+                "hbox_replace",
+            ]
         elif action == Action.CUT:
-            widgets_hidden = ['image_decode', 'label_decode', 'label_decode_status']
+            widgets_hidden = ["image_decode", "label_decode", "label_decode_status"]
 
         for widget in widgets_hidden:
             self.obj(widget).hide()
 
         # enable back- and forward button?
-        self.obj('button_back').set_sensitive(not self.conclusion_iter == 0)
-        self.obj('button_forward').set_sensitive(
-            not (self.conclusion_iter + 1 == len(self.__file_conclusions)))
-        self.obj('button_abort').set_sensitive(action == Action.CUT
-                                               or action == Action.DECODEANDCUT
-                                               and self.file_conclusion.cut.status == Status.OK)
+        self.obj("button_back").set_sensitive(not self.conclusion_iter == 0)
+        self.obj("button_forward").set_sensitive(not (self.conclusion_iter + 1 == len(self.__file_conclusions)))
+        self.obj("button_abort").set_sensitive(
+            action == Action.CUT or action == Action.DECODEANDCUT and self.file_conclusion.cut.status == Status.OK
+        )
 
         # Fill cboxtext_snippets
-        snippets = self.app.config.get('general', 'snippets')
-        self.obj('cboxtext_snippets').remove_all()
-        for snippet in snippets.split('\n'):
-            self.obj('cboxtext_snippets').append_text(snippet)
-        self.obj('cboxtext_snippets').set_active(0)
+        snippets = self.app.config.get("general", "snippets")
+        self.obj("cboxtext_snippets").remove_all()
+        for snippet in snippets.split("\n"):
+            self.obj("cboxtext_snippets").append_text(snippet)
+        self.obj("cboxtext_snippets").set_active(0)
 
         # status message
         if action != Action.DECODE:
-            status, message = self.file_conclusion.cut.status, self.file_conclusion.cut.message
-            self.obj('label_cut_status').set_markup(self.__status_to_s(status, message))
-            self.obj('label_filename').set_markup(f"<b>{os.path.basename(self.file_conclusion.uncut_video)}</b>")
+            status, message = (
+                self.file_conclusion.cut.status,
+                self.file_conclusion.cut.message,
+            )
+            self.obj("label_cut_status").set_markup(self.__status_to_s(status, message))
+            self.obj("label_filename").set_markup(f"<b>{os.path.basename(self.file_conclusion.uncut_video)}</b>")
 
         if action != Action.CUT:
             status = self.file_conclusion.decode.status
             message = self.file_conclusion.decode.message
-            self.obj('label_decode_status').set_markup(self.__status_to_s(status, message))
-            self.obj('label_filename').set_markup(f"<b>{os.path.basename(self.file_conclusion.otrkey)}</b>")
+            self.obj("label_decode_status").set_markup(self.__status_to_s(status, message))
+            self.obj("label_filename").set_markup(f"<b>{os.path.basename(self.file_conclusion.otrkey)}</b>")
 
         # fine tuning
         if action == Action.DECODE:
-            self.obj('box_create_cutlist').hide()
+            self.obj("box_create_cutlist").hide()
 
         else:
-            cut_ok = (self.file_conclusion.cut.status == Status.OK)
+            cut_ok = self.file_conclusion.cut.status == Status.OK
             cut_action = self.file_conclusion.cut.cut_action
 
             # set visibility
-            self.obj('button_play').props.visible = cut_ok
-            self.obj('button_play_cut').props.visible = cut_ok
-            self.obj('box_archive').props.visible = cut_ok
+            self.obj("button_play").props.visible = cut_ok
+            self.obj("button_play_cut").props.visible = cut_ok
+            self.obj("box_archive").props.visible = cut_ok
 
-            self.obj('check_delete_uncut').props.visible = cut_ok
+            self.obj("check_delete_uncut").props.visible = cut_ok
             if cut_ok:
-                self.obj('check_delete_uncut').set_active(self.file_conclusion.cut.delete_uncut)
+                self.obj("check_delete_uncut").set_active(self.file_conclusion.cut.delete_uncut)
 
-            self.obj('box_rename').props.visible = cut_ok
-            self.obj('hbox_replace').props.visible = cut_ok
+            self.obj("box_rename").props.visible = cut_ok
+            self.obj("hbox_replace").props.visible = cut_ok
 
             if cut_ok:
                 rename_list = []
@@ -273,40 +304,42 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                 # print(f"273: self.file_conclusion.cut_video {self.file_conclusion.cut_video}")
                 for ext in fileextensions:
                     if full_fname.endswith(ext):
-                        full_fname = full_fname.replace(ext, '')
+                        full_fname = full_fname.replace(ext, "")
 
-                if self.app.config.get('general', 'rename_cut'):
+                if self.app.config.get("general", "rename_cut"):
                     auto_fname = self.rename_by_schema(os.path.basename(self.file_conclusion.cut_video))
                     for ext in fileextensions:
                         if auto_fname.endswith(ext):
-                            auto_fname = auto_fname.replace(ext, '')
+                            auto_fname = auto_fname.replace(ext, "")
                     rename_list.append(full_fname)
                     rename_list_index = 0
-                    rename_list_entries['full_fname'] = rename_list_index
+                    rename_list_entries["full_fname"] = rename_list_index
                     rename_list.append(auto_fname)
                     rename_list_index += 1
-                    rename_list_entries['auto_fname'] = rename_list_index
+                    rename_list_entries["auto_fname"] = rename_list_index
                 else:
                     rename_list.append(full_fname)
                     rename_list_index = 0
-                    rename_list_entries['full_fname'] = rename_list_index
+                    rename_list_entries["full_fname"] = rename_list_index
 
                 re_fname = re.compile(r".*?\.[0-9]{2}\.[a-zA-Z0-9_-]*")
                 try:
                     bare_fname = re_fname.match(os.path.basename(self.file_conclusion.uncut_video)).group()
                 except Exception as e:
                     # TODO gcurse: Make it possible to cut already cut files
-                    self.log.info(f"Filename does not match the otr pattern.\n"
-                                  f"This happens when cutting a already cut file.\nException: {e}")
+                    self.log.info(
+                        f"Filename does not match the otr pattern.\n"
+                        f"This happens when cutting a already cut file.\nException: {e}"
+                    )
                 if self.file_conclusion.cut.cutlist.filename:  # suggested moviename
                     sugg_fname = self.file_conclusion.cut.cutlist.filename
                     for ext in fileextensions:
                         if sugg_fname.endswith(ext):
-                            sugg_fname = sugg_fname.replace(ext, '')
+                            sugg_fname = sugg_fname.replace(ext, "")
                     if sugg_fname != bare_fname:
                         rename_list.append(sugg_fname)
                         rename_list_index += 1
-                        rename_list_entries['sugg_fname'] = rename_list_index
+                        rename_list_entries["sugg_fname"] = rename_list_index
                         # ~ rename_label = self.obj('label5')
                         # set background of label 'Umbenennen' to yellow to indicate there is
                         # a suggested filename in cutlist. Set font color to black
@@ -315,25 +348,25 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
 
                 edit_fname = self.file_conclusion.cut.rename
                 self.log.debug("edit_fname = {}".format(edit_fname))
-                if not edit_fname == "" and not edit_fname.replace('.mkv', '') in rename_list:
+                if not edit_fname == "" and not edit_fname.replace(".mkv", "") in rename_list:
                     rename_list.append(edit_fname)  # Edited filename
                     rename_list_index += 1
-                    rename_list_entries['edit_fname'] = rename_list_index
+                    rename_list_entries["edit_fname"] = rename_list_index
 
-                self.obj('comboboxentry_rename').remove_all()
-                self.app.gui.set_model_from_list(self.obj('comboboxentry_rename'), rename_list)
+                self.obj("comboboxentry_rename").remove_all()
+                self.app.gui.set_model_from_list(self.obj("comboboxentry_rename"), rename_list)
                 # set active row
-                if 'edit_fname' in rename_list_entries:
-                    self.obj('comboboxentry_rename').set_active(rename_list_entries['edit_fname'])
+                if "edit_fname" in rename_list_entries:
+                    self.obj("comboboxentry_rename").set_active(rename_list_entries["edit_fname"])
                 else:
-                    if self.app.config.get('general', 'ignore_suggested_filename'):
-                        if self.app.config.get('general', 'rename_cut'):
-                            self.obj('comboboxentry_rename').set_active(rename_list_entries['auto_fname'])
+                    if self.app.config.get("general", "ignore_suggested_filename"):
+                        if self.app.config.get("general", "rename_cut"):
+                            self.obj("comboboxentry_rename").set_active(rename_list_entries["auto_fname"])
                         else:
-                            self.obj('comboboxentry_rename').set_active(rename_list_entries['full_fname'])
+                            self.obj("comboboxentry_rename").set_active(rename_list_entries["full_fname"])
                     else:
-                        if 'sugg_fname' in rename_list_entries:
-                            self.obj('comboboxentry_rename').set_active(rename_list_entries['sugg_fname'])
+                        if "sugg_fname" in rename_list_entries:
+                            self.obj("comboboxentry_rename").set_active(rename_list_entries["sugg_fname"])
 
                 archive_to = self.file_conclusion.cut.archive_to
                 if not archive_to:
@@ -344,41 +377,43 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                             self.combobox_archive.set_active(count)
 
             if cut_action == Cut_action.BEST_CUTLIST or cut_action == Cut_action.CHOOSE_CUTLIST:
-                self.obj('box_rating').props.visible = cut_ok
-                self.obj('combobox_external_rating').set_active(self.file_conclusion.cut.my_rating + 1)
+                self.obj("box_rating").props.visible = cut_ok
+                self.obj("combobox_external_rating").set_active(self.file_conclusion.cut.my_rating + 1)
 
                 if cut_ok:
-                    text = self.obj('label_cut_status').get_text()
-                    text += (f"\nMit Cutlist {self.file_conclusion.cut.cutlist.id} geschnitten: "
-                             f"Autor: <b>{self.file_conclusion.cut.cutlist.author}</b>, "
-                             f"Wertung: <b>{self.file_conclusion.cut.cutlist.rating}</b>"
-                             f"\nKommentar: <b>{self.file_conclusion.cut.cutlist.usercomment}</b>")
-                    self.obj('label_cut_status').set_markup(text)
+                    text = self.obj("label_cut_status").get_text()
+                    text += (
+                        f"\nMit Cutlist {self.file_conclusion.cut.cutlist.id} geschnitten: "
+                        f"Autor: <b>{self.file_conclusion.cut.cutlist.author}</b>, "
+                        f"Wertung: <b>{self.file_conclusion.cut.cutlist.rating}</b>"
+                        f"\nKommentar: <b>{self.file_conclusion.cut.cutlist.usercomment}</b>"
+                    )
+                    self.obj("label_cut_status").set_markup(text)
             else:
-                self.obj('box_rating').hide()
+                self.obj("box_rating").hide()
 
             if cut_action == Cut_action.MANUALLY:
-                self.obj('box_create_cutlist').props.visible = cut_ok
+                self.obj("box_create_cutlist").props.visible = cut_ok
 
                 if cut_ok:
-                    self.obj('check_create_cutlist').set_active(self.file_conclusion.cut.create_cutlist)
-                    self.obj('check_upload_cutlist').set_active(self.file_conclusion.cut.upload_cutlist)
+                    self.obj("check_create_cutlist").set_active(self.file_conclusion.cut.create_cutlist)
+                    self.obj("check_upload_cutlist").set_active(self.file_conclusion.cut.upload_cutlist)
 
                     c = self.file_conclusion.cut.cutlist
-                    self.obj('combobox_own_rating').set_active(c.ratingbyauthor + 1)
-                    self.obj('check_wrong_content').set_active(c.wrong_content)
-                    self.obj('entry_actual_content').set_text(c.actualcontent)
-                    self.obj('check_missing_beginning').set_active(c.missing_beginning)
-                    self.obj('check_missing_ending').set_active(c.missing_ending)
-                    self.obj('check_other_error').set_active(c.other_error)
-                    self.obj('entry_other_error_description').set_text(c.othererrordescription)
-                    self.obj('entry_suggested').set_text(c.suggested_filename)
-                    self.obj('entry_comment').set_text(c.usercomment)
+                    self.obj("combobox_own_rating").set_active(c.ratingbyauthor + 1)
+                    self.obj("check_wrong_content").set_active(c.wrong_content)
+                    self.obj("entry_actual_content").set_text(c.actualcontent)
+                    self.obj("check_missing_beginning").set_active(c.missing_beginning)
+                    self.obj("check_missing_ending").set_active(c.missing_ending)
+                    self.obj("check_other_error").set_active(c.other_error)
+                    self.obj("entry_other_error_description").set_text(c.othererrordescription)
+                    self.obj("entry_suggested").set_text(c.suggested_filename)
+                    self.obj("entry_comment").set_text(c.usercomment)
             else:
-                self.obj('box_create_cutlist').hide()
+                self.obj("box_create_cutlist").hide()
 
         if action != Action.CUT:
-            self.obj('button_play').props.visible = (self.file_conclusion.decode.status == Status.OK)
+            self.obj("button_play").props.visible = self.file_conclusion.decode.status == Status.OK
 
         # Reset cursor of MainWindow
         self.app.gui.main_window.get_window().set_cursor(None)
@@ -391,13 +426,14 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     def _do_keypress_event(widget, event, *args):
         keyname = Gdk.keyval_name(event.keyval).upper()
         if event.type == Gdk.EventType.KEY_PRESS:
-            if keyname == 'ESCAPE':
+            if keyname == "ESCAPE":
                 return True
         return False
 
     def _on_button_play_clicked(self, widget, data=None):
-        if self.file_conclusion.action == Action.DECODE or (self.file_conclusion.action == Action.DECODEANDCUT
-                                                            and self.file_conclusion.cut.status != Status.OK):
+        if self.file_conclusion.action == Action.DECODE or (
+            self.file_conclusion.action == Action.DECODEANDCUT and self.file_conclusion.cut.status != Status.OK
+        ):
             self.app.play_file(self.file_conclusion.uncut_video)
         else:
             self.app.play_file(self.file_conclusion.cut_video)
@@ -423,17 +459,17 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
 
     def _on_button_spaces_clicked(self, widget, data=None):
         self.log.debug("Function start")
-        name = self.obj('comboboxentry_rename').get_active_text()
-        new_name = name.replace(' ', '_')
-        self.obj('comboboxtext-entry').set_text(new_name)
+        name = self.obj("comboboxentry_rename").get_active_text()
+        new_name = name.replace(" ", "_")
+        self.obj("comboboxtext-entry").set_text(new_name)
 
     def _on_button_umlauts_clicked(self, widget, data=None):
         self.log.debug("Function start")
-        name = self.obj('comboboxentry_rename').get_active_text()
+        name = self.obj("comboboxentry_rename").get_active_text()
         for key, value in replacements.items():
             if key in name:
                 name = name.replace(key, value)
-        self.obj('comboboxtext-entry').set_text(name)
+        self.obj("comboboxtext-entry").set_text(name)
 
     def _on_combobox_archive_changed(self, widget, data=None):
         if self.file_conclusion != Action.DECODE:
@@ -445,8 +481,8 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         create_cutlist = widget.get_active()
         self.log.info("cut.create_cutlist = {}".format(create_cutlist))
         self.file_conclusion.cut.create_cutlist = create_cutlist
-        self.obj('box_create_cutlist_options').set_sensitive(create_cutlist)
-        self.obj('check_upload_cutlist').set_sensitive(create_cutlist)
+        self.obj("box_create_cutlist_options").set_sensitive(create_cutlist)
+        self.obj("check_upload_cutlist").set_sensitive(create_cutlist)
 
     def _on_check_upload_cutlist_toggled(self, widget, data=None):
         upload_cutlist = widget.get_active()
@@ -491,20 +527,20 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         self.file_conclusion.cut.cutlist.usercomment = widget.get_text()
 
     def _on_btn_prepend_clicked(self, entry_comment):
-        text = self.obj('cboxtext_snippets').get_active_text()
+        text = self.obj("cboxtext_snippets").get_active_text()
         comment = entry_comment.get_text()
         comment = text + comment
         entry_comment.set_text(comment)
 
     def _on_btn_append_clicked(self, entry_comment):
-        text = self.obj('cboxtext_snippets').get_active_text()
+        text = self.obj("cboxtext_snippets").get_active_text()
         comment = entry_comment.get_text()
         comment = comment + text
         entry_comment.set_text(comment)
 
 
 def NewConclusionDialog(app):
-    glade_filename = otrvpath.getdatapath('ui', 'ConclusionDialog.glade')
+    glade_filename = otrvpath.getdatapath("ui", "ConclusionDialog.glade")
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)

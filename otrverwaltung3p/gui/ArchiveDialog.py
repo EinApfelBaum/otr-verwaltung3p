@@ -15,8 +15,10 @@
 # END LICENSE
 
 from os.path import basename
+
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 from otrverwaltung3p import path as otrvpath
@@ -36,7 +38,7 @@ class ArchiveDialog(Gtk.Dialog, Gtk.Buildable):
 
         self.combobox_folder = FolderChooserComboBox()
         self.combobox_folder.show()
-        self.builder.get_object('vbox_main').pack_end(self.combobox_folder, False, False, 0)
+        self.builder.get_object("vbox_main").pack_end(self.combobox_folder, False, False, 0)
 
     #
     # Convenience methods
@@ -47,17 +49,17 @@ class ArchiveDialog(Gtk.Dialog, Gtk.Buildable):
         self.combobox_folder.fill(archive_directory)
         self.combobox_folder.set_active(0)
 
-        self.builder.get_object('label_files').set_text(str(len(filenames)) + " Datei(en) zum Archivieren ausgewählt.")
+        self.builder.get_object("label_files").set_text(str(len(filenames)) + " Datei(en) zum Archivieren ausgewählt.")
 
-        self.builder.get_object('liststore_rename').clear()
+        self.builder.get_object("liststore_rename").clear()
         for filename in filenames:
-            self.builder.get_object('liststore_rename').append([basename(filename), filename])
+            self.builder.get_object("liststore_rename").append([basename(filename), filename])
 
         result = Gtk.Dialog.run(self)
 
         if result == Gtk.ResponseType.OK:
             renamed_filenames = {}
-            for row in self.builder.get_object('liststore_rename'):
+            for row in self.builder.get_object("liststore_rename"):
                 renamed, original = row[0], row[1]
                 renamed_filenames[original] = renamed
             return True, renamed_filenames, self.combobox_folder.get_active_path()
@@ -70,11 +72,11 @@ class ArchiveDialog(Gtk.Dialog, Gtk.Buildable):
 
     def new_name_cell_edited(self, cell, path, new_text):
         # update new name of file in model
-        self.builder.get_object('liststore_rename')[path][0] = new_text
+        self.builder.get_object("liststore_rename")[path][0] = new_text
 
 
 def NewArchiveDialog():
-    glade_filename = otrvpath.getdatapath('ui', 'ArchiveDialog.glade')
+    glade_filename = otrvpath.getdatapath("ui", "ArchiveDialog.glade")
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)

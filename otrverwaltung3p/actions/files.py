@@ -15,8 +15,7 @@
 # END LICENSE
 
 from os import mkdir
-from os.path import dirname, join, isdir, splitext
-import re
+from os.path import dirname, isdir, join, splitext
 
 from otrverwaltung3p import fileoperations
 from otrverwaltung3p.actions.baseaction import BaseAction
@@ -39,9 +38,9 @@ class Delete(BaseAction):
             self.update_list = True
             for f in filenames:
                 if f.endswith("otrkey"):
-                    fileoperations.move_file(f, self.__app.config.get('general', 'folder_trash_otrkeys'))
+                    fileoperations.move_file(f, self.__app.config.get("general", "folder_trash_otrkeys"))
                 else:
-                    fileoperations.move_file(f, self.__app.config.get('general', 'folder_trash_avis'))
+                    fileoperations.move_file(f, self.__app.config.get("general", "folder_trash_avis"))
         self.__app.filenames_locked = []
 
 
@@ -74,13 +73,13 @@ class Restore(BaseAction):
     def do(self, filenames, cut_action=None):
         for f in filenames:
             if f.endswith("otrkey"):
-                fileoperations.move_file(f, self.__app.config.get('general', 'folder_new_otrkeys'))
+                fileoperations.move_file(f, self.__app.config.get("general", "folder_new_otrkeys"))
             elif f.endswith("ac3"):
-                fileoperations.move_file(f, self.__app.config.get('general', 'folder_uncut_avis'))
+                fileoperations.move_file(f, self.__app.config.get("general", "folder_uncut_avis"))
             elif self.__app.regex_uncut_video.match(f):
-                fileoperations.move_file(f, self.__app.config.get('general', 'folder_uncut_avis'))
+                fileoperations.move_file(f, self.__app.config.get("general", "folder_uncut_avis"))
             else:
-                fileoperations.move_file(f, self.__app.config.get('general', 'folder_cut_avis'))
+                fileoperations.move_file(f, self.__app.config.get("general", "folder_cut_avis"))
 
 
 class Rename(BaseAction):
@@ -98,7 +97,7 @@ class Rename(BaseAction):
                 extension = splitext(f)[1]
 
                 new_name = new_names[f]
-                new_name = join(dirname(f), new_name.replace('/', '_'))
+                new_name = join(dirname(f), new_name.replace("/", "_"))
 
                 if f.endswith(extension) and not new_name.endswith(extension):
                     new_name += extension

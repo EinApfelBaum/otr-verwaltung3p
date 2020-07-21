@@ -16,9 +16,9 @@
 
 from os.path import basename
 
-import gi
+from gi import require_version
 
-gi.require_version('Gtk', '3.0')
+require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 from otrverwaltung3p import path as otrvpath
@@ -42,7 +42,7 @@ class RenameDialog(Gtk.Dialog, Gtk.Buildable):
             entries[f].set_text(basename(f))
             entries[f].set_activates_default(True)
             entries[f].show()
-            self.builder.get_object('vboxRename').pack_start(entries[f], False, True, 0)
+            self.builder.get_object("vboxRename").pack_start(entries[f], False, True, 0)
 
         self.set_title(title)
         response = self.run()
@@ -55,13 +55,13 @@ class RenameDialog(Gtk.Dialog, Gtk.Buildable):
 
         # remove entry widgets
         for f in entries:
-            self.builder.get_object('vboxRename').remove(entries[f])
+            self.builder.get_object("vboxRename").remove(entries[f])
 
         return response == Gtk.ResponseType.OK, new_names
 
 
 def NewRenameDialog():
-    glade_filename = otrvpath.getdatapath('ui', 'RenameDialog.glade')
+    glade_filename = otrvpath.getdatapath("ui", "RenameDialog.glade")
 
     builder = Gtk.Builder()
     builder.add_from_file(glade_filename)

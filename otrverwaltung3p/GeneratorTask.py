@@ -14,8 +14,9 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-from gi.repository import GLib
 import threading
+
+from gi.repository import GLib
 
 
 class GeneratorTask(object):

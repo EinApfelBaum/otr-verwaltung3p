@@ -14,17 +14,17 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-import gi
+from gi import require_version
 
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject, Gdk, GLib
-import sys
+require_version("Gdk", "3.0")
+require_version("Gtk", "3.0")
+from gi.repository import GLib, GObject, Gdk, Gtk
 
 
 class EntrySearchToolItem(Gtk.ToolItem):
     __gsignals__ = {
-        'clear': (GObject.SIGNAL_RUN_FIRST, None, ()),
-        'search': (GObject.SIGNAL_RUN_FIRST, None, (str,))
+        "clear": (GObject.SIGNAL_RUN_FIRST, None, ()),
+        "search": (GObject.SIGNAL_RUN_FIRST, None, (str,)),
     }
 
     def __init__(self, default_search_text):

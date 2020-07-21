@@ -14,14 +14,15 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-from appdirs import AppDirs
 import filecmp
 import os.path
 import shutil
 import sys
 
+from appdirs import AppDirs
 
-data_dir = '../data'
+
+data_dir = "../data"
 dirs = AppDirs("otrverwaltung3p", "")
 
 
@@ -49,11 +50,11 @@ def get_path(filename=""):
 
 def get_plugin_paths():
     plugins_home = get_storage_dir("plugins")
-    plugins_usr = os.path.join(data_dir, 'plugins')
+    plugins_usr = os.path.join(data_dir, "plugins")
     return plugins_home, plugins_usr
 
 
-def get_gui_path(filename=''):
+def get_gui_path(filename=""):
     return os.path.join(get_path(), "gui", filename)
 
 
@@ -66,7 +67,7 @@ def get_tools_path(filename=""):
 
 
 def get_internal_virtualdub_path(filename=""):
-    if sys.platform == 'win32':
+    if sys.platform == "win32":
         return None
     vdub_path = getdatapath("tools/intern-VirtualDub", filename)
     if os.path.expanduser("~") in os.path.abspath(sys.path[0]):
@@ -74,20 +75,30 @@ def get_internal_virtualdub_path(filename=""):
         if os.path.exists(vdub_path):
             return vdub_path
         else:
-            return  None
+            return None
     else:
         # started from the system
         if os.path.exists(vdub_path):
-            if os.path.exists(os.path.join(dirs.user_data_dir, "intern-VirtualDub", 'VERSION')):
-                if not filecmp.cmp(getdatapath("tools/intern-VirtualDub", 'VERSION'),
-                                   os.path.join(dirs.user_data_dir, "intern-VirtualDub", 'VERSION')):
+            if os.path.exists(os.path.join(dirs.user_data_dir, "intern-VirtualDub", "VERSION")):
+                if not filecmp.cmp(
+                    getdatapath("tools/intern-VirtualDub", "VERSION"),
+                    os.path.join(dirs.user_data_dir, "intern-VirtualDub", "VERSION"),
+                ):
                     # Version ist nicht aktuell
-                    shutil.rmtree(os.path.join(dirs.user_data_dir, "intern-VirtualDub"), ignore_errors=True)
-                    shutil.copytree(getdatapath('tools/intern-VirtualDub'),
-                                    os.path.join(dirs.user_data_dir, "intern-VirtualDub"), symlinks=True)
+                    shutil.rmtree(
+                        os.path.join(dirs.user_data_dir, "intern-VirtualDub"), ignore_errors=True,
+                    )
+                    shutil.copytree(
+                        getdatapath("tools/intern-VirtualDub"),
+                        os.path.join(dirs.user_data_dir, "intern-VirtualDub"),
+                        symlinks=True,
+                    )
             else:
-                shutil.copytree(getdatapath('tools/intern-VirtualDub'),
-                                os.path.join(dirs.user_data_dir, "intern-VirtualDub"), symlinks=True)
+                shutil.copytree(
+                    getdatapath("tools/intern-VirtualDub"),
+                    os.path.join(dirs.user_data_dir, "intern-VirtualDub"),
+                    symlinks=True,
+                )
 
             return os.path.join(dirs.user_data_dir, "intern-VirtualDub", filename)
         else:

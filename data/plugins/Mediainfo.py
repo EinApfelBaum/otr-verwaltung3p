@@ -23,9 +23,7 @@ class Mediainfo(Plugin):
 
     def enable(self):
         icon_size = self.app.config.get("general", "icon_size")
-        icon = GdkPixbuf.Pixbuf.new_from_file_at_size(
-            self.get_path("mediainfo.svg"), icon_size, icon_size
-        )
+        icon = GdkPixbuf.Pixbuf.new_from_file_at_size(self.get_path("mediainfo.svg"), icon_size, icon_size)
         self.toolbutton = self.gui.main_window.add_toolbutton(
             Gtk.Image.new_from_pixbuf(icon),
             "MediaInfo",
@@ -39,9 +37,7 @@ class Mediainfo(Plugin):
         def configurate(self, dialog):
             dialog.vbox.set_spacing(4)
 
-            dialog.vbox.pack_start(
-                Gtk.Label("Aufrufname der mediainfo GUI:"), expand=False
-            )
+            dialog.vbox.pack_start(Gtk.Label("Aufrufname der mediainfo GUI:"), expand=False)
 
             entry_mediainfo = Gtk.Entry()
             dialog.vbox.pack_start(entry_mediainfo, expand=False)

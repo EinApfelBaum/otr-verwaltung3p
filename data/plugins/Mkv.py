@@ -55,9 +55,7 @@ class Mkv(Plugin):
             )
         )
         self.toolbutton = self.gui.main_window.add_toolbutton(
-            image,
-            "In Mkv umwandeln",
-            [Section.VIDEO_CUT, Section.ARCHIVE, Section.VIDEO_UNCUT],
+            image, "In Mkv umwandeln", [Section.VIDEO_CUT, Section.ARCHIVE, Section.VIDEO_UNCUT],
         )
         self.toolbutton.connect("clicked", self.on_mkv_clicked)
 
@@ -72,80 +70,42 @@ class Mkv(Plugin):
         def on_checkbutton_toggled(widget, data=None):
             self.Config[data] = widget.get_active()
             if data == "EncodeAudioToAAC":
-                checkbutton_encode_only_first_audio.set_sensitive(
-                    self.Config["EncodeAudioToAAC"]
-                )
-                checkbutton_downmix_stereo.set_sensitive(
-                    self.Config["EncodeAudioToAAC"]
-                )
-                checkbutton_normalize_audio.set_sensitive(
-                    self.Config["EncodeAudioToAAC"]
-                )
+                checkbutton_encode_only_first_audio.set_sensitive(self.Config["EncodeAudioToAAC"])
+                checkbutton_downmix_stereo.set_sensitive(self.Config["EncodeAudioToAAC"])
+                checkbutton_normalize_audio.set_sensitive(self.Config["EncodeAudioToAAC"])
 
         # checkbutton for dumping media files
-        checkbutton_dump_avis = Gtk.CheckButton(
-            "Originaldatei automatisch in Mülleimer verschieben?"
-        )
-        dialog.vbox.pack_start(
-            checkbutton_dump_avis, expand=False, fill=False, padding=0
-        )
+        checkbutton_dump_avis = Gtk.CheckButton("Originaldatei automatisch in Mülleimer verschieben?")
+        dialog.vbox.pack_start(checkbutton_dump_avis, expand=False, fill=False, padding=0)
         checkbutton_dump_avis.connect("toggled", on_checkbutton_toggled, "DumpAVIs")
 
         # checkbutton for eraseing media file
-        checkbutton_dump_avis_delete = Gtk.CheckButton(
-            "Originaldatei im Mülleimer gleich für immer löschen?"
-        )
-        dialog.vbox.pack_start(
-            checkbutton_dump_avis_delete, expand=False, fill=False, padding=0
-        )
-        checkbutton_dump_avis_delete.connect(
-            "toggled", on_checkbutton_toggled, "DumpAVIs_delete"
-        )
+        checkbutton_dump_avis_delete = Gtk.CheckButton("Originaldatei im Mülleimer gleich für immer löschen?")
+        dialog.vbox.pack_start(checkbutton_dump_avis_delete, expand=False, fill=False, padding=0)
+        checkbutton_dump_avis_delete.connect("toggled", on_checkbutton_toggled, "DumpAVIs_delete")
 
         # checkbutton encode audio aac
         checkbutton_encode_audio = Gtk.CheckButton("Audiospuren zu AAC umwandeln?")
-        dialog.vbox.pack_start(
-            checkbutton_encode_audio, expand=False, fill=False, padding=0
-        )
-        checkbutton_encode_audio.connect(
-            "toggled", on_checkbutton_toggled, "EncodeAudioToAAC"
-        )
+        dialog.vbox.pack_start(checkbutton_encode_audio, expand=False, fill=False, padding=0)
+        checkbutton_encode_audio.connect("toggled", on_checkbutton_toggled, "EncodeAudioToAAC")
 
         # checkbutton encode first audio only
-        checkbutton_encode_only_first_audio = Gtk.CheckButton(
-            "AAC: nur erste Audiospur kodieren?"
-        )
+        checkbutton_encode_only_first_audio = Gtk.CheckButton("AAC: nur erste Audiospur kodieren?")
         checkbutton_encode_only_first_audio.set_margin_left(margin)
-        dialog.vbox.pack_start(
-            checkbutton_encode_only_first_audio, expand=False, fill=False, padding=0
-        )
-        checkbutton_encode_only_first_audio.connect(
-            "toggled", on_checkbutton_toggled, "EncodeOnlyFirstAudioToAAC"
-        )
+        dialog.vbox.pack_start(checkbutton_encode_only_first_audio, expand=False, fill=False, padding=0)
+        checkbutton_encode_only_first_audio.connect("toggled", on_checkbutton_toggled, "EncodeOnlyFirstAudioToAAC")
 
         # checkbutton down mix first audio stream
-        checkbutton_downmix_stereo = Gtk.CheckButton(
-            "AAC: erste Audiospur automatisch auf Stereo downmixen?"
-        )
+        checkbutton_downmix_stereo = Gtk.CheckButton("AAC: erste Audiospur automatisch auf Stereo downmixen?")
         checkbutton_downmix_stereo.set_margin_left(margin)
-        dialog.vbox.pack_start(
-            checkbutton_downmix_stereo, expand=False, fill=False, padding=0
-        )
-        checkbutton_downmix_stereo.connect(
-            "toggled", on_checkbutton_toggled, "DownMixStereo"
-        )
+        dialog.vbox.pack_start(checkbutton_downmix_stereo, expand=False, fill=False, padding=0)
+        checkbutton_downmix_stereo.connect("toggled", on_checkbutton_toggled, "DownMixStereo")
 
         # checkbutton encode normalize aac
-        checkbutton_normalize_audio = Gtk.CheckButton(
-            "AAC: Audio bei Konvertierung normalisieren?"
-        )
+        checkbutton_normalize_audio = Gtk.CheckButton("AAC: Audio bei Konvertierung normalisieren?")
         checkbutton_normalize_audio.set_margin_left(margin)
-        dialog.vbox.pack_start(
-            checkbutton_normalize_audio, expand=False, fill=False, padding=0
-        )
-        checkbutton_normalize_audio.connect(
-            "toggled", on_checkbutton_toggled, "NormalizeAudio"
-        )
+        dialog.vbox.pack_start(checkbutton_normalize_audio, expand=False, fill=False, padding=0)
+        checkbutton_normalize_audio.connect("toggled", on_checkbutton_toggled, "NormalizeAudio")
 
         # checkbutton remove other audio streams than ac3_stream
         checkbutton_remove_other_audio_streams_than_ac3 = Gtk.CheckButton(
@@ -154,10 +114,7 @@ class Mkv(Plugin):
             "und downgemixt, wenn oben angewählt."
         )
         dialog.vbox.pack_start(
-            checkbutton_remove_other_audio_streams_than_ac3,
-            expand=False,
-            fill=False,
-            padding=0,
+            checkbutton_remove_other_audio_streams_than_ac3, expand=False, fill=False, padding=0,
         )
         checkbutton_remove_other_audio_streams_than_ac3.connect(
             "toggled", on_checkbutton_toggled, "RemoveOtherAudioStreamsThanAC3"
@@ -167,19 +124,13 @@ class Mkv(Plugin):
         checkbutton_dump_avis.set_active(self.Config["DumpAVIs"])
         checkbutton_dump_avis_delete.set_active(self.Config["DumpAVIs_delete"])
         checkbutton_encode_audio.set_active(self.Config["EncodeAudioToAAC"])
-        checkbutton_encode_only_first_audio.set_active(
-            self.Config["EncodeOnlyFirstAudioToAAC"]
-        )
-        checkbutton_encode_only_first_audio.set_sensitive(
-            self.Config["EncodeAudioToAAC"]
-        )
+        checkbutton_encode_only_first_audio.set_active(self.Config["EncodeOnlyFirstAudioToAAC"])
+        checkbutton_encode_only_first_audio.set_sensitive(self.Config["EncodeAudioToAAC"])
         checkbutton_downmix_stereo.set_active(self.Config["DownMixStereo"])
         checkbutton_downmix_stereo.set_sensitive(self.Config["EncodeAudioToAAC"])
         checkbutton_normalize_audio.set_active(self.Config["NormalizeAudio"])
         checkbutton_normalize_audio.set_sensitive(self.Config["EncodeAudioToAAC"])
-        checkbutton_remove_other_audio_streams_than_ac3.set_active(
-            self.Config["RemoveOtherAudioStreamsThanAC3"]
-        )
+        checkbutton_remove_other_audio_streams_than_ac3.set_active(self.Config["RemoveOtherAudioStreamsThanAC3"])
 
         return dialog
 
@@ -207,9 +158,7 @@ class Mkv(Plugin):
 
                 # analyse file
                 cutter = Cut(self.app, self.gui)
-                fps, dar, sar, max_frames, ac3_stream, error = cutter.analyse_mediafile(
-                    filename
-                )
+                fps, dar, sar, max_frames, ac3_stream, error = cutter.analyse_mediafile(filename)
                 if fps is None:
                     self.errors[filename] = error
                     continue
@@ -218,10 +167,7 @@ class Mkv(Plugin):
                 if self.Config["EncodeAudioToAAC"]:
                     # norm volume ausrechnen
                     yield 5, count
-                    if (
-                        self.Config["NormalizeAudio"]
-                        and self.Config["EncodeAudioToAAC"]
-                    ):
+                    if self.Config["NormalizeAudio"] and self.Config["EncodeAudioToAAC"]:
                         vol, error = self.get_norm_volume(filename)
                     else:
                         vol = 1.0
@@ -229,9 +175,7 @@ class Mkv(Plugin):
                     # ffmpeg pass
                     yield 1, count
                     self.progress = 0
-                    ffmpegpass_file = fileoperations.make_unique_filename(
-                        os.path.splitext(filename)[0] + "_remux.mkv"
-                    )
+                    ffmpegpass_file = fileoperations.make_unique_filename(os.path.splitext(filename)[0] + "_remux.mkv")
 
                     # convert first audio stream to aac
                     if self.Config["EncodeOnlyFirstAudioToAAC"]:
@@ -315,9 +259,7 @@ class Mkv(Plugin):
                     args[8:8] = map
 
                     try:
-                        process = subprocess.Popen(
-                            args, stderr=subprocess.PIPE, universal_newlines=True
-                        )
+                        process = subprocess.Popen(args, stderr=subprocess.PIPE, universal_newlines=True)
                     except OSError:
                         self.errors[filename] = "FFMPEG (intern) wurde nicht gefunden!"
                         continue
@@ -330,11 +272,7 @@ class Mkv(Plugin):
                         line = sproc.stderr.readline()
                         m = re.search(infos_match, line)
                         if m and max_frames != 0:
-                            frame = (
-                                float(m.group(1)) * 3600
-                                + float(m.group(2)) * 60
-                                + float(m.group(3))
-                            ) * fps
+                            frame = (float(m.group(1)) * 3600 + float(m.group(2)) * 60 + float(m.group(3))) * fps
                             next = float(frame / float(max_frames)) * 100
                             if next > self.progress:
                                 self.progress = next
@@ -347,9 +285,7 @@ class Mkv(Plugin):
                     if exit_code == 0:
                         pass
                     else:
-                        self.errors[
-                            filename
-                        ] = "Fehler beim Erzeugen der MP4 Datei durch FFMPEG"
+                        self.errors[filename] = "Fehler beim Erzeugen der MP4 Datei durch FFMPEG"
                         if os.path.exists(ffmpegpass_file):
                             fileoperations.remove_file(ffmpegpass_file)
                         continue
@@ -367,9 +303,7 @@ class Mkv(Plugin):
                 # ~ filename = filename.replace(umlaut, umlaute2[umlaute.index(umlaut)])
                 # ~ os.rename(filenameOld, filename)
 
-                mkvpass_file = fileoperations.make_unique_filename(
-                    os.path.splitext(filename)[0] + ".mkv"
-                )
+                mkvpass_file = fileoperations.make_unique_filename(os.path.splitext(filename)[0] + ".mkv")
 
                 if self.Config["EncodeAudioToAAC"]:
                     args = [
@@ -465,14 +399,12 @@ class Mkv(Plugin):
                             fileoperations.remove_file(filename)
                         else:
                             new_filename = os.path.join(
-                                self.app.config.get("general", "folder_trash_avis"),
-                                os.path.basename(filename),
+                                self.app.config.get("general", "folder_trash_avis"), os.path.basename(filename),
                             )
                             if os.path.exists(new_filename):
                                 fileoperations.remove_file(new_filename)
                             fileoperations.move_file(
-                                filename,
-                                self.app.config.get("general", "folder_trash_avis"),
+                                filename, self.app.config.get("general", "folder_trash_avis"),
                             )
                 else:
                     error = sproc.stdout.readline().decode()
@@ -487,17 +419,13 @@ class Mkv(Plugin):
 
         def loop(state, argument):
             if state == 0:
-                self.gui.main_window.set_tasks_text(
-                    f"Analysiere Datei ... {str(argument + 1)}/{str(len(filenames))}"
-                )
+                self.gui.main_window.set_tasks_text(f"Analysiere Datei ... {str(argument + 1)}/{str(len(filenames))}")
             elif state == 1:
                 self.gui.main_window.set_tasks_text(
                     f"Audiospur in AAC wandeln ... {str(argument + 1)}/{str(len(filenames))}"
                 )
             elif state == 2:
-                self.gui.main_window.set_tasks_text(
-                    f"MKV erstellen ...  {str(argument + 1)}/{str(len(filenames))}"
-                )
+                self.gui.main_window.set_tasks_text(f"MKV erstellen ...  {str(argument + 1)}/{str(len(filenames))}")
             elif state == 5:
                 self.gui.main_window.set_tasks_text(
                     f"Normalisierungswert berechnen ... {str(argument + 1)}/{str(len(filenames))}"
@@ -508,9 +436,7 @@ class Mkv(Plugin):
         def complete():
             if len(self.errors) == 0:
                 self.gui.main_window.change_status(
-                    0,
-                    f"Erfolgreich {str(self.success)}/{str(len(filenames))} "
-                    f"Dateien umgewandelt.",
+                    0, f"Erfolgreich {str(self.success)}/{str(len(filenames))} " f"Dateien umgewandelt.",
                 )
 
             else:
@@ -535,16 +461,7 @@ class Mkv(Plugin):
                         1.0, error_message """
         try:
             process1 = subprocess.Popen(
-                [
-                    otrvpath.get_tools_path("intern-ffmpeg"),
-                    "-loglevel",
-                    "quiet",
-                    "-i",
-                    filename,
-                    "-f",
-                    "sox",
-                    "-",
-                ],
+                [otrvpath.get_tools_path("intern-ffmpeg"), "-loglevel", "quiet", "-i", filename, "-f", "sox", "-",],
                 stdout=subprocess.PIPE,
             )
         except OSError:

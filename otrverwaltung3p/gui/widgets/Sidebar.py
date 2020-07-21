@@ -15,17 +15,15 @@
 # END LICENSE
 
 
+from gi import require_version
 
-import gi
-
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GObject
+require_version("Gdk", "3.0")
+require_version("Gtk", "3.0")
+from gi.repository import GObject, Gdk, Gtk
 
 
 class SidebarButton(Gtk.Button):
-    __gsignals__ = {
-        'element-clicked': (GObject.SIGNAL_RUN_FIRST, None, (int,))
-    }
+    __gsignals__ = {"element-clicked": (GObject.SIGNAL_RUN_FIRST, None, (int,))}
 
     def __init__(self, title, id, padding):
         Gtk.Button.__init__(self)
@@ -36,7 +34,7 @@ class SidebarButton(Gtk.Button):
         self.search = None
 
         self.set_relief(Gtk.ReliefStyle.NONE)
-        self.set_property('can_focus', False)  # why?
+        self.set_property("can_focus", False)  # why?
 
         # HBox
         #   - [ Alignment(Label) | (image) ]
@@ -52,21 +50,21 @@ class SidebarButton(Gtk.Button):
         self.add(self.box)
 
         def on_clicked(button):
-            self.emit('element-clicked', self.id)
+            self.emit("element-clicked", self.id)
 
-        self.connect('clicked', on_clicked)
+        self.connect("clicked", on_clicked)
 
     def add_widget(self, widget):
         self.box.pack_end(widget, False, False, 0)
 
     def update_text(self):
         if self.active:
-            markup = '<b>%s</b>' % self.title
+            markup = "<b>%s</b>" % self.title
         else:
             markup = self.title
 
         if self.search is not None:
-            markup += ' <b>(%i)</b>' % self.search
+            markup += " <b>(%i)</b>" % self.search
 
         self.label.set_markup(markup)
 
@@ -80,9 +78,7 @@ class SidebarButton(Gtk.Button):
 
 
 class Sidebar(Gtk.EventBox):
-    __gsignals__ = {
-        'element-clicked': (GObject.SIGNAL_RUN_FIRST, None, (int,))
-    }
+    __gsignals__ = {"element-clicked": (GObject.SIGNAL_RUN_FIRST, None, (int,))}
 
     def __init__(self):
         Gtk.EventBox.__init__(self)
@@ -94,13 +90,13 @@ class Sidebar(Gtk.EventBox):
 
         self.elements = []
 
-        style = self.get_style()
-        self.color = Gdk.color_parse('#AFAFAF')
+        # style = self.get_style()
+        self.color = Gdk.color_parse("#AFAFAF")
         self.modify_bg(Gtk.StateFlags.NORMAL, self.color)
 
     def on_element_clicked(self, element, id):
         self.set_active(id)
-        self.emit('element-clicked', id)
+        self.emit("element-clicked", id)
 
     # public
     def set_active(self, id):
@@ -139,7 +135,7 @@ class Sidebar(Gtk.EventBox):
             element = SidebarButton(title, id, 10)
 
         self.elements.append(element)
-        element.connect('element-clicked', self.on_element_clicked)
+        element.connect("element-clicked", self.on_element_clicked)
 
         self.vbox.pack_start(element, False, False, 0)
 

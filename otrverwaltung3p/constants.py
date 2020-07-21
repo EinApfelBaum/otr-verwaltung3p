@@ -14,8 +14,10 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
+
 class Section:
     """ Die verschiedenen Ansichten """
+
     PLANNING = 6
     DOWNLOAD = 7
     """ Geplante Sendungen"""
@@ -79,7 +81,17 @@ class Format:
     HD0 = 7  # old HD 2011, core < 125
     MP40 = 8  # old mp4 2011, core < 125
 
-    reverse_dict = {0: 'AVI', 1: 'HQ', 2: 'MP4', 3: 'HD', 4: 'AC3', 5: 'HD2', 6: 'HQ0', 7: 'HD0', 8: 'MP40'}
+    reverse_dict = {
+        0: "AVI",
+        1: "HQ",
+        2: "MP4",
+        3: "HD",
+        4: "AC3",
+        5: "HD2",
+        6: "HQ0",
+        7: "HD0",
+        8: "MP40",
+    }
 
     @staticmethod
     def to_string(format_constant):

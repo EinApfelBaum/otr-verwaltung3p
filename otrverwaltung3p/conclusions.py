@@ -14,15 +14,14 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-from otrverwaltung3p.constants import Action
-import os.path
 import logging
+import os.path
 
-from otrverwaltung3p.cutlists import Cutlist
-from otrverwaltung3p.constants import Action, Status
-from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p import fileoperations
+from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p.GeneratorTask import GeneratorTask
+from otrverwaltung3p.constants import Action, Status
+from otrverwaltung3p.cutlists import Cutlist
 
 
 class Decode:
@@ -85,16 +84,17 @@ class ConclusionsManager:
         else:
             text = f"{len(self.conclusions)} geschnittene Dateien anzeigen."
 
-        if self.app.config.get('general', 'show_conclusiondialog_after_cutting'):
+        if self.app.config.get("general", "show_conclusiondialog_after_cutting"):
             self.show_conclusions()
         else:
-            self.app.gui.main_window.builder.get_object('button_show_conclusion').set_label(text)
-            self.app.gui.main_window.builder.get_object('box_conclusion').show()
+            self.app.gui.main_window.builder.get_object("button_show_conclusion").set_label(text)
+            self.app.gui.main_window.builder.get_object("box_conclusion").show()
 
     def show_conclusions(self):
-        conclusions = self.app.gui.dialog_conclusion.run_(self.conclusions, self.app.rename_by_schema,
-                                                          self.app.config.get('general', 'folder_archive'))
-        self.app.gui.main_window.builder.get_object('box_conclusion').hide()
+        conclusions = self.app.gui.dialog_conclusion.run_(
+            self.conclusions, self.app.rename_by_schema, self.app.config.get("general", "folder_archive"),
+        )
+        self.app.gui.main_window.builder.get_object("box_conclusion").hide()
         self.conclusions = []
 
         # create cutlists
@@ -104,7 +104,7 @@ class ConclusionsManager:
             if conclusion.action == Action.DECODE:
                 continue
 
-            self.log.debug("for file ".format(conclusion.uncut_video))
+            self.log.debug(f"for file {conclusion.uncut_video}")
 
             # rename
             if conclusion.cut.rename:
@@ -113,8 +113,9 @@ class ConclusionsManager:
                 if not conclusion.cut.rename.endswith(extension):
                     conclusion.cut.rename += extension
 
-                new_filename = os.path.join(self.app.config.get('general', 'folder_cut_avis'),
-                                            conclusion.cut.rename.replace('/', '_'))
+                new_filename = os.path.join(
+                    self.app.config.get("general", "folder_cut_avis"), conclusion.cut.rename.replace("/", "_"),
+                )
                 new_filename = fileoperations.make_unique_filename(new_filename)
 
                 if conclusion.cut_video != new_filename:
@@ -123,51 +124,58 @@ class ConclusionsManager:
             # move cut video to archive
             self.log.debug("Move to archive?")
             if conclusion.cut.status == Status.OK and conclusion.cut.archive_to:
-                self.log.debug("conclusion.cut.archive_to = true")
                 fileoperations.move_file(conclusion.cut_video, conclusion.cut.archive_to)
+                self.log.debug("True")
+            else:
+                self.log.debug("False")
 
             # move uncut video to trash if it's ok
-            self.log.debug("Move to trash?")
             if conclusion.cut.status == Status.OK and conclusion.cut.delete_uncut:
-                self.log.debug("true")
+                self.log.debug("Move to trash: True")
                 if os.path.exists(conclusion.uncut_video):
                     # move to trash
-                    target = self.app.config.get('general', 'folder_trash_avis')
+                    target = self.app.config.get("general", "folder_trash_avis")
                     conclusion.uncut_video = fileoperations.move_file(conclusion.uncut_video, target)
                     if os.path.exists(conclusion.ac3_file):
-                        target = self.app.config.get('general', 'folder_trash_avis')
+                        target = self.app.config.get("general", "folder_trash_avis")
                         fileoperations.move_file(conclusion.ac3_file, target)
+                else:
+                    self.log.debug("Move to trash: False")
 
                 # remove local cutlists
-                self.log.debug("Remove local cutlist?")
-                if self.app.config.get('general', 'delete_cutlists'):
-                    self.log.debug("true")
+                if self.app.config.get("general", "delete_cutlists"):
+                    self.log.debug("Remove local cutlist: True")
                     if conclusion.cut.cutlist.local_filename:
                         if os.path.exists(conclusion.cut.cutlist.local_filename):
                             fileoperations.remove_file(conclusion.cut.cutlist.local_filename)
+                else:
+                    self.log.debug("Remove local cutlist: False")
 
-            self.log.debug("Create cutlist?")
             if conclusion.cut.create_cutlist:
-                self.log.debug("true")
+                self.log.debug("Create cutlist: True")
                 if "VirtualDub" in conclusion.cut.cutlist.intended_app:
                     intended_app_name = "VirtualDub"
                 else:
                     intended_app_name = "Avidemux"
 
                 if not conclusion.cut.cutlist.local_filename:
-                    path_uncut_avis = self.app.config.get('general', 'folder_uncut_avis')
-                    conclusion.cut.cutlist.local_filename = \
-                        os.path.join(path_uncut_avis, os.path.basename(conclusion.uncut_video) + ".cutlist")
+                    path_uncut_avis = self.app.config.get("general", "folder_uncut_avis")
+                    conclusion.cut.cutlist.local_filename = os.path.join(
+                        path_uncut_avis, os.path.basename(conclusion.uncut_video) + ".cutlist",
+                    )
 
-                conclusion.cut.cutlist.author = self.app.config.get('general', 'cutlist_username')
-                conclusion.cut.cutlist.intended_version = open(otrvpath.getdatapath("VERSION"), 'r').read().strip()
-                conclusion.cut.cutlist.smart = self.app.config.get('general', 'smart')
+                conclusion.cut.cutlist.author = self.app.config.get("general", "cutlist_username")
+                conclusion.cut.cutlist.intended_version = open(otrvpath.getdatapath("VERSION"), "r").read().strip()
+                conclusion.cut.cutlist.smart = self.app.config.get("general", "smart")
 
-                conclusion.cut.cutlist.write_local_cutlist(conclusion.uncut_video, intended_app_name,
-                                                           conclusion.cut.my_rating)
+                conclusion.cut.cutlist.write_local_cutlist(
+                    conclusion.uncut_video, intended_app_name, conclusion.cut.my_rating
+                )
 
                 if conclusion.cut.upload_cutlist:
                     cutlists.append(conclusion.cut.cutlist)
+            else:
+                self.log.debug("Create cutlist: False")
 
         # upload cutlists:
         def upload():
@@ -175,17 +183,18 @@ class ConclusionsManager:
 
             count = len(cutlists)
             for cutlist in cutlists:
-                error_message = cutlist.upload(self.app.config.get('general', 'server'),
-                                               self.app.config.get('general', 'cutlist_hash'))
+                error_message = cutlist.upload(
+                    self.app.config.get("general", "server"), self.app.config.get("general", "cutlist_hash"),
+                )
                 if error_message:
                     error_messages.append(error_message)
                 else:
-                    if self.app.config.get('general', 'delete_cutlists'):
+                    if self.app.config.get("general", "delete_cutlists"):
                         fileoperations.remove_file(cutlist.local_filename)
                 # ~ self.log.debug("Counter: {}, Count: {}".format(counter, count))
                 # ~ if counter < count:
-                    # ~ self.log.debug("Multiple cutlists: Next upload delayed.")
-                    # ~ time.sleep(1.1)
+                # ~ self.log.debug("Multiple cutlists: Next upload delayed.")
+                # ~ time.sleep(1.1)
 
             # message = "Es wurden %s/%s Cutlisten hochgeladen!" % (str(count - len(error_messages)), str(count))
             message = f"Es wurden {str(count - len(error_messages))}/{str(count)} Cutlisten hochgeladen!"
@@ -197,6 +206,7 @@ class ConclusionsManager:
         if len(cutlists) > 0:
             self.log.debug("Upload cutlists")
             if self.app.gui.question_box("Soll(en) %s Cutlist(en) hochgeladen werden?" % len(cutlists)):
+
                 def change_status(message):
                     self.app.gui.main_window.change_status(0, message)
 
@@ -213,8 +223,9 @@ class ConclusionsManager:
 
                 if conclusion.cut.my_rating > -1:
                     self.log.debug("Rate with ", conclusion.cut.my_rating)
-                    success, message = conclusion.cut.cutlist.rate(conclusion.cut.my_rating,
-                                                                   self.app.config.get('general', 'server'))
+                    success, message = conclusion.cut.cutlist.rate(
+                        conclusion.cut.my_rating, self.app.config.get("general", "server"),
+                    )
                     if success:
                         count += 1
                     else:
