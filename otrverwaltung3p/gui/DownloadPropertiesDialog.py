@@ -3,9 +3,9 @@
 # This file is in the public domain
 # END LICENSE
 
-import gi
+from gi import require_version
 
-gi.require_version("Gtk", "3.0")
+require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 from otrverwaltung3p.constants import DownloadTypes
@@ -133,7 +133,7 @@ class DownloadPropertiesDialog(Gtk.Dialog, Gtk.Buildable):
         self.clipboard(self.builder.get_object("label_link_torrentinfo").get_text())
 
 
-def NewDownloadPropertiesDialog():
+def new():
     glade_filename = otrvpath.getdatapath("ui", "DownloadPropertiesDialog.glade")
 
     builder = Gtk.Builder()

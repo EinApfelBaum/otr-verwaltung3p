@@ -147,7 +147,7 @@ class CutDialog(Gtk.Dialog, Gtk.Buildable):
             self.response(Cut_action.MANUALLY)
 
 
-def NewCutDialog(app, gui):
+def new(app, gui):
     glade_filename = otrvpath.getdatapath("ui", "CutDialog.glade")
 
     builder = Gtk.Builder()

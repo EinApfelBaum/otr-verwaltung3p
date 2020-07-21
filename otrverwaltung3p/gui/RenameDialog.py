@@ -60,7 +60,7 @@ class RenameDialog(Gtk.Dialog, Gtk.Buildable):
         return response == Gtk.ResponseType.OK, new_names
 
 
-def NewRenameDialog():
+def new():
     glade_filename = otrvpath.getdatapath("ui", "RenameDialog.glade")
 
     builder = Gtk.Builder()

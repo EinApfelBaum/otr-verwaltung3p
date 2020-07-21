@@ -773,7 +773,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     def on_treeview_download_row_activated(self, treeview, path, view_colum, data=None):
         iter = treeview.get_model().get_iter(path)
         download = treeview.get_model().get_value(iter, 0)
-        dialog = DownloadPropertiesDialog.NewDownloadPropertiesDialog()
+        dialog = DownloadPropertiesDialog.new()
         dialog.run(download)
         if dialog.changed:
             download.stop()

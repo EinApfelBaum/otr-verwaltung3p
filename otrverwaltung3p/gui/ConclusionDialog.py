@@ -20,7 +20,9 @@ import re
 
 from gi import require_version
 
+require_version("GdkPixbuf", "2.0")
 require_version("Gtk", "3.0")
+require_version("Pango", "1.0")
 from gi.repository import Gdk, Gtk, Pango
 
 from otrverwaltung3p import path as otrvpath
@@ -539,7 +541,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         entry_comment.set_text(comment)
 
 
-def NewConclusionDialog(app):
+def new(app):
     glade_filename = otrvpath.getdatapath("ui", "ConclusionDialog.glade")
 
     builder = Gtk.Builder()

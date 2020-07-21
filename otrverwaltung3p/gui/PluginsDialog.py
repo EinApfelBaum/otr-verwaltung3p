@@ -16,6 +16,7 @@
 
 from gi import require_version
 
+require_version("GdkPixbuf", "2.0")
 require_version("Gtk", "3.0")
 from gi.repository import GdkPixbuf, Gtk
 
@@ -92,7 +93,7 @@ class PluginsDialog(Gtk.Dialog, Gtk.Buildable):
         dialog.hide()
 
 
-def NewPluginsDialog(gui):
+def new(gui):
     glade_filename = otrvpath.getdatapath("ui", "PluginsDialog.glade")
 
     builder = Gtk.Builder()

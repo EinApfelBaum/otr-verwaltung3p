@@ -14,13 +14,12 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
-from os.path import basename
 import datetime
 import time
 
-import gi
+from gi import require_version
 
-gi.require_version("Gtk", "3.0")
+require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 from otrverwaltung3p import path as otrvpath
@@ -31,7 +30,7 @@ class PlanningDialog(Gtk.Dialog, Gtk.Buildable):
 
     def __init__(self):
         Gtk.Dialog.__init__(self)
-        pass
+        self.builder = None
 
     def do_parser_finished(self, builder):
         self.builder = builder
@@ -40,7 +39,12 @@ class PlanningDialog(Gtk.Dialog, Gtk.Buildable):
         # fill combobox
         store = Gtk.ListStore(str)
         # ToDo maybe move this to glade file
-        stations = "ARD ZDF Sat.1 Pro7 RTL kabel1 VOX RTL2 SWR WDR NDR MDR RBB HR BR BR alpha SuperRTL Tele5 DMAX 3sat ARTE PHOENIX EinsExtra EinsPlus EinsFestival ZDFdokukanal ZDFinfokanal ZDFtheaterkanal ComedyCentral 9live DASVIERTE Nickelodeon KIKA Eurosport DSF GIGA VIVA MTV N24 n-tv BBC World CNN TRT"
+        stations = (
+            "ARD ZDF Sat.1 Pro7 RTL kabel1 VOX RTL2 SWR WDR NDR MDR RBB HR BR BR alpha SuperRTL Tele5 DMAX "
+            "3sat ARTE PHOENIX EinsExtra EinsPlus EinsFestival ZDFdokukanal ZDFinfokanal ZDFtheaterkanal "
+            "ComedyCentral 9live DASVIERTE Nickelodeon KIKA Eurosport DSF GIGA VIVA MTV N24 n-tv BBC World "
+            "CNN TRT"
+        )
         for station in stations.split(" "):
             store.append([station])
 
@@ -93,7 +97,8 @@ class PlanningDialog(Gtk.Dialog, Gtk.Buildable):
         # do not allow: ',' and ';'
         broadcast = self.builder.get_object("entry_broadcast").get_text().replace(",", "_").replace(";", "_")
 
-        # Note that month is zero-based (i.e it allowed values are 0-11) while selected_day is one-based (i.e. allowed values are 1-31).
+        # Note that month is zero-based (i.e it allowed values are 0-11) while selected_day is one-based
+        # (i.e. allowed values are 1-31).
         year, month, day = self.builder.get_object("calendar").get_date()
         hour, minute = self.builder.get_object("entry_time").get_text().split(":")
         dt = datetime.datetime(year, month + 1, day, int(hour), int(minute))
@@ -105,7 +110,7 @@ class PlanningDialog(Gtk.Dialog, Gtk.Buildable):
         return broadcast, int(stamp), station
 
 
-def NewPlanningDialog(gui):
+def new(gui):
     glade_filename = otrvpath.getdatapath("ui", "PlanningDialog.glade")
 
     builder = Gtk.Builder()

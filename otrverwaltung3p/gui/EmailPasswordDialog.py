@@ -53,7 +53,7 @@ class EmailPasswordDialog(Gtk.Dialog, Gtk.Buildable):
         )
 
 
-def NewEmailPasswordDialog(app):
+def new(app):
     glade_filename = otrvpath.getdatapath("ui", "EmailPasswordDialog.glade")
 
     builder = Gtk.Builder()

@@ -18,6 +18,7 @@ import os
 
 from gi import require_version
 
+require_version("GdkPixbuf", "2.0")
 require_version("Gtk", "3.0")
 from gi.repository import GdkPixbuf, Gtk
 
@@ -54,25 +55,25 @@ class Gui:
         self.preferences_window.bind_config(app)
         set_transient_modal(self, self.preferences_window)
 
-        self.dialog_archive = ArchiveDialog.NewArchiveDialog()
+        self.dialog_archive = ArchiveDialog.new()
         set_transient_modal(self, self.dialog_archive)
 
-        self.dialog_conclusion = ConclusionDialog.NewConclusionDialog(app)
+        self.dialog_conclusion = ConclusionDialog.new(app)
         set_transient_modal(self, self.dialog_conclusion)
 
-        self.dialog_cut = CutDialog.NewCutDialog(app, self)
+        self.dialog_cut = CutDialog.new(app, self)
         set_transient_modal(self, self.dialog_cut)
 
-        self.dialog_email_password = EmailPasswordDialog.NewEmailPasswordDialog(app)
+        self.dialog_email_password = EmailPasswordDialog.new(app)
         set_transient_modal(self, self.dialog_email_password)
 
-        self.dialog_rename = RenameDialog.NewRenameDialog()
+        self.dialog_rename = RenameDialog.new()
         set_transient_modal(self, self.dialog_rename)
 
-        self.dialog_planning = PlanningDialog.NewPlanningDialog(self)
+        self.dialog_planning = PlanningDialog.new(self)
         set_transient_modal(self, self.dialog_planning)
 
-        self.dialog_plugins = PluginsDialog.NewPluginsDialog(self)
+        self.dialog_plugins = PluginsDialog.new(self)
         set_transient_modal(self, self.dialog_plugins)
 
         for window in [self.main_window]:

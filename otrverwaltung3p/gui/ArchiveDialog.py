@@ -30,7 +30,8 @@ class ArchiveDialog(Gtk.Dialog, Gtk.Buildable):
 
     def __init__(self):
         Gtk.Dialog.__init__(self)
-        pass
+        self.builder = None
+        self.combobox_folder = None
 
     def do_parser_finished(self, builder):
         self.builder = builder
@@ -75,7 +76,7 @@ class ArchiveDialog(Gtk.Dialog, Gtk.Buildable):
         self.builder.get_object("liststore_rename")[path][0] = new_text
 
 
-def NewArchiveDialog():
+def new():
     glade_filename = otrvpath.getdatapath("ui", "ArchiveDialog.glade")
 
     builder = Gtk.Builder()
