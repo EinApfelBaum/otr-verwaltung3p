@@ -1134,8 +1134,8 @@ class App:
 
             if errstr != "":
                 if "Kritisch" in errstr:
-                    self.gui.message_info_box(
-                        f"<span color='yellow'>{errstr}</span>\n"
+                    self.gui.message_error_box(
+                        f"<span color='red'>{errstr}</span>\n"
                         "Bitte installieren Sie das/die Programm(e).\n\n"
                         "OTR-Verwaltung3p muss beendet werden."
                     )

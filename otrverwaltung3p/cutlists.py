@@ -120,8 +120,8 @@ class Cutlist:
                 {"userid": cutlist_hash, "filename": os.path.basename(self.local_filename)},
                 files={"userfile[]": clist},
             )
-            self.log.debug(f"{response = }")
-            self.log.debug(f"{response.text = }")
+            self.log.debug(f"response: {response}")
+            self.log.debug(f"response.text: {response.text}")
 
             if "erfolgreich" in response.text:
                 return None
@@ -137,7 +137,7 @@ class Cutlist:
             Returns: error message, otherwise None
         """
         self.local_filename = video_filename
-        self.log.debug(f"{video_filename = }")
+        self.log.debug(f"video_filename: {video_filename}")
         count = 0
 
         while os.path.exists(self.local_filename + ".cutlist"):
