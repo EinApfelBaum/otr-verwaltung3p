@@ -17,7 +17,8 @@
 import datetime
 import logging
 
-# import os
+import os
+
 # import sys
 import time
 import webbrowser
@@ -797,7 +798,10 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         webbrowser.open("https://github.com/EinApfelBaum/otr-verwaltung3p/wiki")
 
     def _on_menu_help_about_activate(self, widget, data=None):
-        version = open(otrvpath.getdatapath("VERSION"), "r").read().strip()
+        try:
+            version = open(otrvpath.getdatapath("VERSION-git"), "r").read().strip()
+        except FileNotFoundError:
+            version = open(otrvpath.getdatapath("VERSION"), "r").read().strip()
         # script_root_dir = os.path.abspath(os.path.realpath(sys.argv[0]) + "/../..")
         authors = [
             "EinApfelBaum https://github.com/EinApfelBaum",
@@ -814,14 +818,14 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             "B. Elbers",
         ]
 
-        license = "GPL version 3, see http://www.gnu.org/licenses/gpl-3.0.html#content"
+        license_ = "GPL version 3, see http://www.gnu.org/licenses/gpl-3.0.html#content"
 
         about_dialog = Gtk.AboutDialog(
             parent=self.app.gui.main_window,
             program_name=self.app.app_name,
             version=version,
             copyright="\xa9 2010 - " + str(datetime.datetime.now().year) + " B. Elbers and others",
-            license=license,
+            license=license_,
             website="https://github.com/EinApfelBaum/otr-verwaltung3p/wiki",
             comments="Verwalten und Schneiden der Dateien von onlinetvrecorder.com",
             authors=authors,

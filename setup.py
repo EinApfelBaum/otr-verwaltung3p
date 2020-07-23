@@ -16,6 +16,7 @@
 import fileinput
 import glob
 import os
+import shutil
 import sys
 
 from setuptools import Distribution
@@ -31,8 +32,8 @@ def update_data_path(path=None, oldvalue=None):
                     if not oldvalue:  # update to prefix, store oldvalue
                         oldvalue = line
                         if sys.platform == "win32":
-                            line = f"data_dir = '{path}'\n"
-                        line = f"data_dir = '{path}'\n"
+                            line = f'data_dir = "{path}"\n'
+                        line = f'data_dir = "{path}"\n'
                     else:  # restore oldvalue
                         line = f"{oldvalue}"
                 print(line, end="")
@@ -73,12 +74,14 @@ class InstallCommand(install):
             prefixed_path = os.path.join("/msys64", prefix[1:], "share/otrverwaltung3p")
         else:
             prefixed_path = os.path.join(prefix, "share/otrverwaltung3p")
-        previous_datapath = update_data_path(path=prefixed_path)
+        shutil.copy("otrverwaltung3p/path.py", "otrverwaltung3p/path.py.org")
+        _ = update_data_path(path=prefixed_path)
         create_desktop_file(prefixed_path)
 
         install.run(self)
 
-        _ = update_data_path(oldvalue=previous_datapath)
+        # _ = update_data_path(oldvalue=previous_datapath)
+        shutil.move("otrverwaltung3p/path.py.org", "otrverwaltung3p/path.py")
         os.remove("otrverwaltung3p.desktop")
 
     @staticmethod
@@ -98,7 +101,7 @@ class InstallCommand(install):
             ("share/otrverwaltung3p/plugins", glob.glob("data/plugins/[!_]*.svg")),
             ("share/otrverwaltung3p/ui", glob.glob("data/ui/[!xml]*")),
             ("share/otrverwaltung3p/ui/xml", glob.glob("data/ui/xml/*.xml")),
-            ("share/otrverwaltung3p", ["data/VERSION"]),
+            ("share/otrverwaltung3p", glob.glob("data/VERSION*")),
             ("share/doc/otrverwaltung3p", ["CHANGELOG.md", "CHANGELOG.de.md"]),
             ("share/applications", ["otrverwaltung3p.desktop"]),
         ]
