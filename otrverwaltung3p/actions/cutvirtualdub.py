@@ -16,6 +16,7 @@
 # END LICENSE
 
 import os
+import shutil
 import subprocess
 import time
 
@@ -64,13 +65,10 @@ class CutVirtualdub(Cut):
             return None, error
 
         # find wine
-        def cmd_exists(x):
-            any(os.access(os.path.join(pathx, x), os.X_OK) for pathx in os.environ["PATH"].split(os.pathsep))
-
-        if cmd_exists("wineconsole"):
-            winecommand = "wineconsole"
-        elif cmd_exists("wine"):
-            winecommand = "wine"
+        if shutil.which("wineconsole"):
+            winecommand = shutil.which("wineconsole")
+        elif shutil.which("wine"):
+            winecommand = shutil.which("wine")
         else:
             return None, "Wine konnte nicht aufgerufen werden."
 
