@@ -470,7 +470,7 @@ class Cut(BaseAction):
         error = "Es konnten keine Video Infos der zu bearbeitenden Datei ausgelesen werden."
         return None, None, None, None, None, error
 
-    def get_keyframes_from_file(self, filename, vformat):
+    def get_keyframes_from_file(self, filename, vformat=None):
         """ returns keyframe list - in frame numbers"""
 
         if not os.path.isfile(filename + ".ffindex_track00.kf.txt"):
@@ -499,11 +499,14 @@ class Cut(BaseAction):
         index.readline()  # Skip the first line, it is a comment
         index.readline()  # Skip the second line, it is 'fps 0'
         try:
-            if vformat == Format.HD2:
-                keyframes_list = [int(i) + 1 for i in index.read().splitlines()]
-                keyframes_list[0] = 0
-            else:
-                keyframes_list = [int(i) for i in index.read().splitlines()]
+            keyframes_list = [int(i) for i in index.read().splitlines()]
+            # with open("/tmp/otrv_kf.txt", "w") as file_:
+            #     c = 1
+            #     for item in keyframes_list:
+            #         file_.write(f"{item}\n")
+            #         c += 1
+            #         if c == 50:
+            #             break
         except ValueError:
             return None, "Keyframes konnten nicht ermittelt werden."
         finally:
@@ -553,6 +556,11 @@ class Cut(BaseAction):
             frame_timecode = {}
             for line_num, line in enumerate(index):
                 frame_timecode[line_num] = int(round(float(line.replace("\n", "").strip()), 2) / 1000 * Gst.SECOND)
+            # with open("/tmp/otrv_frame_tc.txt", "w") as file_:
+            #     for k, v in frame_timecode.items():
+            #         file_.write(f"{k}: {v}\n")
+            #         if k == 1000:
+            #             break
         except ValueError:
             return None, None, "Timecodes konnten nicht ermittelt werden."
         finally:
@@ -564,7 +572,11 @@ class Cut(BaseAction):
 
         # Generate reverse dict
         timecode_frame = {v: k for k, v in frame_timecode.items()}
-
+        # with open("/tmp/otrv_tc_frame.txt", "w") as file_:
+        #     for k, v in timecode_frame.items():
+        #         file_.write(f"{k} : {v}\n")
+        #         if v == 1000:
+        #             break
         if os.path.isfile(filename + ".ffindex"):
             fileoperations.remove_file(filename + ".ffindex")
 
