@@ -583,7 +583,7 @@ Ende Video: Strg - Ende / Ctrl - End
                     <child>
                       <object class="GtkTreeView" id="cutsview">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
+                        <property name="can_focus">False</property>
                         <property name="model">cutslist</property>
                         <property name="headers_clickable">False</property>
                         <property name="search_column">0</property>
