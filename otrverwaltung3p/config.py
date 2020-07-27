@@ -88,8 +88,10 @@ class Config:
                 value = password
         elif option == "h264_codec":
             value = "ffdshow"  # FORCED
-        # elif option == 'encoder_engine':
-        #     value = 'x264'  # FORCED
+            self.set("general", "h264_codec", value)
+        elif option == "vdub":
+            value = "intern-vdub"  # FORCED
+            self.set("programs", "vdub", value)
         else:
             value = self.__fields[category][option]
 
