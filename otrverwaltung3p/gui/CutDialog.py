@@ -24,7 +24,7 @@ from gi.repository import Gtk
 import otrverwaltung3p.cutlists as cutlists_management
 from otrverwaltung3p import fileoperations
 from otrverwaltung3p import path as otrvpath
-from otrverwaltung3p.constants import Cut_action
+from otrverwaltung3p.constants import CutAction
 from otrverwaltung3p.gui.widgets.CutlistsTreeView import CutlistsTreeView
 
 
@@ -35,35 +35,28 @@ class CutDialog(Gtk.Dialog, Gtk.Buildable):
 
     def __init__(self):
         Gtk.Dialog.__init__(self)
-        pass
+        self.builder = None
+        self.chosen_cutlist = None
+        self.filename = ""
+        self.treeview_cutlists_download = None
 
     def do_parser_finished(self, builder):
         self.builder = builder
         self.builder.connect_signals(self)
-
-        self.chosen_cutlist = None
 
         self.treeview_cutlists_download = CutlistsTreeView()
         self.treeview_cutlists_download.show()
         self.treeview_cutlists_download.get_selection().connect("changed", self._on_selection_changed_download)
         self.builder.get_object("scrolledwindow_cutlists").add(self.treeview_cutlists_download)
 
-        self.filename = ""
-
-    #
     # Convenience methods
-    #
 
     def setup(self, video_file, folder_cut_avis, cut_action_ask):
         self.filename = video_file
-        self.builder.get_object("label_file").set_markup("<b>%s</b>" % basename(video_file))
+        self.builder.get_object("label_file").set_markup(f"<b>{basename(video_file)}</b>")
         self.builder.get_object("label_warning").set_markup(
-            '<span size="small">Wichtig! Um eine Cutlist zu erstellen muss das Projekt '
-            + "im Ordner "
-            + folder_cut_avis
-            + " gespeichert werden (siehe "
-            + "Website->Einstieg->Funktionen). OTR-Verwaltung schneidet die "
-            + "Datei dann automatisch.</span>"
+            f"<span size='small'>Wichtig! Um eine Cutlist zu erstellen muss das Projekt im Ordner {folder_cut_avis} "
+            "gespeichert werden. OTR-Verwaltung schneidet die Datei dann automatisch.</span>"
         )
 
         if cut_action_ask:
@@ -74,7 +67,7 @@ class CutDialog(Gtk.Dialog, Gtk.Buildable):
         # looking for a local cutlist
         filename_cutlist = video_file + ".cutlist"
         if exists(filename_cutlist):
-            self.builder.get_object("label_cutlist").set_markup("<b>%s</b>" % filename_cutlist)
+            self.builder.get_object("label_cutlist").set_markup(f"<b>{filename_cutlist}</b>")
             self.builder.get_object("radio_local_cutlist").set_sensitive(True)
         else:
             self.builder.get_object("label_cutlist").set_markup("Keine lokale Cutlist gefunden.")
@@ -127,9 +120,9 @@ class CutDialog(Gtk.Dialog, Gtk.Buildable):
         if paths:
             self.builder.get_object("radio_choose_cutlist").set_active(True)
 
-    def _on_buttonCutOK_clicked(self, widget, data=None):
+    def _on_button_cut_ok_clicked(self, widget, data=None):
         if self.builder.get_object("radio_best_cutlist").get_active():
-            self.response(Cut_action.BEST_CUTLIST)
+            self.response(CutAction.BEST_CUTLIST)
 
         elif self.builder.get_object("radio_choose_cutlist").get_active():
             cutlist = self.treeview_cutlists_download.get_selected()
@@ -139,12 +132,12 @@ class CutDialog(Gtk.Dialog, Gtk.Buildable):
                 return
 
             self.chosen_cutlist = cutlist
-            self.response(Cut_action.CHOOSE_CUTLIST)
+            self.response(CutAction.CHOOSE_CUTLIST)
 
         elif self.builder.get_object("radio_local_cutlist").get_active():
-            self.response(Cut_action.LOCAL_CUTLIST)
+            self.response(CutAction.LOCAL_CUTLIST)
         else:
-            self.response(Cut_action.MANUALLY)
+            self.response(CutAction.MANUALLY)
 
 
 def new(app, gui):

@@ -56,7 +56,7 @@ class Action:
     REAL_DELETE = 10
 
 
-class Cut_action:
+class CutAction:
     ASK = 0
     BEST_CUTLIST = 1
     CHOOSE_CUTLIST = 2

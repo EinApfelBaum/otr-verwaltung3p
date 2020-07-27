@@ -24,7 +24,7 @@ from otrverwaltung3p.GeneratorTask import GeneratorTask
 from otrverwaltung3p.conclusions import FileConclusion
 from otrverwaltung3p.constants import (
     Action,
-    Cut_action,
+    CutAction,
     DownloadStatus,
     DownloadTypes,
     Status,
@@ -611,7 +611,7 @@ class Download:
                     conclusion.cut.cutlist = self.information["cutlist"]
                     conclusion.cut.cutlist.read_from_file()
                     conclusion.cut.status = Status.OK
-                    conclusion.cut.cut_action = Cut_action.CHOOSE_CUTLIST
+                    conclusion.cut.cut_action = CutAction.CHOOSE_CUTLIST
                     if self._config.get("general", "rename_cut"):
                         conclusion.cut.rename = self._app.rename_by_schema(self.filename.rstrip(".otrkey"))
                     else:

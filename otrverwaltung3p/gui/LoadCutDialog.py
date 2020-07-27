@@ -77,7 +77,7 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
 
     def setup(self, video_file):
         self.filename = video_file
-        self.builder.get_object("label_file").set_markup("<b>%s</b>" % os.path.basename(video_file))
+        self.builder.get_object("label_file").set_markup(f"<b>{os.path.basename(video_file)}</b>")
         self.builder.get_object("btn_search_size").set_visible = False
 
         # looking for local cutlists

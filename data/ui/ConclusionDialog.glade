@@ -80,13 +80,13 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkButton" id="button_abort">
-                    <property name="label">Schnitt _abbrechen</property>
+                  <object class="GtkButton" id="btn_cancel_recut">
+                    <property name="label" translatable="yes">_Erneut schneiden</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="use_underline">True</property>
-                    <signal name="clicked" handler="_on_button_abort_clicked" swapped="no"/>
+                    <signal name="clicked" handler="_on_btn_cancel_recut_clicked" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -106,13 +106,13 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkButton" id="button_back">
-                    <property name="label">gtk-go-back</property>
+                  <object class="GtkButton" id="button_abort">
+                    <property name="label">Schnitt _abbrechen</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_stock">True</property>
-                    <signal name="clicked" handler="_on_button_back_clicked" swapped="no"/>
+                    <property name="use_underline">True</property>
+                    <signal name="clicked" handler="_on_button_abort_clicked" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -132,14 +132,12 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkButton" id="button_forward">
-                    <property name="label">gtk-go-forward</property>
+                  <object class="GtkButton" id="button_back">
+                    <property name="label">Zurück</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_stock">True</property>
-                    <property name="image_position">right</property>
-                    <signal name="clicked" handler="_on_button_forward_clicked" swapped="no"/>
+                    <signal name="clicked" handler="_on_button_back_clicked" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -155,18 +153,33 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="button_conclusion_close_clicked">
-                <property name="label">gtk-close</property>
+              <object class="GtkButton" id="button_forward">
+                <property name="label">Vorwärts</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
+                <property name="image_position">right</property>
+                <signal name="clicked" handler="_on_button_forward_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_conclusion_close_clicked">
+                <property name="label">S_chließen</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_underline">True</property>
                 <signal name="clicked" handler="_on_button_conclusion_close_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">4</property>
+                <property name="position">5</property>
               </packing>
             </child>
           </object>
@@ -227,7 +240,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
-                        <property name="margin_left">5</property>
+                        <property name="margin_start">5</property>
                         <property name="label" translatable="yes">Dekodieren:</property>
                         <property name="xalign">0</property>
                         <property name="yalign">0</property>
@@ -242,7 +255,7 @@
                       <object class="GtkLabel" id="label_decode_status">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="margin_left">5</property>
+                        <property name="margin_start">5</property>
                         <property name="label" translatable="yes">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</property>
                         <property name="wrap">True</property>
                         <property name="track_visited_links">False</property>
@@ -284,7 +297,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
-                        <property name="margin_left">5</property>
+                        <property name="margin_start">5</property>
                         <property name="label" translatable="yes">Schneiden:</property>
                         <property name="xalign">0</property>
                         <property name="yalign">0</property>
@@ -299,7 +312,7 @@
                       <object class="GtkLabel" id="label_cut_status">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="margin_left">14</property>
+                        <property name="margin_start">14</property>
                         <property name="label" translatable="yes">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</property>
                         <property name="wrap">True</property>
                         <property name="selectable">True</property>
@@ -365,7 +378,7 @@
                         <property name="width_request">110</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="margin_left">5</property>
+                        <property name="margin_start">5</property>
                         <property name="label" translatable="yes">&lt;i&gt;Umbenennen:&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
                         <property name="width_chars">12</property>
@@ -425,7 +438,7 @@
                         <property name="width_request">110</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="margin_left">5</property>
+                        <property name="margin_start">5</property>
                         <property name="label" translatable="yes">&lt;i&gt;Wertung:&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
                         <property name="width_chars">12</property>
@@ -476,7 +489,7 @@
                         <property name="width_request">110</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="margin_left">5</property>
+                        <property name="margin_start">5</property>
                         <property name="label" translatable="yes">&lt;i&gt;Archivieren:&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
                         <property name="width_chars">12</property>
@@ -508,7 +521,7 @@
                         <property name="width_request">110</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="margin_left">5</property>
+                        <property name="margin_start">5</property>
                         <property name="label" translatable="yes">&lt;i&gt;Ersetze:&lt;/i&gt;</property>
                         <property name="use_markup">True</property>
                         <property name="width_chars">12</property>
@@ -751,7 +764,7 @@
                               <object class="GtkLabel" id="lbl_prepend_comment">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_right">10</property>
+                                <property name="margin_end">10</property>
                                 <property name="label" translatable="yes">Dem Kommentar hinzufügen:</property>
                               </object>
                               <packing>
@@ -794,7 +807,7 @@
                               <object class="GtkComboBoxText" id="cboxtext_snippets">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="margin_left">10</property>
+                                <property name="margin_start">10</property>
                                 <property name="hexpand">True</property>
                               </object>
                               <packing>

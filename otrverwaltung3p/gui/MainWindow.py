@@ -31,7 +31,7 @@ from gi.repository import GLib, Gdk, GdkPixbuf, Gio, Gtk
 
 from otrverwaltung3p import path as otrvpath
 from otrverwaltung3p.GeneratorTask import GeneratorTask
-from otrverwaltung3p.constants import Action, Cut_action, DownloadStatus, Section
+from otrverwaltung3p.constants import Action, CutAction, DownloadStatus, Section
 from otrverwaltung3p.gui import DownloadPropertiesDialog
 from otrverwaltung3p.gui.widgets.DownloadsTreeView import DownloadsTreeView
 from otrverwaltung3p.gui.widgets.EntrySearchToolItem import EntrySearchToolItem
@@ -88,11 +88,11 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         # menu for cut/decodeandcut
         cut_menu = Gtk.Menu()
         items = [
-            ("Nachfragen", Cut_action.ASK),
-            ("Beste Cutlist", Cut_action.BEST_CUTLIST),
-            ("Cutlist wählen", Cut_action.CHOOSE_CUTLIST),
-            ("Lokale Cutlist", Cut_action.LOCAL_CUTLIST),
-            ("Manuell (und Cutlist erstellen)", Cut_action.MANUALLY),
+            ("Nachfragen", CutAction.ASK),
+            ("Beste Cutlist", CutAction.BEST_CUTLIST),
+            ("Cutlist wählen", CutAction.CHOOSE_CUTLIST),
+            ("Lokale Cutlist", CutAction.LOCAL_CUTLIST),
+            ("Manuell (und Cutlist erstellen)", CutAction.MANUALLY),
         ]
 
         for label, cut_action in items:
@@ -428,7 +428,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         GLib.timeout_add(2500, self._css_callback, conclusion_button)
         # eventbox.set_style(style)
 
-    def _css_callback(self, widget):
+    @staticmethod
+    def _css_callback(widget):
         if widget.get_style_context().has_class("conclusion"):
             widget.get_style_context().remove_class("conclusion")
             widget.get_style_context().add_class("conclusion2")
@@ -438,9 +439,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
         return True
 
-    #
     # treeview_files
-    #
 
     def treeview_files_grab(self):
         # Set the focus on treeview and select first entry
@@ -625,9 +624,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         else:
             return 0
 
-    #
     # Convenience
-    #
 
     def set_toolbar(self, section):
         """ Fügt die entsprechenden Toolbuttons in die Toolbar ein.
@@ -699,9 +696,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         """ Setzt den Fortschrittsbalken auf die angegebene %-Zahl. """
         self.builder.get_object("progressbar_tasks").set_fraction(progress / 100.0)
 
-    #
     #  Signal handlers
-    #
 
     def _on_treeview_files_row_activated(self, treeview, tree_path, column, data=None):
         if self.app.section == Section.OTRKEY:
@@ -769,7 +764,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.app.perform_action(Action.CUT)
 
     def _cmenu_cut_manually(self, *args):
-        self.app.perform_action(Action.CUT, cut_action=Cut_action.MANUALLY)
+        self.app.perform_action(Action.CUT, cut_action=CutAction.MANUALLY)
 
     def on_treeview_download_row_activated(self, treeview, path, view_colum, data=None):
         iter = treeview.get_model().get_iter(path)

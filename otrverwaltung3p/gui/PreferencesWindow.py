@@ -254,7 +254,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         ]:
             EntryBinding(self.obj("entry_prog_" + prog), self.app.config, "programs", prog)
         EntryBinding(
-            self.obj("entry_folder_wineprefix"), self.app.config, "programs", "wineprefix",
+            self.obj("entry_prog_wineprefix"), self.app.config, "programs", "wineprefix",
         )
 
         def rename_schema_changed(value):
@@ -331,8 +331,9 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         #     for prefix in ['lbl_prog_', 'entry_prog_', 'btn_prog_', 'lbl_check_']:
         #         self.obj(prefix + prog).set_visible(False)
         # if sys.platform != 'win32':
-        #     for prefix in ['lbl_prog_', 'entry_prog_', 'btn_prog_', 'lbl_check_']:
-        #         self.obj(prefix + 'vdub').set_visible(False)
+        for prog in ["vdub", "wineprefix"]:
+            for prefix in ["lbl_prog_", "entry_prog_", "btn_prog_", "lbl_check_"]:
+                self.obj(prefix + prog).set_visible(False)
 
     # Signal handlers ###
 
@@ -438,6 +439,11 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
                 return True
 
     def _on_preferences_button_close_clicked(self, widget, data=None):
+        if self.obj("btn_snippets_save").get_sensitive():
+            if not self.app.gui.question_box(
+                "Die Snippets wurden nicht gespeichert\n\nWollen Sie das Fenster wirklich schließen?"
+            ):
+                return
         self.hide()
         try:
             # Update settings in Cutinterface

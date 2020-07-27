@@ -14,6 +14,7 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
 
+from pathlib import Path
 import logging
 import os.path
 
@@ -64,9 +65,11 @@ class FileConclusion:
 
     def get_extension(self):
         if self.cut_video == "":  # prefer the extension of the cut video
-            return os.path.splitext(self.uncut_video)[1]
+            # return os.path.splitext(self.uncut_video)[1]
+            return Path(self.uncut_video).suffix
         else:
-            return os.path.splitext(self.cut_video)[1]
+            # return os.path.splitext(self.cut_video)[1]
+            return Path(self.cut_video).suffix
 
 
 class ConclusionsManager:
@@ -104,7 +107,13 @@ class ConclusionsManager:
             if conclusion.action == Action.DECODE:
                 continue
 
-            self.log.debug(f"for file {conclusion.uncut_video}")
+            # Delete ffmsindex files only if cut was not canceled
+            if not conclusion.cut.status == Status.NOT_DONE:
+                if Path(conclusion.uncut_video + ".ffindex_track00.kf.txt").is_file():
+                    os.remove(conclusion.uncut_video + ".ffindex_track00.kf.txt")
+
+                if Path(conclusion.uncut_video + ".ffindex_track00.tc.txt").is_file():
+                    os.remove(conclusion.uncut_video + ".ffindex_track00.tc.txt")
 
             # rename
             if conclusion.cut.rename:

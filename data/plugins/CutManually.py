@@ -20,7 +20,7 @@ require_version("Gtk", "3.0")
 from gi.repository import GdkPixbuf, Gtk
 
 from otrverwaltung3p import path as otrvpath
-from otrverwaltung3p.constants import Action, Cut_action, Section
+from otrverwaltung3p.constants import Action, CutAction, Section
 from otrverwaltung3p.pluginsystem import Plugin
 
 
@@ -58,7 +58,7 @@ class CutManually(Plugin):
 
     # plugin methods
     def start_cut(self):
-        self.app.perform_action(Action.CUT, Cut_action.MANUALLY)
+        self.app.perform_action(Action.CUT, CutAction.MANUALLY)
 
     # signal methods
     def on_cut_clicked(self, widget, data=None):

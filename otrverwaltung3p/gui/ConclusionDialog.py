@@ -26,7 +26,7 @@ require_version("Pango", "1.0")
 from gi.repository import Gdk, Gtk, Pango
 
 from otrverwaltung3p import path as otrvpath
-from otrverwaltung3p.constants import Action, Cut_action, Status
+from otrverwaltung3p.constants import Action, CutAction, Status
 from otrverwaltung3p.gui.widgets.FolderChooserComboBox import FolderChooserComboBox
 
 replacements = {
@@ -96,9 +96,8 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
             self.obj(combobox).pack_start(cell, True)
             self.obj(combobox).add_attribute(cell, "text", 0)
 
-    # Convenience
-
     def run_(self, file_conclusions, rename_by_schema, archive_directory):
+        self.app.file_to_recut = None  # Reset recut
         self.rename_by_schema = rename_by_schema
         self.__file_conclusions = file_conclusions
         # TODO gcurse:WARN_NOT_ALL_SEEN
@@ -122,105 +121,6 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         self.hide()
         return self.__file_conclusions
 
-    def __status_to_s(self, status, message):
-        string = ""
-
-        if status == Status.OK:
-            string = "OK"
-        elif status == Status.ERROR:
-            string = "Fehler"
-        elif status == Status.NOT_DONE:
-            string = "Nicht durchgeführt"
-
-        if message:
-            if status == Status.ERROR:
-                message = "<b>%s</b>" % message
-            string += ": %s" % message
-
-        return string
-
-    def set_entry_suggested_on_close(self):
-        """ Called by '_on_button_abort_clicked', '_on_buttonConclusionClose_clicked',
-              _on_button_back_clicked and _on_button_forward_clicked.
-            Set 'entry_suggested' (the suggested movie name) to the value of 'comboboxentry_rename'
-              if 'Cutlist erstellen' is true. 'self.file_conclusion.cut.rename' holds the value of
-              'comboboxentry_rename' (auto-updated by '_on_comboboxentry_rename_changed')
-        """
-        if self.obj("check_create_cutlist").get_active():
-            if self.obj("entry_suggested").get_text() == "":
-                edit_fname = self.file_conclusion.cut.rename
-                self.log.debug("edit_fname = {}".format(edit_fname))
-                # If Cancel button is clicked edit_fname is set to False. So check.
-                if edit_fname:
-                    for ext in fileextensions:
-                        if edit_fname.endswith(ext):
-                            edit_fname = edit_fname.replace(ext, "")
-                    self.obj("entry_suggested").set_text(edit_fname)
-
-    ###
-    # Controls
-    ###
-
-    def _on_button_back_clicked(self, widget, data=None):
-        self.set_entry_suggested_on_close()
-        self.show_conclusion(self.conclusion_iter - 1)
-        self.forward_clicks -= 1  # TODO gcurse:WARN_NOT_ALL_SEEN
-
-    def _on_button_forward_clicked(self, widget, data=None):
-        self.set_entry_suggested_on_close()
-        self.show_conclusion(self.conclusion_iter + 1)
-        # TODO gcurse:WARN_NOT_ALL_SEEN
-        self.forward_clicks += 1
-        if self.forward_clicks == self.__file_conclusions_count:
-            self.all_file_conclusions_seen = True
-        # <<<<<
-
-    def _on_button_abort_clicked(self, widget, data=None):
-        self.set_entry_suggested_on_close()
-        widgets_hidden = [
-            "button_play_cut",
-            "box_rating",
-            "check_delete_uncut",
-            "box_rename",
-            "box_archive",
-            "button_play",
-            "box_create_cutlist",
-            "hbox_replace",
-        ]
-        for widget in widgets_hidden:
-            self.obj(widget).hide()
-
-        self.file_conclusion.cut.status = Status.NOT_DONE
-        self.obj("check_upload_cutlist").set_active(False)
-        self.file_conclusion.cut.rename = False
-        status, message = (
-            self.file_conclusion.cut.status,
-            self.file_conclusion.cut.message,
-        )
-        self.obj("label_cut_status").set_markup(self.__status_to_s(status, message))
-
-        if os.path.isfile(self.file_conclusion.cut_video):
-            os.remove(self.file_conclusion.cut_video)
-
-    def _on_button_conclusion_close_clicked(self, widget, data=None):
-        # TODO gcurse:WARN_NOT_ALL_SEEN
-        if self.all_file_conclusions_seen:
-            self.set_entry_suggested_on_close()
-            self.app.filenames_locked = []
-            self.close()
-        elif self.app.gui.question_box(
-            "Es wurden nicht alle Dateien geprüft!\n"
-            "Soll der Dialog trotzdem geschlossen werden?\n\n"
-            "Auch alle nicht geprüften Dateien werden dann geschnitten!"
-        ):
-            self.set_entry_suggested_on_close()
-            self.app.filenames_locked = []
-            self.close()
-        else:
-            # not closing the dialog
-            pass
-        # <<<<<
-
     def show_conclusion(self, new_iter):
         self.conclusion_iter = new_iter
         self.file_conclusion = self.__file_conclusions[self.conclusion_iter]
@@ -229,6 +129,8 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         # basic show/hide
         action = self.file_conclusion.action
         self.show_all()
+        self.obj("btn_cancel_recut").props.visible = False
+
         widgets_hidden = []
         if action == Action.DECODE:
             self.obj("box_buttons").show()  # hide all except play button
@@ -328,11 +230,12 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                 try:
                     bare_fname = re_fname.match(os.path.basename(self.file_conclusion.uncut_video)).group()
                 except Exception as e:
-                    # TODO gcurse: Make it possible to cut already cut files
                     self.log.info(
                         f"Filename does not match the otr pattern.\n"
                         f"This happens when cutting a already cut file.\nException: {e}"
                     )
+                    bare_fname = ""
+
                 if self.file_conclusion.cut.cutlist.filename:  # suggested moviename
                     sugg_fname = self.file_conclusion.cut.cutlist.filename
                     for ext in fileextensions:
@@ -378,7 +281,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
                         if row[3] == archive_to:
                             self.combobox_archive.set_active(count)
 
-            if cut_action == Cut_action.BEST_CUTLIST or cut_action == Cut_action.CHOOSE_CUTLIST:
+            if cut_action == CutAction.BEST_CUTLIST or cut_action == CutAction.CHOOSE_CUTLIST:
                 self.obj("box_rating").props.visible = cut_ok
                 self.obj("combobox_external_rating").set_active(self.file_conclusion.cut.my_rating + 1)
 
@@ -394,7 +297,10 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
             else:
                 self.obj("box_rating").hide()
 
-            if cut_action == Cut_action.MANUALLY:
+            if cut_action == CutAction.MANUALLY:
+                if self.__file_conclusions_count == 1:
+                    self.obj("btn_cancel_recut").show()
+                    self.obj("btn_cancel_recut").props.visible = True
                 self.obj("box_create_cutlist").props.visible = cut_ok
 
                 if cut_ok:
@@ -420,9 +326,112 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         # Reset cursor of MainWindow
         self.app.gui.main_window.get_window().set_cursor(None)
 
-    ###
+    def set_entry_suggested_on_close(self):
+        """ Called by '_on_button_abort_clicked', '_on_buttonConclusionClose_clicked',
+              _on_button_back_clicked and _on_button_forward_clicked.
+            Set 'entry_suggested' (the suggested movie name) to the value of 'comboboxentry_rename'
+              if 'Cutlist erstellen' is true. 'self.file_conclusion.cut.rename' holds the value of
+              'comboboxentry_rename' (auto-updated by '_on_comboboxentry_rename_changed')
+        """
+        if self.obj("check_create_cutlist").get_active():
+            if self.obj("entry_suggested").get_text() == "":
+                edit_fname = self.file_conclusion.cut.rename
+                self.log.debug("edit_fname = {}".format(edit_fname))
+                # If Cancel button is clicked edit_fname is set to False. So check.
+                if edit_fname:
+                    for ext in fileextensions:
+                        if edit_fname.endswith(ext):
+                            edit_fname = edit_fname.replace(ext, "")
+                    self.obj("entry_suggested").set_text(edit_fname)
+
+    @staticmethod
+    def __status_to_s(status, message):
+        string = ""
+
+        if status == Status.OK:
+            string = "OK"
+        elif status == Status.ERROR:
+            string = "Fehler"
+        elif status == Status.NOT_DONE:
+            string = "Nicht durchgeführt"
+
+        if message:
+            if status == Status.ERROR:
+                message = "<b>%s</b>" % message
+            string += ": %s" % message
+
+        return string
+
+    # Controls
+
+    def _on_btn_cancel_recut_clicked(self, widget, data=None):
+        self.app.file_to_recut = self.file_conclusion.uncut_video
+        self._on_button_abort_clicked(None)
+
+    def _on_button_abort_clicked(self, widget, data=None):
+        self.set_entry_suggested_on_close()
+        widgets_hidden = [
+            "button_play_cut",
+            "box_rating",
+            "check_delete_uncut",
+            "box_rename",
+            "box_archive",
+            "button_play",
+            "box_create_cutlist",
+            "hbox_replace",
+        ]
+        for widget in widgets_hidden:
+            self.obj(widget).hide()
+
+        self.file_conclusion.cut.status = Status.NOT_DONE
+        self.obj("check_upload_cutlist").set_active(False)
+        self.file_conclusion.cut.rename = False
+        status, message = (
+            self.file_conclusion.cut.status,
+            self.file_conclusion.cut.message,
+        )
+        self.obj("label_cut_status").set_markup(self.__status_to_s(status, message))
+
+        if os.path.isfile(self.file_conclusion.cut_video):
+            os.remove(self.file_conclusion.cut_video)
+        if self.__file_conclusions_count == 1:
+            self.app.filenames_locked = []
+            self.close()
+
+    def _on_button_back_clicked(self, widget, data=None):
+        self.set_entry_suggested_on_close()
+        self.show_conclusion(self.conclusion_iter - 1)
+        self.forward_clicks -= 1  # TODO gcurse:WARN_NOT_ALL_SEEN
+
+    def _on_button_forward_clicked(self, widget, data=None):
+        self.set_entry_suggested_on_close()
+        self.show_conclusion(self.conclusion_iter + 1)
+        # TODO gcurse:WARN_NOT_ALL_SEEN
+        self.forward_clicks += 1
+        if self.forward_clicks == self.__file_conclusions_count:
+            self.all_file_conclusions_seen = True
+        # <<<<<
+
+    def _on_button_conclusion_close_clicked(self, widget, data=None):
+        # TODO gcurse:WARN_NOT_ALL_SEEN
+        if self.all_file_conclusions_seen:
+            self.set_entry_suggested_on_close()
+            self.app.filenames_locked = []
+            self.close()
+        elif self.app.gui.question_box(
+            "Es wurden nicht alle Dateien geprüft!\n"
+            "Soll der Dialog trotzdem geschlossen werden?\n\n"
+            "Auch alle nicht geprüften Dateien werden dann geschnitten!"
+        ):
+            self.set_entry_suggested_on_close()
+            self.app.filenames_locked = []
+            self.close()
+        else:
+            # not closing the dialog
+            pass
+        # <<<<<
+
     # Signals handlers
-    ###
 
     @staticmethod
     def _do_keypress_event(widget, event, *args):
@@ -476,7 +485,10 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     def _on_combobox_archive_changed(self, widget, data=None):
         if self.file_conclusion != Action.DECODE:
             archive_to = self.combobox_archive.get_active_path()
-            self.file_conclusion.cut.archive_to = archive_to
+            try:
+                self.file_conclusion.cut.archive_to = archive_to
+            except AttributeError as e:
+                self.log.debug(f"{e}")
 
     # box_create_cutlist
     def _on_check_create_cutlist_toggled(self, widget, data=None):

@@ -1910,7 +1910,8 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                           <object class="GtkLabel" id="lbl_snippets">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="tooltip_text" translatable="yes">Aus diesen Einträgen kann man im Zusammenfassungsdialog wählen und in den Cutlist Kommentar einfügen.</property>
+                            <property name="tooltip_text" translatable="yes">Aus diesen Einträgen kann man im Zusammenfassungsdialog wählen und in den Cutlist Kommentar einfügen.
+Jede Zeile ist ein Eintrag.</property>
                             <property name="label" translatable="yes">Snippets:</property>
                           </object>
                           <packing>
@@ -1926,6 +1927,7 @@ In jedem Falle wird der vorgeschlagene Dateiname in die Liste übernommen.</prop
                             <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="margin_end">5</property>
                             <signal name="clicked" handler="_on_btn_snippets_save_clicked" object="txtbuf_snippets" swapped="no"/>
                           </object>
                           <packing>
@@ -3157,7 +3159,7 @@ Mehrere Anpassungen werden durch Unterstrich(e) getrennt.</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="lbl_folder_wineprefix">
+                      <object class="GtkLabel" id="lbl_prog_wineprefix">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">wineprefix:</property>
@@ -3169,7 +3171,7 @@ Mehrere Anpassungen werden durch Unterstrich(e) getrennt.</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry" id="entry_folder_wineprefix">
+                      <object class="GtkEntry" id="entry_prog_wineprefix">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <signal name="changed" handler="on_entry_prog_changed" swapped="no"/>
@@ -3180,13 +3182,13 @@ Mehrere Anpassungen werden durch Unterstrich(e) getrennt.</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="btn_folder_wineprefix">
+                      <object class="GtkButton" id="btn_prog_wineprefix">
                         <property name="label" translatable="yes">...</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="halign">end</property>
-                        <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_folder_wineprefix" swapped="no"/>
+                        <signal name="clicked" handler="_on_button_set_file_clicked" object="entry_prog_wineprefix" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">3</property>
