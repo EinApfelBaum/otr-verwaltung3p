@@ -518,6 +518,7 @@ class DecodeOrCut(Cut):
             cuts_frames, cutlist_error = cutter.create_cutlist(filename, config_value)
 
         if program == Program.CUT_INTERFACE:
+            self.app.file_to_recut = None
             # looking for latest cutlist, if any
             filename = Path(filename)
             cutregex = re.compile("^" + filename.name + r"\.?(.*).cutlist$")

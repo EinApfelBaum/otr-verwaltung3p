@@ -114,7 +114,7 @@ class CutSmartMkvmerge(Cut):
         self.log.debug(f"cutlist.cuts_seconds: {cutlist.cuts_seconds}")
 
         # codec configuration string
-        extension = Path(filename).suffix
+        # extension = Path(filename).suffix
         x_offset = [0, 0]
         codec_core = -1
         vformat, ac3_file, bframe_delay, _ = self.get_format(filename)
@@ -125,52 +125,39 @@ class CutSmartMkvmerge(Cut):
                 codec, codec_core = self.complete_x264_opts(
                     shlex.split(self.app.encoding_strings["x264_hq_string"]), filename
                 )
-                #     self.config.get('smartmkvmerge', 'x264_hq_string').split(' '), filename)
             elif encoder_engine == "ffmpeg":
                 codec, codec_core = self.complete_ffmpeg_opts(
                     self.app.encoding_strings["ffmpeg_hq_x264_options"], filename
                 )
-                #     self.config.get('smartmkvmerge', 'ffmpeg_hq_x264_options').split(' '), filename)
         elif vformat == Format.HQ0:  # HQ 2011/2012 and older
             if encoder_engine == "x264":
                 codec, codec_core = self.complete_x264_opts(
                     shlex.split(self.app.encoding_strings["x264_hq0_string"]), filename
                 )
-                #     self.config.get('smartmkvmerge', 'x264_hq0_string').split(' '), filename)
             elif encoder_engine == "ffmpeg":
                 codec, codec_core = self.complete_ffmpeg_opts(
                     self.app.encoding_strings["ffmpeg_hq0_x264_options"], filename
                 )
-            #        self.config.get('smartmkvmerge', 'ffmpeg_hq0_x264_options').split(' '), filename, vformat=vformat)
             codec_core = 125  # Fake
         elif vformat == Format.HD:
             if encoder_engine == "x264":
                 codec, codec_core = self.complete_x264_opts(
                     shlex.split(self.app.encoding_strings["x264_hd_string"]), filename
                 )
-                #     self.config.get('smartmkvmerge', 'x264_hd_string').split(' '), filename)
             elif encoder_engine == "ffmpeg":
                 codec, codec_core = self.complete_ffmpeg_opts(
                     self.app.encoding_strings["ffmpeg_hd_x264_options"], filename
                 )
-                #     self.config.get('smartmkvmerge', 'ffmpeg_hd_x264_options').split(' '), filename)
         elif vformat == Format.HD0:
             if encoder_engine == "x264":
                 codec, codec_core = self.complete_x264_opts(
                     shlex.split(self.app.encoding_strings["x264_hd0_string"]), filename
                 )
-                #     self.config.get('smartmkvmerge', 'x264_hd0_string').split(' '), filename)
             elif encoder_engine == "ffmpeg":
                 codec, codec_core = self.complete_ffmpeg_opts(
                     self.app.encoding_strings["ffmpeg_hd0_x264_options"], filename
                 )
-                #     self.config.get('smartmkvmerge', 'ffmpeg_hd0_x264_options').split(' '), filename)
         elif vformat == Format.HD2:
-            if extension == ".mkv":
-                x_offset = [0, 0]
-                encoder_engine = "x264"
-            else:
-                encoder_engine = "ffmpeg"
             if encoder_engine == "x264":
                 codec, codec_core = self.complete_x264_opts(
                     shlex.split(self.app.encoding_strings["x264_hd2_string"]), filename
@@ -188,13 +175,11 @@ class CutSmartMkvmerge(Cut):
                 codec, codec_core = self.complete_ffmpeg_opts(
                     self.app.encoding_strings["ffmpeg_mp4_x264_options"], filename
                 )
-            #        self.config.get('smartmkvmerge', 'ffmpeg_mp4_x264_options').split(' '), filename, quality='MP4')
         elif vformat == Format.MP40:
             if encoder_engine == "x264":
                 codec, codec_core = self.complete_x264_opts(
                     shlex.split(self.app.encoding_strings["x264_mp40_string"]), filename
                 )
-            #        self.config.get('smartmkvmerge', 'x264_mp40_string').split(' '), filename)
             elif encoder_engine == "ffmpeg":
                 codec, codec_core = self.complete_ffmpeg_opts(
                     self.app.encoding_strings["ffmpeg_mp40_x264_options"], filename

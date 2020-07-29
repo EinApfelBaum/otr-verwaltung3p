@@ -815,13 +815,11 @@ class App:
         Gtk.show_uri_on_window(self.gui.main_window, uri, Gdk.CURRENT_TIME)
 
     def __show(self, cuts, video_filename, edl_subtitles_cb):
-        video_filename_dirname = Path(video_filename).parent
-        f_edl = open(Path.joinpath(video_filename_dirname, ".tmp.edl"), "w", newline="\n")
-        f_mpv_edl = open(Path.joinpath(video_filename_dirname, ".tmp_mpv.edl"), "w", newline="\n")
-        f_sub = open(Path.joinpath(video_filename_dirname, ".tmp.sub"), "w", newline="\n")
-        f_mpv_sub = open(Path.joinpath(video_filename_dirname, ".tmp_mpv.sub"), "w", newline="\n")
-
-        # get cuts in seconds
+        video_file_dir = Path(video_filename).parent
+        f_edl = open(Path.joinpath(video_file_dir, ".tmp.edl"), "w", newline="\n")
+        f_mpv_edl = open(Path.joinpath(video_file_dir, ".tmp_mpv.edl"), "w", newline="\n")
+        f_sub = open(Path.joinpath(video_file_dir, ".tmp.sub"), "w", newline="\n")
+        f_mpv_sub = open(Path.joinpath(video_file_dir, ".tmp_mpv.sub"), "w", newline="\n")
 
         edl_subtitles_cb(f_edl, f_mpv_edl, f_sub, f_mpv_sub, cuts)
 
@@ -830,10 +828,10 @@ class App:
         f_sub.close()
         f_mpv_sub.close()
 
-        f_edl = Path.joinpath(video_filename_dirname, ".tmp.edl")
-        f_mpv_edl = Path.joinpath(video_filename_dirname, ".tmp_mpv.edl")
-        f_sub = Path.joinpath(video_filename_dirname, ".tmp.sub")
-        f_mpv_sub = Path.joinpath(video_filename_dirname, ".tmp_mpv.sub")
+        f_edl = Path.joinpath(video_file_dir, ".tmp.edl")
+        f_mpv_edl = Path.joinpath(video_file_dir, ".tmp_mpv.edl")
+        f_sub = Path.joinpath(video_file_dir, ".tmp.sub")
+        f_mpv_sub = Path.joinpath(video_file_dir, ".tmp_mpv.sub")
 
         def check_prog(prog):
             cmdfound = False

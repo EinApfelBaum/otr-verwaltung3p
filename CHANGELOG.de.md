@@ -1,6 +1,32 @@
+### 1.0.0b9
+* Zusammenfassung "Erneut schneiden" -> Cutinterface "Abbrechen" öffnete sofort
+  wieder das Cutinterface. Dies ist behoben.
+* Cutinterface
+  - Die Anzeige/farbliche Markierung der Keyframe-Positionen wurde für das neue
+    HD-Format deaktiviert, weil Keyframes mit einem Offset von 2 angezeigt werden.
+  - "Schnitt testen" ist jetzt nur aktiv, wenn ein Schnitt ausgewählt ist.
+
+### 1.0.0b8.post2
+* Fügt den Button "Erneut schneiden" zur Zusammenfassung hinzu, der den Schnitt
+  abbricht und die Datei erneut im Cutinterface öffnet.
+* Zusammenfassung:
+  - "Schnitt abbrechen" schliesst den Dialog, falls nur eine Datei geschnitten
+    wurde.
+* Einstellungen:
+  - Blendet Einträge für vdub und wineprefix in Einstellungen aus
+* Sonstiges:
+  - Behebt Fehler in cutvirtualdub.py (wine nicht gefunden).
+
+### 1.0.0b8.post1
+* Korrigiert Fehler beim Schneiden von HD2-Dateien.
+* f-strings mit zu neuer Syntax wurden wurden geändert (cutlists.py).
+* Behebt Fehler im Plugin "Abspielen" (Play.py).
+* "Am Ende automatisch MP4 erzeugen" kopiert jetzt alle Audiotracks (smartmkvmerge).
+* Fehler in bin/otrverwaltung3p behoben (stürzt ab, wenn Pfadname in der Konfiguration leer ist).
+
 ### 1.0.0b8
 
-* Behebt Probleme beim Schneiden des neuen HD-Formates
+* Behebt Probleme beim Schneiden des neuen HD-Formates.
 
 ##### Cutinterface (CI):
 * Fügt eine dritte Stufe der Cutlist-Suche "nach Größe" hinzu:

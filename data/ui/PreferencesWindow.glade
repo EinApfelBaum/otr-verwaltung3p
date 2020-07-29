@@ -1558,7 +1558,8 @@ Dies kann man hier dahingehend √§ndern, dass die Zusammenfassung automatisch ge√
                               <object class="GtkLabel" id="lbl_encoding_engine">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="tooltip_text" translatable="yes">Welcher Kodierer benutzt werden soll. ffmpeg oder x264</property>
+                                <property name="tooltip_text" translatable="yes">Welcher Kodierer benutzt werden soll. ffmpeg oder x264
+HINWEIS: Das neue HD-Fomat wird immer mit ffmpeg geschnitten!</property>
                                 <property name="halign">start</property>
                                 <property name="margin_end">10</property>
                                 <property name="label" translatable="yes">Kodierer:</property>
@@ -1573,7 +1574,8 @@ Dies kann man hier dahingehend √§ndern, dass die Zusammenfassung automatisch ge√
                               <object class="GtkComboBoxText" id="encoder_engine">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="tooltip_text" translatable="yes">Welcher Kodierer benutzt werden soll. ffmpeg oder x264</property>
+                                <property name="tooltip_text" translatable="yes">Welcher Kodierer benutzt werden soll. ffmpeg oder x264
+HINWEIS: Das neue HD-Fomat wird immer mit ffmpeg geschnitten!</property>
                                 <property name="halign">start</property>
                                 <property name="active_id">ffmpeg</property>
                                 <items>

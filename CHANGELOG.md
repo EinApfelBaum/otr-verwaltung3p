@@ -1,3 +1,35 @@
+### 1.0.0b9
+* Fixes: ConclusionDialog "Erneut schneiden" -> Cutinterface "Abbrechen"
+  instantly reopening the Cutinterface
+* Cutinterface
+  - New HD format: Showing/coloring of keyframe positions is disabled because
+    keyframes are shown with an offset of 2 in the Cutinterface
+  - "Schnitt testen" button now only active when a cut is selected
+
+### 1.0.0b8.post2
+* Forces correct config value for [programs] vdub
+* Adds Button "Erneut schneiden" to ConclusionDialog which cancels the cut
+  process and reinvokes the Cutinterface
+* ConclusionDialog:
+  - Button "Schnitt abbrechen" now closes the dialog if only one file was cut
+* PreferenceWindow:
+  - Hides entries for vdub and wineprefix in settings
+* Other:
+  - Fixes deleting ffmsindex files even if cutting was canceled (code was moved
+    to conclusions.py)
+* Fixes cutsview (Cutinterface) intercepting keystrokes.
+* Changes for the AUR git package to show an extended version
+* More robust adaption of path.py (Installation)
+* Fixes bug in cutvirtualdub.py (wine not found)
+
+### 1.0.0b8.post1
+* Fixes error cutting HD2 files
+* Fixes f-string usage (cutlists.py)
+* Fixes unreadable text in message_error_box (otrverwaltung3p)
+* Fixes bug in plugin "Abspielen" (Play.py)
+* Fixes only one audio track is copied when remuxing to mp4 (smartmkvmerge)
+* Fixes bug in bin/otrverwaltung3p (crashes when pathname in config is empty)
+
 ### 1.0.0b8
 * Fixes problems with new HD format
 
