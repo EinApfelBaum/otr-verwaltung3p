@@ -29,7 +29,7 @@ from otrverwaltung3p.gui.widgets.CutlistsTreeView import CutlistsTreeView
 
 
 class CutDialog(Gtk.Dialog, Gtk.Buildable):
-    """ Dialog, um den Schnittmodus constants.Cut_action und ggf die Cutlist auszuwählen """
+    """ Dialog, um den Schnittmodus constants.CutAction und ggf die Cutlist auszuwählen """
 
     __gtype_name__ = "CutDialog"
 

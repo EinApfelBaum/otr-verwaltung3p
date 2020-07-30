@@ -903,6 +903,7 @@ Die Namen der Programme müssen überprüft werden!&lt;/i&gt;</property>
                                     <items>
                                       <item id="SmartMKVmerge" translatable="yes">SmartMKVmerge</item>
                                       <item id="intern-vdub" translatable="yes">intern-vdub</item>
+                                      <item id="vdub.exe" translatable="yes">vdub.exe</item>
                                     </items>
                                   </object>
                                   <packing>

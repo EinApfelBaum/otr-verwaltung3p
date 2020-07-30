@@ -84,7 +84,7 @@ class PluginSystem:
                     try:
                         plugin_module = __import__(plugin_name)
                     except Exception as error:
-                        self.log.error("Error in >{0}< plugin: {1}".format(plugin_name, error))
+                        self.log.error(f"Error in >{plugin_name}< plugin: {error}")
                         continue
 
                     # instanciate plugin

@@ -178,8 +178,12 @@ class Cut(BaseAction):
                 bframe_delay = 0
                 ac3name = os.path.splitext(root)[0] + ".HD.ac3"
             else:
-                vformat = self.format_dict[self.media_info.tracks[1].format_profile]
-                self.log.debug(f"Format: {vformat}")
+                # print(f"self.media_info.tracks[1].format_profile: {self.media_info.tracks[1].format_profile}")
+                format_profile = self.media_info.tracks[1].format_profile
+                if " / " in format_profile:
+                    format_profile = format_profile.split(" / ")[0]
+                vformat = self.format_dict[format_profile]
+                self.log.error(f"Format: {vformat}")
                 ac3name = root + ".HD.ac3"
         elif extension == ".ac3":
             vformat = Format.AC3
@@ -237,27 +241,12 @@ class Cut(BaseAction):
 
         if sys.platform == "linux":
             vdub = otrvpath.get_internal_virtualdub_path("vdub.exe")
+        elif sys.platform == "win32":
+            vdub = self.app.config.get_program("vdub")
+            if not (os.path.exists(vdub) and vdub.endswith(vdub.exe)):
+                vdub = None
         else:
-            if os.path.exists(self.app.config.get_program("vdub")):
-                vdub = self.config.get_program("vdub")
-                if not vdub.endswith(vdub.exe):
-                    return (
-                        -2,
-                        (
-                            "'vdub.exe' konnte nicht gefunden werden. Bitte prüfen Sie den Pfad unter "
-                            "Einstellungen->Programme->vdub.exe"
-                        ),
-                        False,
-                    )
-            else:
-                return (
-                    -2,
-                    (
-                        "'vdub.exe' konnte nicht gefunden werden. Bitte prüfen Sie den Pfad unter "
-                        "Einstellungen->Programme->vdub.exe"
-                    ),
-                    False,
-                )
+            vdub = None
 
         if "avidemux" in config_value:
             return Program.AVIDEMUX, config_value, ac3
@@ -268,9 +257,26 @@ class Cut(BaseAction):
                 ac3,
             )
         elif "intern-vdub" in config_value:
-            return Program.VIRTUALDUB, vdub, ac3
+            if vdub is None:
+                return (
+                    -2,
+                    ("vdub wurde nicht gefunden. Das Paket 'otr-verwaltung3p-vdub' scheint nicht installiert zu sein"),
+                    False,
+                )
+            else:
+                return Program.VIRTUALDUB, vdub, ac3
         elif "vdub" in config_value or "VirtualDub" in config_value:
-            return Program.VIRTUALDUB, config_value, ac3
+            if vdub is None:
+                return (
+                    -2,
+                    (
+                        "'vdub.exe' konnte nicht gefunden werden. Bitte prüfen Sie den Pfad unter "
+                        "Einstellungen->Programme->vdub.exe"
+                    ),
+                    False,
+                )
+            else:
+                return Program.VIRTUALDUB, config_value, ac3
         elif "CutInterface" in config_value and manually:
             return Program.CUT_INTERFACE, config_value, ac3
         elif "SmartMKVmerge" in config_value:

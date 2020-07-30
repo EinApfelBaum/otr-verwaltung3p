@@ -301,18 +301,6 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             "general", "passwd_store", lambda value: self._radio_passwd_store_toggled(value),
         )
 
-        # Delete combobox entries for intern-vdub if not installed
-        if otrvpath.get_internal_virtualdub_path("vdub.exe") is None:
-            for widget_name in [
-                "combobox_avi",
-                "combobox_hq",
-                "combobox_hd2",
-                "combobox_mp4",
-            ]:
-                self.obj(widget_name).remove(1)
-        # and (not os.path.exists(self.app.config.get_program('vdub'))
-        #      or not os.path.exists(self.app.config.get_program('wineprefix')))
-
         # Initializing
         self.obj("entry_password").set_visibility(False)
         self.obj("entry_schema").set_sensitive(self.app.config.get("general", "rename_cut"))
@@ -320,6 +308,8 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         self.obj("label_iconsize").set_sensitive(not self.obj("check_use_internal_icons").get_active())
         self.obj("spinbutton_iconsize").set_sensitive(not self.obj("check_use_internal_icons").get_active())
         self._radio_passwd_store_toggled(self.app.config.get("general", "passwd_store"))
+
+        # Show normalize_audio only if audio conversion to AAC is chosen
         first = "AAC" in self.app.config.get("smartmkvmerge", "first_audio_stream")
         second = "AAC" in self.app.config.get("smartmkvmerge", "second_audio_stream")
         if first or second:
@@ -327,11 +317,33 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         else:
             self.obj("check_normalize_audio").set_sensitive(False)
 
-        # for prog in ["ffmpeg", "ffprobe", "ffmsindex", 'x264', 'mpv']:
-        #     for prefix in ['lbl_prog_', 'entry_prog_', 'btn_prog_', 'lbl_check_']:
-        #         self.obj(prefix + prog).set_visible(False)
-        # if sys.platform != 'win32':
-        for prog in ["vdub", "wineprefix"]:
+        # Delete combobox entries "intern-vdub" if not installed and "vdub.exe" if not on Windows
+        intern_vdub_available = False
+        vdubexe_available = False
+        if sys.platform == "linux":
+            if otrvpath.get_internal_virtualdub_path("vdub.exe") is not None:
+                intern_vdub_available = True
+        elif sys.platform == "win32":
+            vdub = self.app.config.get_program("vdub")
+            if os.path.exists(vdub) and vdub.endswith(vdub.exe):
+                vdubexe_available = True
+
+        for widget_name in [
+            "combobox_avi",
+            "combobox_hq",
+            "combobox_hd2",
+            "combobox_mp4",
+        ]:
+            if not intern_vdub_available:
+                self.obj(widget_name).remove(1)
+            if not vdubexe_available:
+                self.obj(widget_name).remove(2)
+
+        # Hide some fields in tab "Programme"
+        progs2 = ["wineprefix"]
+        if sys.platform == "linux":
+            progs2.append("vdub")
+        for prog in progs2:
             for prefix in ["lbl_prog_", "entry_prog_", "btn_prog_", "lbl_check_"]:
                 self.obj(prefix + prog).set_visible(False)
 
