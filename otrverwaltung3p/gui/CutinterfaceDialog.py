@@ -220,16 +220,13 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.config = app.config
         self.filename = Path(filename)
         self.fileuri = self.filename.as_uri()
-        fname_extension = self.filename.suffix
         self.config_update()
         self.seek_distance = self.seek_distance_default
-        # HD2
+
+        # HD2 Store config value of atfc and set it temporarily to False for this file
         self.vformat, _, _, _ = self.get_format(str(self.filename))
         old_atfc = None
-        # --> HD2
-
-        # HD2 Store config value of atfc and set it temporarily to False
-        if self.vformat == Format.HD2 and fname_extension != ".mkv":
+        if self.vformat == Format.HD2:
             old_atfc = self.config.get("cutinterface", "alt_time_frame_conv")
             self.config.set("cutinterface", "alt_time_frame_conv", False)
         # --> HD2
