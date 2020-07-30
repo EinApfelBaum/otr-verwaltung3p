@@ -702,9 +702,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.clipboard.set_text(str(self.filename), -1)
 
     def time_to_frame(self, nanoseconds):
-        """ Searches in dict self.timecode_frame for the nearest timecode
-        for the variable 'position' (in nanoseconds) and returns the frame number.
-        """
+        """Return the frame number for time"""
         if self.config.get("cutinterface", "alt_time_frame_conv"):
             if nanoseconds in self.timecode_frame:
                 return self.timecode_frame[nanoseconds]
@@ -713,18 +711,20 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 # ~ self.log.debug("nearest_position: {}".format(nearest_position))
                 return self.timecode_frame[nearest_position]
         else:
-            return round(nanoseconds * self.fps / Gst.SECOND)
+            return round(nanoseconds / Gst.SECOND * self.fps)
 
     def frame_to_time(self, frame_number):
         """Returns the time (nanoseconds) for frame_number."""
+        if frame_number < 0:
+            return 0
+        elif frame_number > self.frames:
+            return self.videolength
+
         if self.config.get("cutinterface", "alt_time_frame_conv"):
             if frame_number in self.frame_timecode:
                 return self.frame_timecode[frame_number]
             else:
-                if frame_number < 0:
-                    return 0
-                else:
-                    return self.videolength
+                return self.current_position
         else:
             return frame_number / self.fps * Gst.SECOND
 

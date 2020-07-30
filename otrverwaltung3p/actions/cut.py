@@ -620,6 +620,8 @@ class Cut(BaseAction):
             except ValueError:
                 pass
 
+        self.app.gui.main_window.set_tasks_text("")
+        self.app.gui.main_window.set_tasks_progress(0)
         return
 
     def get_keyframe_in_front_of_frame(self, keyframes, frame):

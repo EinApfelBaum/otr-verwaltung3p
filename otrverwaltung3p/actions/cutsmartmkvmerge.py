@@ -237,6 +237,8 @@ class CutSmartMkvmerge(Cut):
 
         command = [
             mkvmerge,
+            "--ui-language",
+            "en_US",
             "-D",
             "--split",
             "parts:" + audio_timecodes,
@@ -341,6 +343,8 @@ class CutSmartMkvmerge(Cut):
         if video_splitframes:
             command = [
                 mkvmerge,
+                "--ui-language",
+                "en_US",
                 "-A",
                 "--split",
                 "parts-frames:" + video_splitframes,
@@ -516,7 +520,17 @@ class CutSmartMkvmerge(Cut):
             cut_video = os.path.splitext(self.generate_filename(filename, 1))[0] + ".mkv"
 
         command = (
-            [mkvmerge, "--engage", "no_cue_duration", "--engage", "no_cue_relative_position", "-o", cut_video]
+            [
+                mkvmerge,
+                "--ui-language",
+                "en_US",
+                "--engage",
+                "no_cue_duration",
+                "--engage",
+                "no_cue_relative_position",
+                "-o",
+                cut_video,
+            ]
             + self.video_files
             + self.audio_files
         )

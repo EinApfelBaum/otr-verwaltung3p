@@ -518,6 +518,8 @@ class DecodeOrCut(Cut):
             cuts_frames, cutlist_error = cutter.create_cutlist(filename, config_value)
 
         if program == Program.CUT_INTERFACE:
+            self.app.gui.main_window.set_tasks_text("")
+            self.app.gui.main_window.set_tasks_progress(0)
             self.app.file_to_recut = None
             # looking for latest cutlist, if any
             filename = Path(filename)
