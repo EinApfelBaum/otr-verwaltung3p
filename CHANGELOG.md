@@ -1,4 +1,4 @@
-### 1.0.0b9
+### 1.0.0b8.post3
 * Fixes: ConclusionDialog "Erneut schneiden" -> Cutinterface "Abbrechen"
   instantly reopening the Cutinterface
 * Cutinterface

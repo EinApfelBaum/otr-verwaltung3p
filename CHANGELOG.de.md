@@ -1,4 +1,4 @@
-### 1.0.0b9
+### 1.0.0b8.post3
 * Zusammenfassung "Erneut schneiden" -> Cutinterface "Abbrechen" öffnete sofort
   wieder das Cutinterface. Dies ist behoben.
 * Cutinterface
