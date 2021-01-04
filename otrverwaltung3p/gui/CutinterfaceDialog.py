@@ -795,7 +795,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             if self.getVideoLength:
                 self.getVideoLength = not self.getVideoLength
                 self.log.debug("Async done")
-                self.log.debug(f"{self.getVideoLength = }")
+                self.log.debug(f"getVideoLength = {self.getVideoLength}")
                 self.videolength = self.player.query_duration(Gst.Format.TIME)[1]
                 self.frames = round(self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND)  # ROUND
                 self.slider.set_range(0, self.get_frames())
