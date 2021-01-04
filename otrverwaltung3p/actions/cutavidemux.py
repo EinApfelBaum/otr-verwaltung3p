@@ -242,13 +242,12 @@ class CutAvidemux(Cut):
 
         while avidemux.poll() is None:
             time.sleep(1)
-            #            TODO: make it happen
-            #            line = avidemux.stderr.readline()
+            # line = avidemux.stderr.readline()
             #
-            #            if "Done:" in line:
-            #                progress = line[line.find(":") + 1 : line.find("%")]
-            #                self.gui.main_window.set_tasks_progress(int(progress))
-            #
+            # if "Done:" in line:
+            #     progress = line[line.find(":") + 1 : line.find("%")]
+            #     self.gui.main_window.set_tasks_progress(int(progress))
+
             while Gtk.events_pending():
                 Gtk.main_iteration()
 

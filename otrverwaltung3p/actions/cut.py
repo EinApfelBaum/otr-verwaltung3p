@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 # END LICENSE
+from decimal import Decimal
 import bisect
 import gc
 import logging
@@ -40,16 +41,26 @@ Gst.init(None)
 
 
 class Cut(BaseAction):
-    #  format_dict: Both, old HD anf HQ use "Main@L3", so these are not listed here.
     format_dict = {
+        "Baseline@L1.3": Format.MP4,
+        "High@L3": Format.HQ,
         "High@L4": Format.HD,
+        "High@L3.0": Format.HQ,
+        "High@L3.1": Format.HQ,
         "High@L3.2": Format.HD,
         "Main@L3.2": Format.HD2,
-        "High@L3.1": Format.HQ,
-        "High@L3.0": Format.HQ,
-        "High@L3": Format.HQ,
+        "Main@L3": Format.HD0,
         "Simple@L1": Format.AVI,
-        "Baseline@L1.3": Format.MP4,
+    }
+    bframe_delays = {
+        Format.AVI: 1,
+        Format.HD: 2,
+        Format.HD0: 1,
+        Format.HD2: 0,
+        Format.HQ: 2,
+        Format.HQ0: 1,
+        Format.MP4: 0,
+        Format.MP40: 0,
     }
 
     def __init__(self, app, gui):
@@ -102,13 +113,16 @@ class Cut(BaseAction):
             self.media_info = MediaInfo.parse(filename)
 
         codec_core = self.get_codeccore(filename)
-        self.log.debug(f"get_format:get_codeccore: {codec_core}")
 
-        bframe_delay = 1
+        self.log.debug(f"get_format:get_codeccore: {codec_core}")
+        if self.media_info.tracks[1].width:
+            video_width = self.media_info.tracks[1].width
+        else:
+            video_width = None
+
         if extension == ".avi":
             if os.path.splitext(root)[1] == ".HQ":
                 if codec_core >= 125:
-                    bframe_delay = 2
                     vformat = Format.HQ
                     self.log.debug(f"vformat = Format.HQ, value: {Format.HQ}")
                 else:  # old OTR file
@@ -117,12 +131,10 @@ class Cut(BaseAction):
                 ac3name = os.path.splitext(root)[0] + ".HD.ac3"
             elif os.path.splitext(root)[1] == ".HD":
                 if codec_core >= 125:
-                    bframe_delay = 2
                     vformat = Format.HD
                     self.log.debug(f"vformat = Format.HD, value: {Format.HD}")
                 elif codec_core == 0:  # new HD 2020
                     vformat = Format.HD2
-                    bframe_delay = 0
                     self.log.debug(f"vformat = Format.HD2, value: {Format.HD2}")
                 else:  # old OTR file
                     vformat = Format.HD0  # old HD
@@ -130,24 +142,17 @@ class Cut(BaseAction):
                 ac3name = root + ".ac3"
             elif os.path.splitext(root)[1] == ".test" and codec_core == 0:
                 vformat = Format.HD2
-                bframe_delay = 0
                 ac3name = os.path.splitext(root)[0] + ".ac3"
             else:
-                bframe_delay = 2
                 vformat = Format.AVI
                 ac3name = root + ".HD.ac3"
         elif extension == ".mp4":
-            bframe_delay = 0
             if os.path.splitext(root)[1] == ".HQ":
                 vformat = Format.HQ
                 ac3name = os.path.splitext(root)[0] + ".HD.ac3"
             elif os.path.splitext(root)[1] == ".HD":
                 vformat = Format.HD
                 ac3name = root + ".ac3"
-            elif os.path.splitext(root)[1] == ".test":
-                vformat = Format.HD2
-                bframe_delay = 0
-                ac3name = os.path.splitext(root)[0] + ".HD.ac3"
             else:
                 if codec_core >= 125:
                     vformat = Format.MP4
@@ -157,45 +162,44 @@ class Cut(BaseAction):
         elif extension == ".mkv":
             if os.path.splitext(root)[1] == ".HQ":
                 if codec_core >= 125:
-                    bframe_delay = 2
                     vformat = Format.HQ
                 else:  # old OTR file
                     vformat = Format.HQ0
                 ac3name = os.path.splitext(root)[0] + ".HD.ac3"
             elif os.path.splitext(root)[1] == ".HD":
                 if codec_core >= 125:
-                    bframe_delay = 2
                     vformat = Format.HD
                 elif codec_core == 0:
                     vformat = Format.HD2
-                    bframe_delay = 0
                 else:  # old OTR file
-                    bframe_delay = 1
                     vformat = Format.HD0  # old HD
                 ac3name = root + ".ac3"
             elif os.path.splitext(root)[1] == ".test":
                 vformat = Format.HD2
-                bframe_delay = 0
                 ac3name = os.path.splitext(root)[0] + ".HD.ac3"
             else:
-                # print(f"self.media_info.tracks[1].format_profile: {self.media_info.tracks[1].format_profile}")
                 format_profile = self.media_info.tracks[1].format_profile
                 if " / " in format_profile:
                     format_profile = format_profile.split(" / ")[0]
                 vformat = self.format_dict[format_profile]
-                self.log.error(f"Format: {vformat}")
+                # The format profiles "Baseline@L1.3" and "Main@L3" are ambiguous:
+                if vformat == Format.MP4:
+                    if codec_core < 125:
+                        vformat = Format.MP40
+                elif vformat == Format.HD0:
+                    if video_width is not None and video_width == 720:
+                        vformat = Format.HQ0
+                self.log.debug(f"Format: {vformat}")
                 ac3name = root + ".HD.ac3"
         elif extension == ".ac3":
             vformat = Format.AC3
             ac3name = root
         else:
-            return -1, None
-
+            return -1, None, None, None
         if os.path.isfile(ac3name):
-            return vformat, ac3name, bframe_delay, codec_core
+            return vformat, ac3name, self.bframe_delays[vformat], codec_core
         else:
-            # print(f"format: {vformat}, bframe_delay: {bframe_delay}, codec_core: {codec_core}")
-            return vformat, None, bframe_delay, codec_core
+            return vformat, None, self.bframe_delays[vformat], codec_core
 
     def get_program(self, filename, manually=False):
         if manually:
@@ -314,8 +318,9 @@ class Cut(BaseAction):
             ]
         )
         # splitting .ac3. Every second fragment will be used.
-        # return_value = subprocess.call([mkvmerge, "--split", "timecodes:" + timecodes, "-o",
-        #                                                           root + "-%03d.mka", ac3_file])
+        # return_value = subprocess.call(
+        #     [mkvmerge, "--split", "timecodes:" + timecodes, "-o", root + "-%03d.mka", ac3_file]
+        # )
         try:
             blocking_process = subprocess.Popen(
                 [
@@ -335,6 +340,7 @@ class Cut(BaseAction):
             )
         except OSError as e:
             return None, e.strerror + ": " + mkvmerge
+
         return_value = blocking_process.wait()
         # return_value=0 is OK, return_value=1 means a warning. Most probably non-ac3-data that
         # has been omitted.
@@ -370,7 +376,7 @@ class Cut(BaseAction):
 
                     # Mux the cut .avi with the resulting audio-file into mkv_file
                     # TODO: Is there some way to pass possible warnings to the conclusion dialog?
-                #        return_value = subprocess.call([mkvmerge, "-o", mkv_file, cut_video, root + ".mka"])
+                    # return_value = subprocess.call([mkvmerge, "-o", mkv_file, cut_video, root + ".mka"])
         try:
             blocking_process = subprocess.Popen(
                 [mkvmerge, "-o", mkv_file, cut_video, root + ".mka"],
@@ -390,16 +396,14 @@ class Cut(BaseAction):
         return mkv_file, ac3_file, None
 
     @staticmethod
-    def seconds_to_hms(time, seconds_as_int=False):
+    def seconds_to_hms(seconds):
         # converts the seconds into a timecode-format that mkvmerge understands
-        minute, second = divmod(int(time), 60)  # discards milliseconds
+        minute, second = divmod(int(seconds), 60)  # discards milliseconds
         hour, minute = divmod(minute, 60)
-        second = time - minute * 60 - hour * 3600  # for the milliseconds
-        if seconds_as_int:
-            return f"{hour:02}:{minute:02}:{int(second):02}"
-        else:
-            # return "%02i:%02i:%f" % (hour, minute, second)
-            return f"{hour:02}:{minute:02}:{second:.9}"
+        second = seconds - minute * 60 - hour * 3600  # for the milliseconds
+
+        return "%02i:%02i:%f" % (hour, minute, second)
+        # return f"{hour:02d}:{minute:02d}:{second:.f}"
 
     def analyse_mediafile(self, filename):
         # TODO: gCurse Also get file format through mediainfos "format profile" or ffmpeg.
@@ -578,6 +582,7 @@ class Cut(BaseAction):
 
         # Generate reverse dict
         timecode_frame = {v: k for k, v in frame_timecode.items()}
+        # DEBUG
         # with open("/tmp/otrv_tc_frame.txt", "w") as file_:
         #     for k, v in timecode_frame.items():
         #         file_.write(f"{k} : {v}\n")
@@ -1029,9 +1034,10 @@ class Cut(BaseAction):
 
     @staticmethod
     def available_cpu_count():
-        """ Number of available virtual or physical CPUs on this system, i.e.
-        user/real as output by time(1) when called with an optimally scaling
-        userspace-only program"""
+        """Number of available virtual or physical CPUs on this system, i.e.
+           user/real as output by time(1) when called with an optimally scaling
+           userspace-only program
+        """
 
         # cpuset may restrict the number of *available* processors
         try:

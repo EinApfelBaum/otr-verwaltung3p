@@ -18,17 +18,17 @@
 class Section:
     """ Die verschiedenen Ansichten """
 
-    PLANNING = 6
-    DOWNLOAD = 7
-    """ Geplante Sendungen"""
     OTRKEY = 0
-    """ Nicht dekodiert """
+    # Nicht dekodiert
     VIDEO_UNCUT = 1
     VIDEO_CUT = 2
     ARCHIVE = 3
     TRASH = 4
     TRASH_AVI = 5
+    PLANNING = 6
+    DOWNLOAD = 7
     TRASH_OTRKEY = 8
+    TRASH_CUTLIST = 9
 
 
 class Action:

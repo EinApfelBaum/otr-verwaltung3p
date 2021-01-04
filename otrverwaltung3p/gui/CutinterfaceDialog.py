@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import time
+from decimal import Decimal
 from pathlib import Path
 
 import cairo  # noqa F401 gcurse: DO NOT DELETE
@@ -36,13 +37,14 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.log = logging.getLogger(self.__class__.__name__)
+        self.atfc = None  # alternative time <-> frame conversion
         self.builder = None
-        self.bus = None
+        self.bus = None  # gstreamer bus
         self.buttonClose = False
         self.buttonOk = False
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
-        self.current_frame_position = 0
-        self.current_position = 0
+        self.current_position_frame = 0
+        self.current_position_time = 0
         self.cut_selected = -1
         self.cut_selected_last = -1
         self.cutlist, self.cutslistmodel = None, None
@@ -56,6 +58,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.getVideoLength = True
         self.gtksink = None
         self.hide_cuts = False
+        self.hide_mouse_over_video = False
         self.img_pause, self.img_play = None, None
         self.initial_cutlist = []
         self.initial_cutlist_in_frames = False
@@ -65,6 +68,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.last_direction = "none"
         self.marker_a, self.marker_b = 0, -1
         self.movie_box = None
+        self.nkfs = None  # new keyframe search
         self.player = None
         self.seek_distance = 0
         self.seek_distance_default = 0
@@ -75,6 +79,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.timelines = [[]]
         self.timeoutcontrol = True
         self.timer, self.timer2 = None, None
+        self.timer_hide_cursor = None
         self.vformat = None
         self.videoheight = 0
         self.videolength = 0
@@ -127,8 +132,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.hide_cuts = self.builder.get_object("checkbutton_hide_cuts").get_active()
 
         self.cutslistmodel = self.builder.get_object("cutslist")
-        cutslistselection = self.builder.get_object("cutsview").get_selection()
-        cutslistselection.connect("changed", self.on_cuts_selection_changed)
+        # Now in glade:
+        # cutslistselection = self.builder.get_object("cutsview").get_selection()
+        # cutslistselection.connect("changed", self.on_cuts_selection_changed)
 
         button_delete_cut = self.builder.get_object("button_delete_cut")
         button_delete_cut.set_sensitive(False)
@@ -198,12 +204,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         if self.slider:
             self.slider.queue_draw()
+
         return cutlist
 
     def set_cuts(self, cutlist, cuts):
-        self.log.debug("Function start")
-        self.log.debug(f"var cutlist: {cutlist}")
-        self.log.debug(f"var cuts: {cuts}")
         cutlist.fps = self.fps
         cutlist.cuts_frames = cuts
         cutlist.cuts_seconds = []
@@ -214,29 +218,18 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             cutlist.cuts_seconds.append((s, d))
 
     def run_(self, filename, cutlist, app):
-        self.log.debug("function start")
         self.set_title("Cutinterface")
         self.app = app
         self.config = app.config
         self.filename = Path(filename)
         self.fileuri = self.filename.as_uri()
-        self.config_update()
-        self.seek_distance = self.seek_distance_default
 
-        # HD2 Store config value of atfc and set it temporarily to False for this file
         self.vformat, _, _, _ = self.get_format(str(self.filename))
-        old_atfc = None
-        if self.vformat == Format.HD2:
-            old_atfc = self.config.get("cutinterface", "alt_time_frame_conv")
-            self.config.set("cutinterface", "alt_time_frame_conv", False)
-        # --> HD2
 
-        if self.config.get("cutinterface", "alt_time_frame_conv"):
-            (self.frame_timecode, self.timecode_frame, error,) = self.get_timecodes_from_file(str(self.filename))
-            # with open('____d_frame_timecode.json', 'w') as fp:
-            #     json.dump(self.frame_timecode, fp)
-            # with open('____d_timecode_frame.json', 'w') as fp:
-            #     json.dump(self.timecode_frame, fp)
+        self.config_update()
+
+        if self.atfc:
+            self.frame_timecode, self.timecode_frame, error = self.get_timecodes_from_file(str(self.filename))
             if self.frame_timecode is None:
                 self.log.error("Error: Timecodes konnten nicht ausgelesen werden.")
 
@@ -282,22 +275,20 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
         self.ready_callback()
 
-        self.timer2 = GLib.timeout_add(600, self.update_listview)
         # Reset cursor MainWindow
         self.app.gui.main_window.get_window().set_cursor(None)
+
+        self.timer2 = GLib.timeout_add(600, self.update_listview)
 
         if Gtk.ResponseType.OK == self.run():
             self.set_cuts(self.cutlist, self.timelines[-1])
         else:
             self.set_cuts(self.cutlist, [])
 
-        # Set return value of self.tick to false, so self.timer
-        # is stopped if it still exists
+        # Set return value of self.tick to false, so self.timer is stopped if it still exists
         self.timeoutcontrol = False
-        # HD2 Reset atfc to original value
-        if old_atfc:
-            self.config.set("cutinterface", "alt_time_frame_conv", old_atfc)
-        # --> HD2
+        # Un-hide the PreferencesWindow notebook tabs
+        self.preferences_window_pages_visible(True)
 
         return self.cutlist
 
@@ -319,7 +310,14 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             pass
 
     def config_update(self):
+        self.hide_mouse_over_video = self.config.get("cutinterface", "mouse_hide_over_video")
+        if self.vformat == Format.HD2:
+            self.atfc = False
+        else:
+            self.atfc = self.config.get("cutinterface", "alt_time_frame_conv")
+        self.nkfs = self.config.get("cutinterface", "new_keyframe_search")
         self.seek_distance_default = self.config.get("cutinterface", "seek_distance_default") * Gst.SECOND
+        self.seek_distance = self.seek_distance_default
         # Setup buttons
         seek1 = str(self.config.get("cutinterface", "seek1"))
         seek2 = str(self.config.get("cutinterface", "seek2"))
@@ -328,12 +326,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.builder.get_object("button_seek1_back").set_label(f"<< {seek1} s")
         self.builder.get_object("button_seek1_forward").set_label(f"{seek1} s >>")
         self.builder.get_object("switch_tooltip").set_active(self.config.get("cutinterface", "show_tooltips"))
-        self.builder.get_object("switch_keyframesearch").set_active(
-            not self.config.get("cutinterface", "new_keyframe_search")
-        )
+        self.builder.get_object("switch_keyframesearch").set_active(not self.nkfs)
         if not self.config.get("cutinterface", "show_tooltips"):
             self.on_switch_tooltip_state_set(None)
-        if self.config.get("cutinterface", "new_keyframe_search"):
+        if self.nkfs:
             self.on_switch_keyframesearch_state_set(None)
         self.adjust_volume()
 
@@ -525,7 +521,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         else:
             self.builder.get_object("btn_test_cut").set_sensitive(self.cut_selected != -1)
             try:
-                success, self.current_position = self.query_position(Gst.Format.TIME)
+                success, self.current_position_time = self.query_position(Gst.Format.TIME)
                 duration = self.player.query_duration(Gst.Format.TIME)[1]
                 if not success:
                     return
@@ -533,16 +529,13 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 self.log.warning(f"Exception: {e}")
                 return
 
-            if self.config.get("cutinterface", "alt_time_frame_conv"):
-                self.current_frame_position = self.time_to_frame(self.current_position)
-            else:
-                self.current_frame_position = round(self.current_position * self.fps / Gst.SECOND)
+            self.current_position_frame = self.time_to_frame(self.current_position_time)
 
             label_time_colors = self.config.get("cutinterface", "label_time_colors")
             frame_color = label_time_colors[1]
             if (
                 self.keyframes is not None
-                and self.current_frame_position in self.keyframes
+                and self.current_position_frame in self.keyframes
                 and self.vformat != Format.HD2
             ):
                 if self.config.get("cutinterface", "label_time_colors")[0]:
@@ -553,37 +546,52 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                     frame_color = label_time_colors[2]
                 string = '<span font_family="monospace">    </span>'
 
+            disp_frame = f"{self.current_position_frame} / {self.get_frames() - 1}"
+            disp_hms = f"{self.nanoseconds_to_hms(self.current_position_time)} / {self.nanoseconds_to_hms(duration)}"
+            disp_sec = (
+                f"{round(Decimal(self.current_position_time / Gst.SECOND), 3):.3f} / "
+                f"{round(Decimal(duration / Gst.SECOND), 3):.3f}"
+            )
+            # if self.config.get("cutinterface", "label_time_colors")[0] and self.vformat != Format.HD2:
+            #     self.builder.get_object("lbl_time").set_markup(
+            #         f"<span color='{frame_color}'>Frame: {string}{disp_frame}, </span>"
+            #         f"<span color='{label_time_colors[3]}'>Zeit: {disp_hms}, </span>"
+            #         f"<span color='{label_time_colors[4]}'> Sek: {disp_sec}  </span>"
+            #         f"<span color='{label_time_colors[5]}'>{Format.to_string(self.vformat)}</span>"
+            #     )
+            # else:
+            #     self.builder.get_object("label_time").set_markup(
+            #         f"Frame: {string}{disp_frame}, "
+            #         f"Zeit: {disp_hms}, "
+            #         f"Sek: {disp_sec}  {Format.to_string(self.vformat)}"
+            #     )
             if self.config.get("cutinterface", "label_time_colors")[0] and self.vformat != Format.HD2:
-                self.builder.get_object("label_time").set_markup(
-                    f"<span color='{frame_color}'>Frame: {string}"
-                    f"{self.current_frame_position} / {self.get_frames() - 1}, </span>"
-                    f"<span color='{label_time_colors[3]}'>Zeit: "
-                    f"{self.nanoseconds_to_hms(self.current_position)} / {self.nanoseconds_to_hms(duration)}, </span>"
-                    f"<span color='{label_time_colors[4]}'> Sek: "
-                    f"{round(self.current_position / Gst.SECOND, 2):.2f} / {round(duration / Gst.SECOND, 2):.2f}"
-                    "  </span>"
+                self.builder.get_object("lbl_frame").set_markup(
+                    f"<span color='{frame_color}'>Frame: {string}{disp_frame}</span>"
+                )
+                self.builder.get_object("lbl_time").set_markup(
+                    f"<span color='{label_time_colors[3]}'>Zeit: {disp_hms}</span>"
+                )
+                self.builder.get_object("lbl_seconds").set_markup(
+                    f"<span color='{label_time_colors[4]}'> Sek: {disp_sec}</span>"
+                )
+                self.builder.get_object("lbl_format").set_markup(
                     f"<span color='{label_time_colors[5]}'>{Format.to_string(self.vformat)}</span>"
                 )
             else:
-                self.builder.get_object("label_time").set_markup(
-                    f"Frame: {string}"
-                    f"{self.current_frame_position} / {self.get_frames() - 1}, "
-                    f"Zeit: "
-                    f"{self.nanoseconds_to_hms(self.current_position)} / {self.nanoseconds_to_hms(duration)}, "
-                    f"Sek: "
-                    f"{round(self.current_position / Gst.SECOND, 2):.2f} / {round(duration / Gst.SECOND, 2):.2f}  "
-                    f"{Format.to_string(self.vformat)}"
-                )
+                self.builder.get_object("lbl_frame").set_markup(f"Frame: {string}{disp_frame}")
+                self.builder.get_object("lbl_time").set_markup(f"Zeit: {disp_hms}")
+                self.builder.get_object("lbl_seconds").set_markup(f"Sek: {disp_sec}")
+                self.builder.get_object("lbl_format").set_markup(f"{Format.to_string(self.vformat)}")
 
     def update_slider(self):
         try:
             nanosecs = self.player.query_position(Gst.Format.TIME)[1]
             # block seek handler so we don't seek when we set_value()
             self.builder.get_object("slider").handler_block_by_func(self.on_slider_value_changed)
-            if self.config.get("cutinterface", "alt_time_frame_conv"):
-                frame = self.time_to_frame(nanosecs)
-            else:
-                frame = nanosecs * self.framerate_num / self.framerate_denom / Gst.SECOND
+
+            frame = self.time_to_frame(nanosecs)
+
             self.builder.get_object("slider").set_value(frame)
             self.builder.get_object("slider").handler_unblock_by_func(self.on_slider_value_changed)
         # catch Gst.QueryError
@@ -620,23 +628,26 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.log.debug("Function start")
         listview = self.builder.get_object("cutsview")
         listselection = listview.get_selection()
-        listmodel, listiter = listselection.get_selected()
-        listview.set_model(None)  # for speeding up the update of the view
-        listmodel.clear()
+        if listselection.get_selected():
+            listmodel, listiter = listselection.get_selected()
+            listview.set_model(None)  # for speeding up the update of the view
+            listmodel.clear()
 
-        if not self.getVideoLength:
-            self.inverted_timeline = self.invert_simple(self.timelines[-1])
-            for start, duration in self.inverted_timeline:
-                listmodel.append((start, start + duration - 1))
+            if not self.getVideoLength:
+                self.inverted_timeline = self.invert_simple(self.timelines[-1])
+                for start, duration in self.inverted_timeline:
+                    listmodel.append((start, start + duration - 1))
 
-        cut_duration_secs = sum([duration for start, duration in self.timelines[-1]]) / self.fps
-        cut_duration = self.seconds_to_hms(cut_duration_secs, True)
-        # self.builder.get_object('lbl_cut_duration').set_text(f"Laufzeit: {str(cut_duration)}")
-        self.builder.get_object("lbl_cut_duration").set_text(f"{str(cut_duration)}")
+            cut_duration_secs = sum([duration for start, duration in self.timelines[-1]]) / self.fps
+            cut_duration = self.seconds_to_hms(cut_duration_secs).split(".")[0]
+            self.builder.get_object("lbl_cut_duration").set_text(f"{str(cut_duration)}")
 
-        listview.set_model(listmodel)
-        if listiter:
-            listselection.select_path(listmodel.get_path(listiter))
+            listview.set_model(listmodel)
+            if listiter:
+                listselection.select_path(listmodel.get_path(listiter))
+
+            if self.timer2 is not None:
+                return False
 
     def select_cut(self, direction):
         listview = self.builder.get_object("cutsview")
@@ -685,7 +696,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         else:
             self.builder.get_object("button_remove").set_label("Übernehmen")
 
-    def cmenu_lbl_filename(self, *args, **kwargs):
+    def cmenu_lbl_filename(self):
         menu = Gtk.Menu()
         items = [("Dateiname kopieren", "name"), ("Dateiname mit Pfad kopieren", "path")]
         for label, action in items:
@@ -701,9 +712,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         elif action == "path":
             self.clipboard.set_text(str(self.filename), -1)
 
-    def time_to_frame(self, nanoseconds):
+    def time_to_frame(self, nanoseconds: int) -> int:
         """Return the frame number for time"""
-        if self.config.get("cutinterface", "alt_time_frame_conv"):
+        if self.atfc:
             if nanoseconds in self.timecode_frame:
                 return self.timecode_frame[nanoseconds]
             else:
@@ -713,23 +724,23 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         else:
             return round(nanoseconds / Gst.SECOND * self.fps)
 
-    def frame_to_time(self, frame_number):
+    def frame_to_time(self, frame_number: int):
         """Returns the time (nanoseconds) for frame_number."""
         if frame_number < 0:
             return 0
         elif frame_number > self.frames:
             return self.videolength
 
-        if self.config.get("cutinterface", "alt_time_frame_conv"):
+        if self.atfc:
             if frame_number in self.frame_timecode:
                 return self.frame_timecode[frame_number]
             else:
-                return self.current_position
+                return self.current_position_time
         else:
             return frame_number / self.fps * Gst.SECOND
 
     @staticmethod
-    def find_closest(find_in, position):
+    def find_closest(find_in: dict, position: int) -> int:
         """ Assumes find_in (key_list) is sorted. Returns closest value to position.
         If two numbers are equally close, return the smaller one.
         """
@@ -747,22 +758,21 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             return before
 
     @staticmethod
-    def nanoseconds_to_hms(sec):
-        s, rest = divmod(sec, Gst.SECOND)
-        h, s = divmod(s, 3600)
-        m, s = divmod(s, 60)
-        if rest == 0:
-            rest_string = "000"
-        else:
-            rest_string = str(rest / Gst.SECOND)[2:5]
-        return f"{h:02}:{m:02}:{s:02}.{rest_string}"
+    def nanoseconds_to_hms(nanoseconds: int) -> str:
+        # Used for display
+        second, remainder = divmod(nanoseconds, Gst.SECOND)
+        hour, second = divmod(second, 3600)
+        minute, second = divmod(second, 60)
+
+        decimals = str(int(remainder))[:3].ljust(3, "0")
+        return f"{hour:02}:{minute:02}:{second:02}.{decimals}"
 
     # #### gstreamer bus signals ####
     def on_error(self, bus, msg):
         err, debug = msg.parse_error()
         self.log.error(f"Error: {err}, {debug}")
         self.player.set_state(Gst.State.NULL)
-        self.builder.get_object("label_time").set_text("Frame: 0/0, Zeit 0s/0s")
+        self.builder.get_object("lbl_time").set_text("Frame: 0/0, Zeit 0s/0s")
 
     def on_eos(self, bus, msg):
         self.player.set_state(Gst.State.PAUSED)
@@ -785,6 +795,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             if self.getVideoLength:
                 self.getVideoLength = not self.getVideoLength
                 self.log.debug("Async done")
+                self.log.debug(f"{self.getVideoLength = }")
                 self.videolength = self.player.query_duration(Gst.Format.TIME)[1]
                 self.frames = round(self.videolength * self.framerate_num / self.framerate_denom / Gst.SECOND)  # ROUND
                 self.slider.set_range(0, self.get_frames())
@@ -801,6 +812,22 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 self.test_cut_part2()
 
     # #### signals ####
+    def on_movie_event_box_enter_leave_notify_event(self, widget, event, *args):
+        if self.hide_mouse_over_video:
+            if event.type == Gdk.EventType.MOTION_NOTIFY:
+                GLib.source_remove(self.timer_hide_cursor)
+                widget.get_window().set_cursor(None)
+                self.timer_hide_cursor = GLib.timeout_add(
+                    2000, widget.get_window().set_cursor, self.app.gui.cursor_blank
+                )
+            if event.type == Gdk.EventType.ENTER_NOTIFY and self.hide_mouse_over_video:
+                self.timer_hide_cursor = GLib.timeout_add(
+                    2000, widget.get_window().set_cursor, self.app.gui.cursor_blank
+                )
+            elif event.type == Gdk.EventType.LEAVE_NOTIFY:
+                GLib.source_remove(self.timer_hide_cursor)
+                widget.get_window().set_cursor(None)
+
     def on_movie_box_unrealize(self, widget):
         self.player.set_state(Gst.State.NULL)
         # MEMORYLEAK:
@@ -944,7 +971,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def on_slider_scroll_event(self, widget, event):
         # Handles navigating with mousewheel
-        direction = "down" if event.get_scroll_deltas()[2] > 0 else "up"
+        if self.app.config.get("cutinterface", "scrolling_inverted"):
+            direction = "up" if event.get_scroll_deltas()[2] > 0 else "down"
+        else:
+            direction = "down" if event.get_scroll_deltas()[2] > 0 else "up"
         # accel_mask = Gtk.accelerator_get_default_mod_mask()
         mod_ctrl = event.state & Gdk.ModifierType.CONTROL_MASK
         mod_shift = event.state & Gdk.ModifierType.SHIFT_MASK
@@ -1005,9 +1035,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.log.debug("update_frames_and_time() by slider change")
             self.update_frames_and_time()
 
-    def on_slider_draw_event(self, widget, cairo_context):
-        # self.redraw(cairo_context)
-        slider = self.builder.get_object("slider")
+    def on_slider_draw_event(self, slider, cairo_context):
         border = 11
         if self.get_frames() != 0:
             # draw line from marker a to marker b and for all cuts
@@ -1167,6 +1195,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.cmenu_lbl_filename()
 
     def on_btn_config_clicked(self, widget, data=None):
+        self.app.gui.preferences_window.builder.get_object("notebook").set_current_page(6)
+        self.preferences_window_pages_visible(False)
         self.app.gui.preferences_window.show()
 
     def on_button_undo_clicked(self, *args):
@@ -1215,14 +1245,14 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     def on_button_a_clicked(self, *args):
         # TODO: warn if Marker A = B or distance between them to low
-        self.log.debug(f"marker a = {self.current_frame_position}")
-        self.set_marker(a=self.current_frame_position)
+        self.log.debug(f"marker a = {self.current_position_frame}")
+        self.set_marker(a=self.current_position_frame)
         self.slider.queue_draw()
 
     def on_button_b_clicked(self, *args):
         # TODO: warn if Marker A = B or distance between them to low
-        self.log.debug(f"marker b = {self.current_frame_position}")
-        self.set_marker(b=self.current_frame_position)
+        self.log.debug(f"marker b = {self.current_position_frame}")
+        self.set_marker(b=self.current_position_frame)
         self.slider.queue_draw()
 
     def on_button_remove_clicked(self, widget):
@@ -1262,7 +1292,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.update_frames_and_time()
         marker_a = self.get_absolute_position(self.marker_a)
         marker_b = self.get_absolute_position(self.marker_b)
-        pos = self.get_absolute_position(self.current_frame_position)
+        pos = self.get_absolute_position(self.current_position_frame)
 
         self.hide_cuts = widget.get_active()
         self.config.set("cutinterface", "hide_cuts", self.hide_cuts)
@@ -1306,10 +1336,12 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.jump_relative(-10)
 
     def on_button_back_clicked(self, widget, data=None):
-        self.jump_relative(-1)
+        if self.current_position_frame != 0:
+            self.jump_relative(-1)
 
     def on_button_forward_clicked(self, widget, data=None):
-        self.jump_relative(1)
+        # self.jump_relative(1)
+        self.frame_step(1.0, 1)
 
     def on_button_fast_forward_clicked(self, widget, data=None):
         self.jump_relative(10)
@@ -1340,7 +1372,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.update_frames_and_time()
             marker_a = self.get_absolute_position(self.marker_a)
             marker_b = self.get_absolute_position(self.marker_b)
-            pos = self.get_absolute_position(self.current_frame_position)
+            pos = self.get_absolute_position(self.current_position_frame)
 
         inverted = self.invert_simple(self.timelines[-1])
         del inverted[self.cut_selected]
@@ -1405,9 +1437,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
     def on_switch_keyframesearch_state_set(self, *args):
         active = self.builder.get_object("switch_keyframesearch").get_active()
         if active:
-            self.config.set("cutinterface", "new_keyframe_search", False)
+            self.nkfs = False
         else:
-            self.config.set("cutinterface", "new_keyframe_search", True)
+            self.nkfs = True
 
     # ##### seeking #####
     def jump_relative_time(self, jump_nanoseconds, flags=Gst.SeekFlags.ACCURATE):
@@ -1441,33 +1473,33 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             return
 
         self.videolength = self.player.query_duration(Gst.Format.TIME)[1]
-        self.frames = round(self.videolength * self.fps / Gst.SECOND)
+        # self.frames = round(self.videolength * self.fps / Gst.SECOND)
 
-        if self.config.get("cutinterface", "alt_time_frame_conv"):
+        if self.atfc:
             nano_seconds = self.frame_to_time(self.time_to_frame(nano_seconds) + frames)
         else:
-            nano_seconds += frames * (1 * Gst.SECOND * self.framerate_denom / self.framerate_num)
+            nano_seconds += frames * (Gst.SECOND * self.framerate_denom / self.framerate_num)
 
         self.jump_to(nanoseconds=nano_seconds, flags=flags)
 
     def jump_key(self, direction, playing=None):
         self.update_frames_and_time()
-        frame = self.current_frame_position
         # success, current_position = self.query_position(Gst.Format.TIME)
-        if self.config.get("cutinterface", "new_keyframe_search"):  # gcurse new_keyframe_search
+        if self.nkfs:  # gcurse new_keyframe_search
             if direction == "backward":
                 self.player.seek_simple(
                     Gst.Format.TIME,
                     Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT | Gst.SeekFlags.SNAP_BEFORE,
-                    self.current_position - 1,
+                    self.frame_to_time(self.current_position_frame - 1),
                 )
             else:
                 self.player.seek_simple(
                     Gst.Format.TIME,
                     Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT | Gst.SeekFlags.SNAP_AFTER,
-                    self.current_position + 1,
+                    self.frame_to_time(self.current_position_frame + 1),
                 )
         else:
+            frame = self.current_position_frame
             if direction == "backward":
                 jumpto = self.get_keyframe_in_front_of_frame(self.keyframes, frame)
             else:
@@ -1485,10 +1517,8 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             if frames >= self.get_frames():
                 frames = self.get_frames() - 1
 
-            if self.config.get("cutinterface", "alt_time_frame_conv"):
-                nanoseconds = self.frame_to_time(frames)
-            else:
-                nanoseconds = frames * Gst.SECOND * self.framerate_denom / self.framerate_num
+            nanoseconds = self.frame_to_time(frames)
+
         elif seconds:
             nanoseconds = seconds * Gst.SECOND
 
@@ -1514,7 +1544,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 # start_type (Gst.SeekType) – The type and flags for the new start position
                 Gst.SeekType.SET,
                 # start (int) – The value of the new start position
-                self.current_position,
+                self.current_position_time,
                 # stop_type (Gst.SeekType) – The type and flags for the new stop position
                 Gst.SeekType.NONE,
                 # stop (int) – The value of the new stop position
@@ -1528,7 +1558,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 Gst.SeekType.SET,
                 0,
                 Gst.SeekType.SET,
-                self.current_position,
+                self.current_position_time,
             )
         _ = self.gtksink.send_event(set_direction)
 
@@ -1541,6 +1571,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             The flush flag will clear any pending data in the pipeline before starting the step operation.
             The intermediate flag instructs the pipeline that this step operation is part of a larger step operation.
         """
+        # This does not work if the direction of playback is backwards (Audio: cannot flush buffer, or the like).
         if direction < 0:
             self.set_playback_direction(direction)
         frame_step = Gst.Event.new_step(
@@ -1550,7 +1581,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             True,  # flush (bool) – flushing steps
             False,  # intermediate (bool) – intermediate steps
         )
-        _ = self.gtksink.send_event(frame_step)
+        _ = self.player.send_event(frame_step)
         if direction < 0:
             self.set_playback_direction(-direction)
 
@@ -1616,11 +1647,31 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         _ = self.gtksink.send_event(segment2)
         self.player.set_state(Gst.State.PLAYING)
 
+    def preferences_window_pages_visible(self, visible: bool):
+        page_count = self.app.gui.preferences_window.builder.get_object("notebook").get_n_pages()
+        for page_num in range(page_count):
+            # if page_num not in [6]:
+            #     self.app.gui.preferences_window.builder.get_object("notebook").get_nth_page(page_num).set_visible(
+            #         visible
+            #     )
+            if page_num == 6:  # Page Cutinterface
+                widgets = [
+                    "lbl_moviewindow_x",
+                    "lbl_moviewindow_y",
+                    "spinbutton_x",
+                    "spinbutton_y",
+                    "button_reset_size_moviewindow",
+                ]
+                if self.timecode_frame is None or len(self.timecode_frame) == 0:
+                    widgets.append("check_alt_time_frame_conv")
+                for widget in widgets:
+                    self.app.gui.preferences_window.builder.get_object(widget).set_sensitive(visible)
 
-def new(gui):
+
+def new():
     glade_filename = otrvpath.getdatapath("ui", "CutinterfaceDialog.glade")
-    builder = Gtk.Builder()
-    builder.add_from_file(glade_filename)
+    builder = Gtk.Builder.new_from_file(glade_filename)
+    # builder.add_from_file(glade_filename)
     dialog = builder.get_object("cutinterface_dialog")
-    dialog.gui = gui
+    # dialog.gui = gui
     return dialog

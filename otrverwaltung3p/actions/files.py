@@ -32,15 +32,22 @@ class Delete(BaseAction):
         if len(filenames) == 1:
             message = "Es ist eine Datei ausgewählt. Soll diese Datei "
         else:
-            message = "Es sind %s Dateien ausgewählt. Sollen diese Dateien " % len(filenames)
+            message = f"Es sind {len(filenames)} Dateien ausgewählt. Sollen diese Dateien "
 
         if self.__gui.question_box(message + "in den Müll verschoben werden?"):
             self.update_list = True
-            for f in filenames:
-                if f.endswith("otrkey"):
-                    fileoperations.move_file(f, self.__app.config.get("general", "folder_trash_otrkeys"))
+            if self.__app.config.get("general", "delete_cutlists"):
+                cutlist_folder = self.__app.config.get("general", "folder_trash_avis")
+            else:
+                cutlist_folder = None
+
+            for fname in filenames:
+                if fname.endswith("otrkey"):
+                    fileoperations.move_file(fname, self.__app.config.get("general", "folder_trash_otrkeys"))
                 else:
-                    fileoperations.move_file(f, self.__app.config.get("general", "folder_trash_avis"))
+                    fileoperations.move_file(
+                        fname, self.__app.config.get("general", "folder_trash_avis"), cutlist_move_to=cutlist_folder
+                    )
         self.__app.filenames_locked = []
 
 
@@ -55,7 +62,7 @@ class RealDelete(BaseAction):
         if len(filenames) == 1:
             message = "Es ist eine Datei ausgewählt. Soll diese Datei "
         else:
-            message = "Es sind %s Dateien ausgewählt. Sollen diese Dateien " % len(filenames)
+            message = f"Es sind {len(filenames)} Dateien ausgewählt. Sollen diese Dateien "
 
         if self.__gui.question_box(message + "endgültig gelöscht werden?"):
             for f in filenames:

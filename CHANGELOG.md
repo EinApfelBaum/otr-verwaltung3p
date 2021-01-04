@@ -1,3 +1,16 @@
+### 1.0.0b8.post4
+* Cutinterface: Cursor is hidden in video window
+* Preferences->MainWindow: New setting Default sort order of the file list
+  (filename or recording date)
+* If "Cutlist nach dem Schneiden löschen" is True, cutlists are not deleted but
+  moved to the internal AVI trashcan
+* ffmsindex files are deleted when toolbar button "move to trash" in section
+  AVI_UNCUT is used
+* Directory monitors are updated when the path "folder_cut_avis",
+  "folder_new_otrkeys" or "folder_uncut_avis" is changed in settings
+* decodeorcut: Fixes UnicodeDecodeError when decoder reports errors. Fixes #108
+* ConclusionDialog: Snippets can be inserted at cursor position
+
 ### 1.0.0b8.post3
 * Fixes: ConclusionDialog "Erneut schneiden" -> Cutinterface "Abbrechen"
   instantly reopening the Cutinterface

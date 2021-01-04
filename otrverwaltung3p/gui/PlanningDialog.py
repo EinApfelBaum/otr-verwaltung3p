@@ -38,7 +38,6 @@ class PlanningDialog(Gtk.Dialog, Gtk.Buildable):
 
         # fill combobox
         store = Gtk.ListStore(str)
-        # ToDo maybe move this to glade file
         stations = (
             "ARD ZDF Sat.1 Pro7 RTL kabel1 VOX RTL2 SWR WDR NDR MDR RBB HR BR BR alpha SuperRTL Tele5 DMAX "
             "3sat ARTE PHOENIX EinsExtra EinsPlus EinsFestival ZDFdokukanal ZDFinfokanal ZDFtheaterkanal "

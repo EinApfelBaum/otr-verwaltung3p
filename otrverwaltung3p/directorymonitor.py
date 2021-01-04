@@ -21,7 +21,8 @@ class DirectoryMonitor:
         self.app = app
         self.file_regex = file_regex
         self.monitor = None
-        self.monitored_dir = Gio.File.new_for_path(monitored_dir)
+        self.monitored_dir = Gio.File.new_for_path(str(monitored_dir))
+        self.monitored_dir_debug = str(monitored_dir)
         self.section = section
 
     def start(self):

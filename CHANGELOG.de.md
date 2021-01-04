@@ -1,3 +1,11 @@
+### 1.0.0b8.post4
+* Cutinterface: Mauszeiger wird im Videofenster ausgeblendet
+* Einstellungen->Hauptfenster: Neue Einstellung Standardsortierung der Dateiliste entweder
+  nach Name oder Aufzeichnungsdatum.
+* Wenn "Cutlist nach dem Schneiden löschen" aktiv ist werden Cutlists nicht gelöscht,
+  sondern in den internen AVI-Papierkorb verschoben.
+* Zusammenfassung: Snippets können an der Cursor-Position eingefügt werden.
+
 ### 1.0.0b8.post3
 * Zusammenfassung "Erneut schneiden" -> Cutinterface "Abbrechen" öffnete sofort
   wieder das Cutinterface. Dies ist behoben.

@@ -2270,6 +2270,23 @@ Jede Zeile ist ein Eintrag.</property>
                       </packing>
                     </child>
                     <child>
+                      <object class="GtkCheckButton" id="check_sort_record_date">
+                        <property name="label" translatable="yes">Nach Aufnahmedatum sortieren</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="margin_top">10</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
                       <placeholder/>
                     </child>
                     <child>
@@ -2389,7 +2406,7 @@ Jede Zeile ist ein Eintrag.</property>
                     <property name="can_focus">False</property>
                     <property name="column_spacing">30</property>
                     <child>
-                      <object class="GtkLabel" id="labelMoviewindowY">
+                      <object class="GtkLabel" id="lbl_moviewindow_y">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
@@ -2421,6 +2438,7 @@ Jede Zeile ist ein Eintrag.</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">800x450</property>
                         <property name="halign">start</property>
                         <signal name="clicked" handler="_on_button_reset_size_moviewindow_clicked" swapped="no"/>
                       </object>
@@ -2430,7 +2448,7 @@ Jede Zeile ist ein Eintrag.</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="labelMoviewindowX">
+                      <object class="GtkLabel" id="lbl_moviewindow_x">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
@@ -2634,6 +2652,60 @@ Jede Zeile ist ein Eintrag.</property>
                       </packing>
                     </child>
                     <child>
+                      <object class="GtkCheckButton" id="check_mouse_hide_over_video">
+                        <property name="label" translatable="yes"> Maus im Videofenster ausblenden</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_top">10</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">9</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="check_scrolling_inverted">
+                        <property name="label" translatable="yes"> Mausrad: Richtung umkehren</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="tooltip_text" translatable="yes">Wenn der Mauszeiger im Bereich des Sliders ("Schieberegler") ist, kann man mit dem Mausrad vor-und zurück navigieren.
+Hier kann man die Richtung umkehren.</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">10</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
                       <placeholder/>
                     </child>
                     <child>
@@ -2731,6 +2803,7 @@ Jede Zeile ist ein Eintrag.</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
+                        <property name="margin_start">30</property>
                         <property name="margin_top">10</property>
                         <property name="label" translatable="yes">Konfiguration:</property>
                       </object>
@@ -2745,7 +2818,7 @@ Jede Zeile ist ein Eintrag.</property>
                         <property name="can_focus">False</property>
                         <child>
                           <object class="GtkCheckButton" id="check_vol_adjust_on">
-                            <property name="label" translatable="yes">Lautstärkeanhebung für bestimmte Sender aktivieren</property>
+                            <property name="label" translatable="yes"> Lautstärkeanhebung für bestimmte Sender aktivieren</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
@@ -2777,6 +2850,7 @@ D.h.: Wenn im Sendernamen "usw" oder "uk" vorkommt, setze die Lautstärke im Cut
 Dies hebt die Wiedergabelautstärke für alle US- und UK-Sender an. Dies ist die Voreinstellung.
 Es dürfen nur die Zeichen a bis z, 0 bis 9 sowie Komma und Punkt vorkommen.
 Mehrere Anpassungen werden durch Unterstrich(e) getrennt.</property>
+                        <property name="margin_start">30</property>
                         <property name="hexpand">True</property>
                       </object>
                       <packing>
@@ -2802,6 +2876,10 @@ Mehrere Anpassungen werden durch Unterstrich(e) getrennt.</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="tooltip_text" translatable="yes">Cutlists werden wie folgt gesucht:
+1. Exacte Suche nach Name und Format (HQ, HD etc.)
+2. Suche nach Name in ALLEN Formaten
+3. Suche nach Dateigröße</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
@@ -3388,11 +3466,11 @@ Mehrere Anpassungen werden durch Unterstrich(e) getrennt.</property>
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="button_close">
-                <property name="label">gtk-close</property>
+                <property name="label">_Close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
+                <property name="use_underline">True</property>
                 <signal name="clicked" handler="_on_preferences_button_close_clicked" swapped="no"/>
               </object>
               <packing>

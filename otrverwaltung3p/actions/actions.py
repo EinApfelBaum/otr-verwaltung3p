@@ -38,7 +38,6 @@ actions = {
     Action.DECODE: decodeorcut.DecodeOrCut,
     Action.CUT: decodeorcut.DecodeOrCut,
     # file movement
-    # TODO: archive in "files"
     Action.ARCHIVE: archive.Archive,
     Action.DELETE: files.Delete,
     Action.RESTORE: files.Restore,

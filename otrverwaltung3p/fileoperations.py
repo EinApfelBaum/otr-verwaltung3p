@@ -20,7 +20,6 @@ Zeigt bei Fehlern einen gtk.MessageDialog an."""
 import logging
 import os
 import shutil
-from os.path import basename, exists, join, splitext
 
 from gi import require_version
 
@@ -87,11 +86,11 @@ def rename_file(old_filename, new_filename, error_cb=__error):
     return new_filename
 
 
-def move_file(filename, target, error_cb=__error):
+def move_file(filename, target, error_cb=__error, cutlist_move_to=None):
     """ Verschiebt eine Datei in den angegebenen Ordner."""
 
-    new_filename = join(target, basename(filename))
-    if exists(new_filename):
+    new_filename = os.path.join(target, os.path.basename(filename))
+    if os.path.exists(new_filename):
         handle_error(error_cb, f"Umbenennen: Die Datei existiert bereits! ({new_filename})")
         return filename
     log.debug(f"Moving {filename} to {target}")
@@ -107,8 +106,21 @@ def move_file(filename, target, error_cb=__error):
             )
             return filename
 
-    if os.path.isfile(filename + ".cutlist"):
-        os.remove(filename + ".cutlist")
+    if cutlist_move_to is not None:
+        if os.path.isdir(cutlist_move_to):
+            if os.path.isfile(filename + ".cutlist"):
+                move_file(filename + ".cutlist", cutlist_move_to)
+
+    try:
+        if os.path.isfile(filename + ".ffindex_track00.kf.txt"):
+            os.remove(filename + ".ffindex_track00.kf.txt")
+        if os.path.isfile(filename + ".ffindex_track00.tc.txt"):
+            os.remove(filename + ".ffindex_track00.tc.txt")
+    except Exception as e:
+        handle_error(
+            error_cb, f"Fehler beim Löschen von {filename} nach {target} ({e}). ",
+        )
+
     return new_filename
 
 
@@ -118,8 +130,8 @@ def make_unique_filename(filename):
     """
     new_filename = filename
     count = 1
-    while exists(new_filename):
-        path, extension = splitext(filename)
+    while os.path.exists(new_filename):
+        path, extension = os.path.splitext(filename)
         new_filename = f"{path}.{count:d}{extension}"
         count += 1
     return new_filename

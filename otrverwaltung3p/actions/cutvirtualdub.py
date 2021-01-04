@@ -128,7 +128,6 @@ class CutVirtualdub(Cut):
 
         # make file for virtualdub scripting engine
         if manually:
-            # TODO: kind of a hack
             curr_dir = os.getcwd()
             try:
                 os.chdir(os.path.dirname(config_value))

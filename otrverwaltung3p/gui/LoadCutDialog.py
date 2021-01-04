@@ -206,7 +206,8 @@ class LoadCutDialog(Gtk.Dialog, Gtk.Buildable):
 
             if len(self.cutlists_list) != 0:
                 self.treeview_download_cutlists.grab_focus()
-                self.treeview_download_cutlists.get_selection().select_path(Gtk.TreePath.new_first())
+                if self.treeview_download_cutlists is not None:
+                    self.treeview_download_cutlists.get_selection().select_path(Gtk.TreePath.new_first())
             if self.download_try < 2:
                 self.builder.get_object("btn_search_size").set_visible = True
             # gcurse: ONLY_ONE_CUTLIST <--

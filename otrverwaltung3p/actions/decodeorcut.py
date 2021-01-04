@@ -197,7 +197,7 @@ class DecodeOrCut(Cut):
 
             try:
                 process = subprocess.Popen(
-                    command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True,
+                    command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, errors="replace", universal_newlines=True,
                 )
             except OSError:
                 file_conclusion.decode.status = Status.ERROR
@@ -545,10 +545,10 @@ class DecodeOrCut(Cut):
 
             self.log.debug(f"local cutlist: {local_cutlist}")
 
-            self.app.gui.ci_instance = CutinterfaceDialog.new(self.gui)
+            self.app.gui.ci_instance = CutinterfaceDialog.new()
             self.app.gui.ci_instance.set_transient_for(self.app.gui.main_window)
             self.app.gui.ci_instance.set_modal(True)
-            self.app.gui.main_window.get_window().set_cursor(self.app.gui.main_window.cursor_wait)
+            self.app.gui.main_window.get_window().set_cursor(self.app.gui.cursor_wait)
             cutlist = self.app.gui.ci_instance.run_(filename, local_cutlist, self.app)
             self.app.gui.ci_instance.destroy()
             self.app.gui.main_window.get_window().set_cursor(None)
@@ -611,7 +611,7 @@ class DecodeOrCut(Cut):
                 return self.mux_ac3(filename, cut_video, ac3file, cutlist)
 
         elif program == Program.SMART_MKVMERGE:
-            self.app.gui.main_window.get_window().set_cursor(self.app.gui.main_window.cursor_wait)
+            self.app.gui.main_window.get_window().set_cursor(self.app.gui.cursor_wait)
             cutter = CutSmartMkvmerge(self.app, self.gui)
             cut_video, error = cutter.cut_file_by_cutlist(filename, cutlist)
             self.app.gui.main_window.get_window().set_cursor(None)
@@ -619,7 +619,7 @@ class DecodeOrCut(Cut):
                 return cut_video, ac3file, None
 
         elif program == Program.VIRTUALDUB:  # VIRTUALDUB
-            self.app.gui.main_window.get_window().set_cursor(self.app.gui.main_window.cursor_wait)
+            self.app.gui.main_window.get_window().set_cursor(self.app.gui.cursor_wait)
             cutter = CutVirtualdub(self.app, self.gui)
             cut_video, error = cutter.cut_file_by_cutlist(filename, cutlist, program_config_value)
             self.app.gui.main_window.get_window().set_cursor(None)

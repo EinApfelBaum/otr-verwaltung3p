@@ -65,7 +65,6 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                                """
         self.css_provider = Gtk.CssProvider()
         self.css_provider.load_from_data(self.conclusion_css)
-        self.cursor_wait = Gdk.Cursor(Gdk.CursorType.WATCH)
         self.svn_version_url = ""  # gcurse: Delete this later
         self.treeview_files = None
 
@@ -76,7 +75,6 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     def conf_g(self, option_str):
         self.app.config.get("general", option_str)
 
-    # TODO: only workaround. try to remove.
     def post_init(self):
         self.__setup_toolbar()
         self.__setup_treeview_planning()
@@ -182,6 +180,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             Section.ARCHIVE: ["delete", "real_delete", "rename", "new_folder"],
             Section.TRASH: ["real_delete", "restore"],
             Section.TRASH_AVI: ["real_delete", "restore"],
+            Section.TRASH_CUTLIST: ["real_delete", "restore"],
             Section.TRASH_OTRKEY: ["real_delete", "restore"],
         }
         if self.app.config.get("general", "hide_archive_buttons"):
@@ -384,6 +383,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.sidebar.add_section("PAPIERKORB")
         self.sidebar.add_element(Section.TRASH, "Alles")
         self.sidebar.add_element(Section.TRASH_AVI, "Avi", True, 10)
+        self.sidebar.add_element(Section.TRASH_CUTLIST, "Cutlist", True, 10)
         self.sidebar.add_element(Section.TRASH_OTRKEY, "Otrkey", True, 10)
 
         self.builder.get_object("hbox_main").pack_start(self.sidebar, expand=False, fill=False, padding=0)
@@ -396,7 +396,6 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.eventbox_planning = Gtk.EventBox()
         self.label_planning_current = Gtk.Label()
 
-        # TODO eventbox
         self.eventbox_planning.add(self.label_planning_current)
         self.eventbox_planning.set_size_request(30, 15)
 
@@ -442,11 +441,11 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     # treeview_files
 
     def treeview_files_grab(self):
-        # Set the focus on treeview and select first entry
+        # Set focus on treeview
         self.treeview_files.grab_focus()
-        treeview_files_selection = self.treeview_files.get_selection().select_path(  # noqa F841
-            Gtk.TreePath.new_first()
-        )
+        # self.treeview_files.get_selection().select_path(Gtk.TreePath.new_first())
+        sort_column = 1 if self.app.config.get("general", "sort_record_date") else 0
+        self.treeview_files.get_model().set_sort_column_id(sort_column, Gtk.SortType.ASCENDING)
 
     def clear_files(self):
         """ Entfernt alle Einträge aus den Treeviews treeview_files."""
@@ -486,8 +485,6 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             unlocked,
         ]  # gcurse:LOCK add column "unlocked"
 
-        # TODO implement liststore into glade ?
-        # http://fo2adzz.blogspot.de/2012/09/gtktreeview-glade-with-python-tutorial.html
         iter_files = self.treeview_files.get_model().append(parent, data)
         return iter_files
 
@@ -587,12 +584,12 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     @staticmethod
     def __treeview_planning_datetime(column, cell, model, iter, data=None):
         broadcast = model.get_value(iter, 0)
-        datetime = time.strftime("%a, %d.%m.%Y, %H:%M", time.localtime(broadcast.datetime))
+        date_time = time.strftime("%a, %d.%m.%Y, %H:%M", time.localtime(broadcast.datetime))
 
         if broadcast.datetime < time.time():
-            cell.set_property("markup", f"<b>{datetime}</b>")
+            cell.set_property("markup", f"<b>{date_time}</b>")
         else:
-            cell.set_property("markup", datetime)
+            cell.set_property("markup", date_time)
 
     @staticmethod
     def __treeview_planning_station(column, cell, model, iter, data=None):
@@ -641,7 +638,7 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             self.__toolbar_buttons[button].set_sensitive(not state)
 
     def on_button_show_conclusion_clicked(self, widget, data=None):
-        self.get_window().set_cursor(self.cursor_wait)
+        self.get_window().set_cursor(self.app.gui.cursor_wait)
         self.app.conclusions_manager.show_conclusions()
         self.app.show_section(self.app.section)
 

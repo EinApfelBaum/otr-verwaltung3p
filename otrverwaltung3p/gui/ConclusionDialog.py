@@ -100,7 +100,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
         self.app.file_to_recut = None  # Reset recut
         self.rename_by_schema = rename_by_schema
         self.__file_conclusions = file_conclusions
-        # TODO gcurse:WARN_NOT_ALL_SEEN
+        # gcurse:WARN_NOT_ALL_SEEN
         self.__file_conclusions_count = len(file_conclusions)
         self.forward_clicks = 1
         self.all_file_conclusions_seen = False
@@ -110,7 +110,7 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
             self.obj("button_back").hide()
             self.obj("button_forward").hide()
             self.obj("label_count").hide()
-            self.all_file_conclusions_seen = True  # TODO gcurse:WARN_NOT_ALL_SEEN
+            self.all_file_conclusions_seen = True  # gcurse:WARN_NOT_ALL_SEEN
 
         self.combobox_archive.fill(archive_directory)
         self.combobox_archive.connect("changed", self._on_combobox_archive_changed)
@@ -401,19 +401,19 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     def _on_button_back_clicked(self, widget, data=None):
         self.set_entry_suggested_on_close()
         self.show_conclusion(self.conclusion_iter - 1)
-        self.forward_clicks -= 1  # TODO gcurse:WARN_NOT_ALL_SEEN
+        self.forward_clicks -= 1  # gcurse:WARN_NOT_ALL_SEEN
 
     def _on_button_forward_clicked(self, widget, data=None):
         self.set_entry_suggested_on_close()
         self.show_conclusion(self.conclusion_iter + 1)
-        # TODO gcurse:WARN_NOT_ALL_SEEN
+        # gcurse:WARN_NOT_ALL_SEEN
         self.forward_clicks += 1
         if self.forward_clicks == self.__file_conclusions_count:
             self.all_file_conclusions_seen = True
         # <<<<<
 
     def _on_button_conclusion_close_clicked(self, widget, data=None):
-        # TODO gcurse:WARN_NOT_ALL_SEEN
+        # gcurse:WARN_NOT_ALL_SEEN
         if self.all_file_conclusions_seen:
             self.set_entry_suggested_on_close()
             self.app.filenames_locked = []
@@ -539,6 +539,11 @@ class ConclusionDialog(Gtk.Dialog, Gtk.Buildable):
     def _on_entry_comment_changed(self, widget, data=None):
         self.log.info("cut.cutlist.usercomment = {}".format(widget.get_text()))
         self.file_conclusion.cut.cutlist.usercomment = widget.get_text()
+
+    def _on_btn_atcursor_clicked(self, entry_comment):
+        text = self.obj("cboxtext_snippets").get_active_text()
+        pos = entry_comment.get_position()
+        entry_comment.insert_text(text, pos)
 
     def _on_btn_prepend_clicked(self, entry_comment):
         text = self.obj("cboxtext_snippets").get_active_text()

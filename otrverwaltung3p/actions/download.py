@@ -31,7 +31,6 @@ def add_download(via_link, app, gui, link=None):
     if link:
         link = link.replace("otr://", "")
 
-    # TODO: implment another type of download
     # dialog = AddDownloadDialog.NewAddDownloadDialog(gui, app.config, via_link, link)
     dialog = Gtk.MessageDialog(
         gui.main_window,

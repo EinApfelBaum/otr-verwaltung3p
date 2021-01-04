@@ -86,7 +86,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
 
     def bind_config(self, app):
         self.app = app
-        # If stored decoder is not in the standard list (see PreferenceWindow.glade)
+        # If the stored decoder is not in the standard list (see PreferenceWindow.glade)
         # it will be prepended and set as active entry.
         entries = []
         if sys.platform == "linux":
@@ -205,6 +205,9 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         CheckButtonBinding(
             self.obj("check_hide_archive_buttons"), self.app.config, "general", "hide_archive_buttons",
         )
+        CheckButtonBinding(
+            self.obj("check_sort_record_date"), self.app.config, "general", "sort_record_date",
+        )
         ComboBoxEntryBinding(
             self.obj("entry_cut_default"), self.app.config, "general", "cut_action", data=["cut_default"],
         )
@@ -234,6 +237,13 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
         CheckButtonBinding(
             self.obj("check_show_tooltips"), self.app.config, "cutinterface", "show_tooltips",
         )
+        CheckButtonBinding(
+            self.obj("check_mouse_hide_over_video"), self.app.config, "cutinterface", "mouse_hide_over_video",
+        )
+        CheckButtonBinding(
+            self.obj("check_scrolling_inverted"), self.app.config, "cutinterface", "scrolling_inverted",
+        )
+
         CheckButtonBinding(
             self.obj("check_not_force_search_cutlist_by_name"),
             self.app.config,
@@ -266,7 +276,7 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
 
         self.app.config.connect("general", "rename_schema", rename_schema_changed)
         # "initial rename"
-        # TODO: remove?
+        # remove?
         # rename_schema_changed(self.obj('entry_schema').get_text())
 
         for option in [
@@ -457,6 +467,8 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             ):
                 return
         self.hide()
+        self.app.gui.start_directory_monitors(restart=True)
+        self.app.show_section(self.app.section)
         try:
             # Update settings in Cutinterface
             self.app.gui.ci_instance.config_update()

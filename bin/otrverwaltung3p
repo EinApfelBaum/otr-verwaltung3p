@@ -40,8 +40,11 @@ except Exception as e:
     print(f"Exception: {e}")
     sys.exit(-1)
 
-sys.modules["gi.overrides.Gst"] = None
-sys.modules["gi.overrides.GstPbutils"] = None
+# https://stackoverflow.com/a/38463428
+# noinspection PyTypeChecker
+# sys.modules["gi.overrides.Gst"] = None
+# noinspection PyTypeChecker
+# sys.modules["gi.overrides.GstPbutils"] = None
 
 # Logging
 logging.basicConfig(
@@ -141,29 +144,42 @@ class App:
 
         self.encoding_strings = {
             "ffmpeg_avi_mpeg4_options": "-c:v mpeg4 -vtag DX50 -qscale:v 5 -g 300 -f avi",
-            "ffmpeg_hd0_x264_options": "-tune film -x264opts b_pyramid=0:chroma_qp_offset=0:me=umh:"
-            "psy_rd=0.00/0.00:subme=5:direct=temporal:weightb=0:weightp=0:ipratio=1.41:"
-            "pbratio=1.25:qp=23:ref=3",
-            "ffmpeg_hd2_x264_options": "-preset veryfast -tune film -x264opts pic-struct=1:sps-id=1:stitchable=1:"
-            "no-scenecut=1",
-            "ffmpeg_hd_x264_options": "-preset medium -tune film -x264opts direct=auto:force-cfr=1:rc-lookahead=60:"
-            "b-adapt=2:weightp=0:sps-id=1:stitchable=1",
-            "ffmpeg_hq0_x264_options": "-x264opts b_pyramid=0:chroma_qp_offset=0:me=umh:psy_rd=0.00/0.00:subme=5:"
-            "direct=temporal:weightb=0:weightp=0:ipratio=1.41:pbratio=1.25:qp=22:"
-            "sps-id=1:stitchable=1",
-            "ffmpeg_hq_x264_options": "-preset medium -tune film -x264opts direct=auto:force-cfr=1:b-adapt=2:"
-            "rc-lookahead=60:weightp=0",
+            "ffmpeg_hd0_x264_options": (
+                "-tune film -x264opts b_pyramid=0:chroma_qp_offset=0:direct=temporal:"
+                "ipratio=1.41:me=umh:pbratio=1.25:psy_rd=0.00/0.00:qp=23:ref=3:subme=5:"
+                "weightb=0:weightp=0"
+            ),
+            "ffmpeg_hd2_x264_options": (
+                "-preset veryfast -tune film -x264opts no-scenecut=1:pic-struct=1:" "sps-id=1:stitchable=1"
+            ),
+            "ffmpeg_hd_x264_options": (
+                "-preset medium -tune film -x264opts aq-mode=2:b-adapt=2:crf=23:deblock=-1/-1:"
+                "direct=auto:force-cfr=1:psy-rd=1/0.15:rc-lookahead=60:weightp=0"
+            ),  # noqa gcurse: Must not contain sps-id=1 !
+            "ffmpeg_hq0_x264_options": (
+                "-x264opts b_pyramid=0:chroma_qp_offset=0:direct=temporal:ipratio=1.41:me=umh:"
+                "pbratio=1.25:psy_rd=0.00/0.00:qp=22:sps-id=1:subme=5:weightb=0:"  # sps-id ??
+                "weightp=0"
+            ),
+            "ffmpeg_hq_x264_options": (
+                "-preset medium -tune film -x264opts b-adapt=2:direct=auto:force-cfr=1:" "rc-lookahead=60:weightp=0"
+            ),
             "ffmpeg_mp4_x264_options": "-preset veryfast -x264opts force-cfr=1:trellis=0",
             "ffmpeg_mp40_x264_options": "-preset medium -x264opts force-cfr=1:trellis=0",
-            "x264_hd0_string": "--tune film --b-pyramid none --chroma-qp-offset 0 --me umh --psy-rd 0.00:0.00 "
-            "--subme 5 --direct temporal --no-weightb --weightp 0 --ipratio 1.41 --pbratio 1.25 "
-            "--qp 23 --ref 3",
-            "x264_hd2_string": "--preset veryfast --tune film --pic-struct --no-scenecut --sps-id 1 --stitchable",
-            "x264_hd_string": "--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 --weightp 0",
-            "x264_hq0_string": "--b-pyramid none --chroma-qp-offset 0 --me umh --psy-rd 0.00:0.00 --subme 5 "
-            "--direct temporal --no-weightb --weightp 0 --ipratio 1.41 --pbratio 1.25 --qp 22",
-            "x264_hq_string": "--tune film --direct auto --force-cfr --rc-lookahead 60 --b-adapt 2 "
-            "--aq-mode 2 --weightp 0",
+            "x264_hd0_string": (
+                "--tune film --b-pyramid none --chroma-qp-offset 0 --direct temporal --ipratio 1.41 "
+                "--me umh --no-weightb --pbratio 1.25 --psy-rd 0.00:0.00 --qp 23 --ref 3 --subme 5 "
+                "--weightp 0"
+            ),
+            "x264_hd2_string": "--preset veryfast --tune film --no-scenecut --pic-struct --sps-id 1 --stitchable",
+            "x264_hd_string": "--tune film --direct auto --b-adapt 2 --force-cfr --rc-lookahead 60 --weightp 0",
+            "x264_hq0_string": (
+                "--b-pyramid none --chroma-qp-offset 0 --direct temporal --ipratio 1.41 --me umh "
+                "--no-weightb --pbratio 1.25 --psy-rd 0.00:0.00 --qp 22 --subme 5 --weightp 0"
+            ),
+            "x264_hq_string": (
+                "--tune film --direct auto --aq-mode 2 --b-adapt 2 --force-cfr --rc-lookahead 60 " "--weightp 0"
+            ),
             "x264_mp40_string": "--preset medium --force-cfr --trellis 0",
             "x264_mp4_string": "--preset veryfast --force-cfr --trellis 0",
         }
@@ -171,7 +187,6 @@ class App:
         configuration = {
             "general": {
                 "aes_key": b64encode(os.urandom(32)).decode("utf-8"),
-                "after_cut_show": 10,
                 "ask_if_all": True,
                 "choose_cutlists_by": 1,  # 1=name, 0=size
                 "cut_action": CutAction.ASK,
@@ -187,7 +202,9 @@ class App:
                 "cutlist_hash": hashlib.md5(str(time.time()).encode()).hexdigest(),
                 "cutlist_mp4_as_hq": False,  # for mp4s, when searching cutlist by name, add an HQ --> Name.HQ.mp4
                 "cutlist_username": "",
-                "delete_cutlists": True,
+                "cut_show_after": 10,
+                "cut_show_pre": 10,
+                "delete_cutlists": False,
                 "email": "",
                 "folder_archive": "",
                 "folder_cut_avis": "",
@@ -214,7 +231,6 @@ class App:
                 "passwd_store_memory": False,
                 "password": "",
                 "planned_items": "",
-                "pre_cut_show": 10,
                 "prefer_mplayer": False,
                 "rename_cut": False,
                 "rename_schema": "{titel} vom {tag}. {MONAT} {jahr}, {stunde}-{minute} ({sender})",
@@ -224,6 +240,7 @@ class App:
                 "show_conclusiondialog_after_cutting": False,
                 "smart": True,
                 "snippets": "Snippets können in Einstellungen->Cutlist eingetragen werden",
+                "sort_record_date": False,
                 "use_internal_icons": False,
                 "verify_decoded": True,
                 "vol_adjust": "uswabc,1.0,100__usw,3.0,140__uk,3.0,140",
@@ -236,12 +253,14 @@ class App:
             },
             "cutinterface": {
                 "alt_time_frame_conv": True,
-                "not_force_search_cutlist_by_name": False,
                 "hide_cuts": False,
                 "label_time_colors": [False, "#009900", "#FF9900", "#0064C8", "lightblue", "yellow"],
+                "mouse_hide_over_video": True,
                 "new_keyframe_search": True,
+                "not_force_search_cutlist_by_name": False,
                 "resolution_x": 800,
                 "resolution_y": 450,
+                "scrolling_inverted": False,
                 "seek1": 4,
                 "seek2": 20,
                 "seek_distance_default": 80,
@@ -327,7 +346,7 @@ class App:
         )
 
         self.regex_cut_video = re.compile(".*(avi|mp4|mkv|wmv|ac3)$")
-
+        self.regex_cutlist = re.compile(".*cutlist$")
         self.regex_rec_date = re.compile(r".*(([0-9]{2}\.){2}([0-9]){2}_([0-9]){2}-([0-9]){2}).*")
 
         # only for DirectoryMonitor
@@ -414,6 +433,7 @@ class App:
             Section.ARCHIVE: "scrolledwindow_files",
             Section.TRASH: "scrolledwindow_files",
             Section.TRASH_AVI: "scrolledwindow_files",
+            Section.TRASH_CUTLIST: "scrolledwindow_files",
             Section.TRASH_OTRKEY: "scrolledwindow_files",
         }
 
@@ -437,6 +457,9 @@ class App:
 
         elif section == Section.TRASH_AVI:
             files = self.__section_trash_avi()
+
+        elif section == Section.TRASH_CUTLIST:
+            files = self.__section_trash_cutlist()
 
         elif section == Section.TRASH_OTRKEY:
             files = self.__section_trash_otrkey()
@@ -495,6 +518,20 @@ class App:
         files = []
         files += self.__section_trash_otrkey()
         files += self.__section_trash_avi()
+        files += self.__section_trash_cutlist()
+        return files
+
+    def __section_trash_cutlist(self):
+        fpath = self.config.get("general", "folder_trash_avis")
+        files = []
+        if fpath == "":
+            return files
+        if Path(fpath).is_dir():
+            files += [
+                join(fpath, file_)
+                for file_ in os.listdir(fpath)
+                if self.regex_cutlist.match(file_) and self.search(file_)
+            ]
         return files
 
     def __section_trash_avi(self):
@@ -949,8 +986,8 @@ class App:
         # FIXME doc-string
 
         def edl_subtitles_cb(f_edl, f_mpv_edl, f_sub, f_mpv_sub, cuts):
-            pre_cut_show = self.config.get("general", "pre_cut_show")
-            after_cut_show = self.config.get("general", "after_cut_show")
+            cut_show_pre = self.config.get("general", "cut_show_pre")
+            cut_show_after = self.config.get("general", "cut_show_after")
 
             sub_count = 0
             sub_mpv_count = 0
@@ -961,72 +998,72 @@ class App:
             for count, (start, duration) in enumerate(cuts):
                 end = start + duration
 
-                f_edl.write(f"{start - pre_cut_show} 0\n")
-                f_edl.write(f"{start + after_cut_show} {end - pre_cut_show} 0\n")
-                f_edl.write(f"{end + after_cut_show} ")
+                f_edl.write(f"{start - cut_show_pre} 0\n")
+                f_edl.write(f"{start + cut_show_after} {end - cut_show_pre} 0\n")
+                f_edl.write(f"{end + cut_show_after} ")
 
-                f_mpv_edl.write(f"{video_filename}, {start}, {pre_cut_show}\n")
-                f_mpv_edl.write(f"{video_filename}, {end - after_cut_show}, {after_cut_show}\n")
+                f_mpv_edl.write(f"{video_filename}, {start}, {cut_show_pre}\n")
+                f_mpv_edl.write(f"{video_filename}, {end - cut_show_after}, {cut_show_after}\n")
 
                 if count == 0:
-                    for second in range(pre_cut_show):
+                    for second in range(cut_show_pre):
                         sub_count += 1
                         f_sub.write(f"{sub_count}\n")
                         f_sub.write(
                             "%s --> %s\n"
                             % (
-                                self.format_seconds(start - pre_cut_show + second),
-                                self.format_seconds(start - pre_cut_show + second + 1),
+                                self.format_seconds(start - cut_show_pre + second),
+                                self.format_seconds(start - cut_show_pre + second + 1),
                             )
                         )
-                        f_sub.write("Sendung beginnt in %s Sekunden...\n\n" % str(pre_cut_show - second))
+                        f_sub.write("Sendung beginnt in %s Sekunden...\n\n" % str(cut_show_pre - second))
                 else:
-                    for second in range(pre_cut_show):
+                    for second in range(cut_show_pre):
                         sub_count += 1
                         f_sub.write(f"{sub_count}\n")
                         f_sub.write(
                             "%s --> %s\n"
                             % (
-                                self.format_seconds(start - pre_cut_show + second),
-                                self.format_seconds(start - pre_cut_show + second + 1),
+                                self.format_seconds(start - cut_show_pre + second),
+                                self.format_seconds(start - cut_show_pre + second + 1),
                             )
                         )
-                        f_sub.write("Werbung #%i endet in %s Sekunden...\n\n" % (count, str(pre_cut_show - second)))
+                        f_sub.write("Werbung #%i endet in %s Sekunden...\n\n" % (count, str(cut_show_pre - second)))
 
                 if count == (len(cuts) - 1):
-                    for second in range(pre_cut_show):
+                    for second in range(cut_show_pre):
                         sub_count += 1
                         f_sub.write(f"{sub_count}\n")
                         f_sub.write(
                             "%s --> %s\n"
                             % (
-                                self.format_seconds(end - pre_cut_show + second),
-                                self.format_seconds(end - pre_cut_show + second + 1),
+                                self.format_seconds(end - cut_show_pre + second),
+                                self.format_seconds(end - cut_show_pre + second + 1),
                             )
                         )
-                        f_sub.write("Sendung endet in %s Sekunden...\n\n" % str(pre_cut_show - second))
+                        f_sub.write("Sendung endet in %s Sekunden...\n\n" % str(cut_show_pre - second))
                 else:
-                    for second in range(pre_cut_show):
+                    for second in range(cut_show_pre):
                         sub_count += 1
                         f_sub.write(f"{sub_count}\n")
                         f_sub.write(
                             "%s --> %s\n"
                             % (
-                                self.format_seconds(end - pre_cut_show + second),
-                                self.format_seconds(end - pre_cut_show + second + 1),
+                                self.format_seconds(end - cut_show_pre + second),
+                                self.format_seconds(end - cut_show_pre + second + 1),
                             )
                         )
                         f_sub.write(
-                            "Werbung #%i beginnt in %s Sekunden...\n\n" % (count + 1, str(pre_cut_show - second))
+                            "Werbung #%i beginnt in %s Sekunden...\n\n" % (count + 1, str(cut_show_pre - second))
                         )
 
                 # mpv_sub
-                for second in range(pre_cut_show):
+                for second in range(cut_show_pre):
                     sub_mpv_count += 1
                     f_mpv_sub.write(f"{sub_mpv_count}\n")
-                    cut_sec = count * (after_cut_show + pre_cut_show) + pre_cut_show + second
+                    cut_sec = count * (cut_show_after + cut_show_pre) + cut_show_pre + second
                     f_mpv_sub.write(f"{self.format_seconds(cut_sec)} --> {self.format_seconds(cut_sec + 1)}\n")
-                    f_mpv_sub.write(f"Schnitt {count + 1} beginnt in {after_cut_show - second} Sekunden...\n\n")
+                    f_mpv_sub.write(f"Schnitt {count + 1} beginnt in {cut_show_after - second} Sekunden...\n\n")
 
             f_edl.write("50000 0")
 
@@ -1042,8 +1079,8 @@ class App:
         # FIXME doc-string
 
         def edl_subtitles_cb(f_edl, f_mpv_edl, f_sub, f_mpv_sub, cuts):
-            pre_cut_show = self.config.get("general", "pre_cut_show")
-            after_cut_show = self.config.get("general", "after_cut_show")
+            cut_show_pre = self.config.get("general", "cut_show_pre")
+            cut_show_after = self.config.get("general", "cut_show_after")
 
             length = 0
             sub_count = 0
@@ -1051,32 +1088,32 @@ class App:
             f_mpv_edl.write("# mpv EDL v0\n")
 
             for count, (start, duration) in enumerate(cuts):
-                f_edl.write(f"{after_cut_show + length} {length + duration - pre_cut_show} 0\n")
-                if length == 0 or duration > pre_cut_show:
-                    f_mpv_edl.write(f"{video_filename}, {length}, {pre_cut_show}\n")
+                f_edl.write(f"{cut_show_after + length} {length + duration - cut_show_pre} 0\n")
+                if length == 0 or duration > cut_show_pre:
+                    f_mpv_edl.write(f"{video_filename}, {length}, {cut_show_pre}\n")
                 length += duration
-                if duration > pre_cut_show:
-                    f_mpv_edl.write(f"{video_filename}, {length - after_cut_show}, {after_cut_show}\n")
+                if duration > cut_show_pre:
+                    f_mpv_edl.write(f"{video_filename}, {length - cut_show_after}, {cut_show_after}\n")
 
                 # vor dem schnitt:
-                for second in range(pre_cut_show):
+                for second in range(cut_show_pre):
                     sub_count += 1
                     f_sub.write(f"{sub_count}\n")
                     f_sub.write(
-                        f"{self.format_seconds(length - pre_cut_show + second)} --> "
-                        f"{self.format_seconds(length - pre_cut_show + second + 1)}\n"
+                        f"{self.format_seconds(length - cut_show_pre + second)} --> "
+                        f"{self.format_seconds(length - cut_show_pre + second + 1)}\n"
                     )
                     f_mpv_sub.write(f"{sub_count}\n")
                     f_mpv_sub.write(
-                        f"{self.format_seconds((pre_cut_show + after_cut_show) * count + pre_cut_show + second)} --> "
-                        f"{self.format_seconds((pre_cut_show + after_cut_show) * count + pre_cut_show + second + 1)}\n"
+                        f"{self.format_seconds((cut_show_pre + cut_show_after) * count + cut_show_pre + second)} --> "
+                        f"{self.format_seconds((cut_show_pre + cut_show_after) * count + cut_show_pre + second + 1)}\n"
                     )
                     if count == len(cuts) - 1:
-                        f_sub.write(f"Sendung endet in {pre_cut_show - second} Sekunden...\n\n")
-                        f_mpv_sub.write(f"Sendung endet in {pre_cut_show - second} Sekunden...\n\n")
+                        f_sub.write(f"Sendung endet in {cut_show_pre - second} Sekunden...\n\n")
+                        f_mpv_sub.write(f"Sendung endet in {cut_show_pre - second} Sekunden...\n\n")
                     else:
-                        f_sub.write(f"Schnitt in {pre_cut_show - second} Sekunden...\n\n")
-                        f_mpv_sub.write(f"Schnitt in {pre_cut_show - second}s Sekunden...\n\n")
+                        f_sub.write(f"Schnitt in {cut_show_pre - second} Sekunden...\n\n")
+                        f_mpv_sub.write(f"Schnitt in {cut_show_pre - second}s Sekunden...\n\n")
 
         error = cutlist.read_cuts()
 
@@ -1227,13 +1264,6 @@ class App:
 
 
 if __name__ == "__main__":
-    if not sys.stdout.isatty():
-        with open(Path.joinpath(Path(tempfile.gettempdir()), "otrv3p.log"), "w") as f:
-            sys.stdout = f
-            app = App()
-            app.run()
-            app.config.save()
-    else:
-        app = App()
-        app.run()
-        app.config.save()
+    app = App()
+    app.run()
+    app.config.save()
