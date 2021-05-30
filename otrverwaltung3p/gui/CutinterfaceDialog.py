@@ -231,11 +231,11 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         if self.atfc:
             self.frame_timecode, self.timecode_frame, error = self.get_timecodes_from_file(str(self.filename))
             if self.frame_timecode is None:
-                self.log.error("Error: Timecodes konnten nicht ausgelesen werden.")
+                self.log.error(f"Fehler: {error}")
 
         self.keyframes, error = self.get_keyframes_from_file(str(self.filename), self.vformat)
         if self.keyframes is None:
-            self.log.error("Error: Keyframes konnten nicht ausgelesen werden.")
+            self.log.error(f"Fehler: {error}")
 
         self.movie_box.set_size_request(
             self.config.get("cutinterface", "resolution_x"), self.config.get("cutinterface", "resolution_y"),
@@ -278,7 +278,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         # Reset cursor MainWindow
         self.app.gui.main_window.get_window().set_cursor(None)
 
-        self.timer2 = GLib.timeout_add(600, self.update_listview)
+        self.timer2 = GLib.timeout_add(700, self.update_listview)
 
         if Gtk.ResponseType.OK == self.run():
             self.set_cuts(self.cutlist, self.timelines[-1])
@@ -684,7 +684,11 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                 else:
                     listiter = listmodel.iter_nth_child(None, rows - 1)
 
-            tree_path = listmodel.get_path(listiter)
+            try:
+                tree_path = listmodel.get_path(listiter)
+            except TypeError:
+                self.update_listview()
+                self.select_cut(direction)
             listselection.select_path(tree_path)
 
     def is_remove_modus(self):

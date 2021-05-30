@@ -54,6 +54,7 @@ class Config:
         self.log = logging.getLogger(self.__class__.__name__)
         self.keyring_available = keyring_available  # PreferenceWindow.py uses this
         self.log.debug(f"Keyring available: {self.keyring_available}")
+        self.rdebug = False
 
     def connect(self, category, option, callback):
         self.__callbacks.setdefault(category, {})
@@ -61,7 +62,8 @@ class Config:
 
     def set(self, category, option, value):
         printed_value = "*****" if option in ["email", "password", "aes_key", "server"] else value
-        self.log.debug(f"Set [{category}].[{option}] to {printed_value}")
+        if not self.rdebug:
+            self.log.debug(f"Set [{category}].[{option}] to {printed_value}")
         try:
             for callback in self.__callbacks[category][option]:
                 callback(value)
@@ -170,9 +172,11 @@ class Config:
             if the config value contains 'intern' """
 
         value = self.__fields["programs"][program]
-        self.log.debug(f"program value: {value}")
+        if not self.rdebug:
+            self.log.debug(f"program value: {value}")
         intern_program = otrvpath.get_tools_path(value)
-        self.log.debug(f"intern_program: {intern_program}")
+        if not self.rdebug:
+            self.log.debug(f"intern_program: {intern_program}")
 
         if "intern-" in value:
             if os.path.isfile(intern_program):

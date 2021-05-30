@@ -642,7 +642,7 @@
                     <property name="can-focus">False</property>
                     <child>
                       <object class="GtkCheckButton" id="check_create_cutlist">
-                        <property name="label" translatable="yes">Cutlist _erstellen</property>
+                        <property name="label" translatable="yes">Cutlist e_rstellen</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">False</property>

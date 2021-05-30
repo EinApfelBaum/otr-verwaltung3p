@@ -1,3 +1,9 @@
+### 1.0.0b8.post5-WIP
+* Fixes duplicate Alt-e shortcut in ConclusionDialog
+* Decoding should not "hang" anymore if errors occur
+* Fixes cutlist rating
+* New commandline option reduced debug "--rdebug"
+
 ### 1.0.0b8.post4
 * Cutinterface: Cursor is hidden in video window
 * Preferences->MainWindow: New setting Default sort order of the file list

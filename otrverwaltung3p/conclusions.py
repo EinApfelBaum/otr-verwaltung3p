@@ -231,7 +231,7 @@ class ConclusionsManager:
                     continue
 
                 if conclusion.cut.my_rating > -1:
-                    self.log.debug("Rate with ", conclusion.cut.my_rating)
+                    self.log.debug(f"Rate with {conclusion.cut.my_rating}")
                     success, message = conclusion.cut.cutlist.rate(
                         conclusion.cut.my_rating, self.app.config.get("general", "server"),
                     )
@@ -246,7 +246,7 @@ class ConclusionsManager:
                 if count == 1:
                     text = "Es wurde 1 Cutlist bewertet!"
                 else:
-                    text = "Es wurden %s Cutlisten bewertet!" % count
+                    text = f"Es wurden {count} Cutlisten bewertet!"
 
                 if len(messages) > 0:
                     text += " (Fehler: %s)" % ", ".join(messages)

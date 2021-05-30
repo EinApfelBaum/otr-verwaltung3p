@@ -441,6 +441,7 @@ class Cut(BaseAction):
 
         m = None
         for line in log.split("\n".encode()):
+            self.log.debug(line)
             try:
                 m = re.search(video_infos_match, line.decode())
             except UnicodeDecodeError:
@@ -486,7 +487,9 @@ class Cut(BaseAction):
         if not os.path.isfile(filename + ".ffindex_track00.kf.txt"):
             try:
                 command = [self.config.get_program("ffmsindex"), "-f", "-k", filename]
-                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process = subprocess.Popen(
+                    command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, errors="replace", universal_newlines=True
+                )
                 self.show_indexing_progress(process)
             except OSError:
                 return None, "ffmsindex konnte nicht aufgerufen werden."
@@ -538,7 +541,9 @@ class Cut(BaseAction):
                     "-k",
                     filename,
                 ]
-                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process = subprocess.Popen(
+                    command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, errors="replace", universal_newlines=True
+                )
                 self.show_indexing_progress(process)
             except OSError:
                 return None, "ffmsindex konnte nicht aufgerufen werden."
@@ -598,32 +603,28 @@ class Cut(BaseAction):
         """ Shows the progress of keyframe/timecode indexing in main_window """
         self.log.debug("Function start")
         first_run = True
-        while True:
-            line = ""
-            while True:
-                c = process.stdout.read(1).decode("utf-8")
-                if c == "\r" or c == "\n":
+        while process.poll() is None:
+            for line in iter(process.stdout.readline, ""):
+                if not line or "done" in line:
                     break
-                line += c
+                else:
+                    dline = line.strip("\n")
+                    self.log.debug(f"ffmsindex: {dline}")
 
-            if not line or "done" in line:
-                self.log.debug("Outer while break")
-                break
+                try:
+                    if first_run and "Indexing" in line:
+                        first_run = False
+                        self.app.gui.main_window.set_tasks_text("Datei wird indiziert")
 
-            try:
-                if first_run and "Indexing" in line:
-                    first_run = False
-                    self.app.gui.main_window.set_tasks_text("Datei wird indiziert")
+                    if len(line) > 25 and line[25].isdigit():
+                        progress = int(line[25:].replace("%", ""))
+                        # update progress
+                        self.app.gui.main_window.set_tasks_progress(progress)
 
-                if len(line) > 25 and line[25].isdigit():
-                    progress = int(line[25:].replace("%", ""))
-                    # update progress
-                    self.app.gui.main_window.set_tasks_progress(progress)
-
-                while Gtk.events_pending():
-                    Gtk.main_iteration()
-            except ValueError:
-                pass
+                    while Gtk.events_pending():
+                        Gtk.main_iteration()
+                except ValueError:
+                    pass
 
         self.app.gui.main_window.set_tasks_text("")
         self.app.gui.main_window.set_tasks_progress(0)

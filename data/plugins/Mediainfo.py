@@ -3,6 +3,7 @@
 
 import os
 import os.path
+import sys
 import subprocess
 
 from gi import require_version
@@ -56,5 +57,9 @@ class Mediainfo(Plugin):
         """ Öffne die Datei mit mediainfo """
 
         args = self.gui.main_window.get_selected_filenames()
-        args[:0] = [self.Config["mediainfo"]]
+        if sys.platform == "win32":
+            args[:0] = [self.app.config.get_program("mediainfo")]
+        else:
+            args[:0] = [self.Config["mediainfo"]]
+
         subprocess.Popen(args, stdout=subprocess.PIPE)

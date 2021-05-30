@@ -18,6 +18,7 @@ import codecs
 import configparser
 import logging
 import os.path
+import sys
 import urllib.request
 
 # noinspection PyUnresolvedReferences
@@ -225,18 +226,30 @@ class Cutlist:
         """
 
         url = f"{server}rate.php?rate={self.id}&rating={rating}"
+        self.log.debug(f"Rate URL: {url}".replace(server.split("/")[3], "<FRED>"))
 
         try:
-            self.log.debug(f"Rate URL: {url}".replace(server.split("/")[3], "<FRED>"))
-            message = urllib.request.urlopen(url).read()
+            httpobj = urllib.request.urlopen(url)
+
+            # message = urllib.request.urlopen(url).read()
+            message = httpobj.read()
             self.log.debug(f"Rate message: {message}".replace(server.split("/")[3], "<FRED>"))
 
-            if "Cutlist wurde bewertet. Vielen Dank!" in message:
+            # old response: if "Cutlist wurde bewertet. Vielen Dank!" in message:
+            if sys.version_info < (3, 9):
+                status_code = httpobj.getcode()
+            else:
+                status_code = httpobj.status
+
+            if status_code == 200:
+                self.log.debug(f"Status code: {httpobj.status}")
                 return True, message
             else:
                 return False, message
-        except (IOError, TypeError):
-            return False, "Keine Internetverbindung oder sonstiger Fehler"
+        except (IOError, TypeError) as e:
+            self.log.debug(f"Exception: {e}")
+            # return False, "Keine Internetverbindung oder sonstiger Fehler"
+            return False, f"Exception: {e}"
 
     def write_local_cutlist(self, uncut_video, intended_app_name, my_rating):
         """ Writes a cutlist file to the instance's local_filename. """

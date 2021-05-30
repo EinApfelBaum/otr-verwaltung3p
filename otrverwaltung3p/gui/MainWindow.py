@@ -102,30 +102,32 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         return cut_menu
 
     def __setup_toolbar(self):
+        toolbar_buttons_internal = [
+            ("decodeandcut", "decodeandcut.png", "Dekodieren und Schneiden", Action.DECODEANDCUT,),
+            ("decode", "decode.png", "Dekodieren", Action.DECODE),
+            ("delete", "bin.png", "In den Müll verschieben", Action.DELETE),
+            ("archive", "archive.png", "Archivieren", Action.ARCHIVE),
+            ("cut", "cut.png", "Schneiden", Action.CUT),
+            ("restore", "restore.png", "Wiederherstellen", Action.RESTORE),
+            ("rename", "rename.png", "Umbenennen", Action.RENAME),
+            ("new_folder", "new_folder.png", "Neuer Ordner", Action.NEW_FOLDER),
+            ("real_delete", "delete.png", "Löschen", Action.REAL_DELETE),
+        ]
+
+        toolbar_buttons = [
+            ("decodeandcut", "edit-cut", "Dekodieren und Schneiden", Action.DECODEANDCUT,),
+            ("decode", "system-lock-screen", "Dekodieren", Action.DECODE),
+            ("delete", "user-trash", "In den Müll verschieben", Action.DELETE),
+            ("archive", "system-file-manager", "Archivieren", Action.ARCHIVE),
+            ("cut", "edit-cut", "Schneiden", Action.CUT),
+            ("restore", "view-refresh", "Wiederherstellen", Action.RESTORE),
+            ("rename", "edit-redo", "Umbenennen", Action.RENAME),
+            ("new_folder", "folder-new", "Neuer Ordner", Action.NEW_FOLDER),
+            ("real_delete", "edit-delete", "Löschen", Action.REAL_DELETE),
+        ]
+
         if self.app.config.get("general", "use_internal_icons"):
-            toolbar_buttons = [
-                ("decodeandcut", "decodeandcut.png", "Dekodieren und Schneiden", Action.DECODEANDCUT,),
-                ("decode", "decode.png", "Dekodieren", Action.DECODE),
-                ("delete", "bin.png", "In den Müll verschieben", Action.DELETE),
-                ("archive", "archive.png", "Archivieren", Action.ARCHIVE),
-                ("cut", "cut.png", "Schneiden", Action.CUT),
-                ("restore", "restore.png", "Wiederherstellen", Action.RESTORE),
-                ("rename", "rename.png", "Umbenennen", Action.RENAME),
-                ("new_folder", "new_folder.png", "Neuer Ordner", Action.NEW_FOLDER),
-                ("real_delete", "delete.png", "Löschen", Action.REAL_DELETE),
-            ]
-        else:
-            toolbar_buttons = [
-                ("decodeandcut", "edit-cut", "Dekodieren und Schneiden", Action.DECODEANDCUT,),
-                ("decode", "rotation-locked-symbolic", "Dekodieren", Action.DECODE),
-                ("delete", "user-trash", "In den Müll verschieben", Action.DELETE),
-                ("archive", "system-file-manager", "Archivieren", Action.ARCHIVE),
-                ("cut", "edit-cut", "Schneiden", Action.CUT),
-                ("restore", "view-refresh", "Wiederherstellen", Action.RESTORE),
-                ("rename", "edit-rename", "Umbenennen", Action.RENAME),
-                ("new_folder", "folder-new", "Neuer Ordner", Action.NEW_FOLDER),
-                ("real_delete", "edit-delete", "Löschen", Action.REAL_DELETE),
-            ]
+            toolbar_buttons = toolbar_buttons_internal
 
         self.__toolbar_buttons = {}
         for key, image_name, text, action in toolbar_buttons:
@@ -140,27 +142,49 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
                 )
             else:
                 # Gtk.IconSize.LARGE_TOOLBAR
-                if type(image_name) is list:  # It's a list so we create an emblemed icon
-                    try:
-                        image = Gtk.Image.new_from_gicon(
-                            Gio.EmblemedIcon.new(
-                                Gio.ThemedIcon.new(image_name[0]), Gio.Emblem.new(Gio.ThemedIcon.new(image_name[1])),
-                            ),
-                            self.app.config.get("general", "icon_size"),
+                # if type(image_name) is list:  # It's a list so we create an emblemed icon
+                #     try:
+                #         image = Gtk.Image.new_from_gicon(
+                #             Gio.EmblemedIcon.new(
+                #                 Gio.ThemedIcon.new(image_name[0]), Gio.Emblem.new(Gio.ThemedIcon.new(image_name[1])),
+                #             ),
+                #             self.app.config.get("general", "icon_size"),
+                #         )
+                #     except Exception as e:
+                #         # Fallback to internal icon
+                #         image = Gtk.Image.new_from_pixbuf(
+                #             GdkPixbuf.Pixbuf.new_from_file_at_size(
+                #                 otrvpath.get_image_path(image_name),
+                #                 self.app.config.get("general", "icon_size"),
+                #                 self.app.config.get("general", "icon_size"),
+                #             )
+                #         )
+                #         self.log.info(f"Exception: {e}")
+                # else:
+                try:
+                    image = Gtk.Image.new_from_pixbuf(
+                        Gtk.IconTheme.get_default().load_icon(
+                            image_name, self.app.config.get("general", "icon_size"), 0,
                         )
-                    except Exception as e:
-                        self.log.info(f"{e}")
-                else:
-                    try:
-                        image = Gtk.Image.new_from_pixbuf(
-                            Gtk.IconTheme.get_default().load_icon(
-                                image_name, self.app.config.get("general", "icon_size"), 0,
-                            )
-                        )
-                    except Exception as e:
-                        self.log.info(f"{e}")
+                    )
+                except Exception as e:
+                    self.log.info(f"Exception: {e}")
 
-            image.show()
+            try:
+                image.show()
+            except UnboundLocalError:
+                # Fallback to internal icon
+                index = [i for i, v in enumerate(toolbar_buttons_internal) if v[0] == key]
+                image_name_internal = toolbar_buttons_internal[index[0]][1]
+
+                image = Gtk.Image.new_from_pixbuf(
+                    GdkPixbuf.Pixbuf.new_from_file_at_size(
+                        otrvpath.get_image_path(image_name_internal),
+                        self.app.config.get("general", "icon_size"),
+                        self.app.config.get("general", "icon_size"),
+                    )
+                )
+                image.show()
 
             if key == "cut" or key == "decodeandcut":
                 self.__toolbar_buttons[key] = Gtk.MenuToolButton.new(image, text)

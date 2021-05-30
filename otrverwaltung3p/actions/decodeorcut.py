@@ -174,30 +174,38 @@ class DecodeOrCut(Cut):
                     email,
                     "-p",
                     password,
-                    "-O",
-                    Path(self.config.get("general", "folder_uncut_avis")) / Path(file_conclusion.otrkey).stem,
+                    # "-O",
+                    # Path(self.config.get("general", "folder_uncut_avis")) / Path(file_conclusion.otrkey).stem,
+                    "-D",
+                    self.config.get("general", "folder_uncut_avis"),
                     file_conclusion.otrkey,
                 ]
             else:
                 command = [
                     Path(self.config.get_program("decoder")),
-                    "-i",
-                    file_conclusion.otrkey,
                     "-e",
                     email,
                     "-p",
                     password,
                     "-o",
                     self.config.get("general", "folder_uncut_avis"),
+                    "-i",
+                    file_conclusion.otrkey,
                 ]
                 if not verify:
-                    command += ["-q"]
+                    command.insert(7, "-q")
                 self.log.debug(f"decoder command: {command}")
             # <-- otrtool
 
             try:
                 process = subprocess.Popen(
-                    command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, errors="replace", universal_newlines=True,
+                    # command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, errors="replace",
+                    # universal_newlines=True,
+                    command,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    errors="replace",
+                    universal_newlines=True,
                 )
             except OSError:
                 file_conclusion.decode.status = Status.ERROR
@@ -221,75 +229,86 @@ class DecodeOrCut(Cut):
                     "info:",
                     "warning:",
                 ]
-                for line in iter(process.stderr.readline, ""):
-                    if line:
-                        dline = line.strip("\n")
-                        self.log.debug(f"otrtool: {dline}")
-                    else:
-                        break
-                    # Gathering errors
-                    if not any(x in line for x in nonerror):
-                        error_message += line.strip()
-
-                    if "Decrypting" in line:
-                        self.app.gui.main_window.set_tasks_text(
-                            f"Datei {file_count[0]}/{file_count[1]} dekodieren und prüfen"
-                        )
-
-                    if ("gui" in line) and not ("Finished" in line):
-                        progress = int(line[5:])
-                        # update progress
-                        self.app.gui.main_window.set_tasks_progress(progress)
-
-                    while Gtk.events_pending():
-                        Gtk.main_iteration()
-            # <-- otrtool
-            else:
-                while True:
-                    line = ""
-                    while True:
-                        c = process.stdout.read(1)
-                        if c == "\r" or c == "\n":
+                while process.poll() is None:
+                    for line in iter(process.stderr.readline, ""):
+                        if not line:
                             break
-                        line += c
-                    if not line:
-                        break
-                    else:
-                        self.log.debug(f"decoder: {line}")
+                        else:
+                            dline = line.strip("\n")
+                            self.log.debug(f"otrtool: {dline}")
+                        # Gathering errors
+                        if not any(x in line for x in nonerror):
+                            error_message += line.strip() + "\n"
 
-                    try:
-                        if verify:
-                            file_count = count + 1, len(file_conclusions)
+                        if "Decrypting" in line:
+                            self.app.gui.main_window.set_tasks_text(
+                                f"Datei {file_count[0]}/{file_count[1]} dekodieren und prüfen"
+                            )
 
-                            if "input" in line:
-                                self.app.gui.main_window.set_tasks_text(
-                                    "Eingabedatei %s/%s kontrollieren" % file_count
-                                )
-                            elif "output" in line:
-                                self.app.gui.main_window.set_tasks_text(
-                                    "Ausgabedatei %s/%s kontrollieren" % file_count
-                                )
-                            elif "Decoding" in line:
-                                self.app.gui.main_window.set_tasks_text("Datei %s/%s dekodieren" % file_count)
-
-                        if len(line) > 13 and line[12].isdigit():
-                            progress = int(line[10:13])
+                        if ("gui" in line) and not ("Finished" in line):
+                            progress = int(line[5:])
                             # update progress
                             self.app.gui.main_window.set_tasks_progress(progress)
 
                         while Gtk.events_pending():
                             Gtk.main_iteration()
-                    except ValueError:
-                        pass
+            # <-- otrtool
+            else:
+                # while True:
+                while process.poll() is None:
+                    for line in iter(process.stdout.readline, ""):
+                        # line = ""
+                        # while True:
+                        #     c = process.stdout.read(1)
+                        #     if c == "\r" or c == "\n":
+                        #         break
+                        #     line += c
+                        if not line:
+                            break
+                        else:
+                            dline = line.strip("\n")
+                            self.log.debug(f"decoder: {dline}")
+
+                        try:
+                            if verify:
+                                file_count = count + 1, len(file_conclusions)
+
+                                if "input" in line:
+                                    self.app.gui.main_window.set_tasks_text(
+                                        f"Eingabedatei {file_count[0]}/{file_count[1]} kontrollieren"
+                                    )
+                                elif "output" in line:
+                                    self.app.gui.main_window.set_tasks_text(
+                                        f"Ausgabedatei {file_count[0]}/{file_count[1]} kontrollieren"
+                                    )
+                                elif "Decoding" in line:
+                                    self.app.gui.main_window.set_tasks_text(
+                                        f"Datei {file_count[0]}/{file_count[1]} dekodieren"
+                                    )
+
+                            if len(line) > 13 and line[12].isdigit():
+                                progress = int(line[10:13])
+                                # update progress
+                                self.app.gui.main_window.set_tasks_progress(progress)
+
+                            while Gtk.events_pending():
+                                Gtk.main_iteration()
+                        except ValueError:
+                            pass
 
                 # errors?
                 errors = process.stderr.readlines()
                 error_message = ""
                 for error in errors:
-                    # ~ error = error.decode('ISO-8859-1')
                     if "libmediaclient" not in error:
-                        error_message += error.strip()
+                        error_message += error.strip() + "\n"
 
+            self.log.debug(f"Decoder returncode: {process.returncode}")
+            if process.returncode != 0:
+                if process.returncode == -11:
+                    error_message += f"Dekoder Returncode: Segmentation fault ({process.returncode})"
+                else:
+                    error_message += f"Dekoder Returncode: {process.returncode}"
             if error_message == "":  # dekodieren erfolgreich
                 file_conclusion.decode.status = Status.OK
                 file_conclusion.uncut_video = str(
@@ -302,11 +321,10 @@ class DecodeOrCut(Cut):
                     fileoperations.move_file(file_conclusion.otrkey, target)
             else:
                 file_conclusion.decode.status = Status.ERROR
-                try:
-                    str(error_message)
-                except UnicodeDecodeError:
-                    error_message = str(error_message, "iso-8859-1")
-
+                # try:
+                #     str(error_message)
+                # except UnicodeDecodeError:
+                #     error_message = str(error_message, "iso-8859-1")
                 file_conclusion.decode.message = error_message
 
         return True

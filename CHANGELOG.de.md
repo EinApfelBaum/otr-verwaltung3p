@@ -1,3 +1,9 @@
+### 1.0.0b8.post5-WIP
+* Der doppelt vergebene Shortcut "Alt-e" in der Zusammenfassung wurde korrigiert
+* Das Dekodieren sollte nun nicht mehr "hängen" wenn ein Dekoderfehler auftritt
+* Das Bewerten der Cutlists sollte nun wieder funktionieren
+* Neuer Parameter für reduzierte Debug-Ausgabe "--rdebug"
+
 ### 1.0.0b8.post4
 * Cutinterface: Mauszeiger wird im Videofenster ausgeblendet
 * Einstellungen->Hauptfenster: Neue Einstellung Standardsortierung der Dateiliste entweder

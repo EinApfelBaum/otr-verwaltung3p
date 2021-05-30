@@ -62,6 +62,7 @@ def parse_opts():
     oparse = optparse.OptionParser(usage=usage)
     oparse.add_option("-v", "--verbose", action="store_true", help="Verbose messages", default=False)
     oparse.add_option("-d", "--debug", action="store_true", help="Debug messages", default=False)
+    oparse.add_option("--rdebug", action="store_true", help="Reduced debug messages", default=False)
     # oparse.add_option("-l", "--link", help="Add a link")
 
     opt, _ = oparse.parse_args()
@@ -69,9 +70,12 @@ def parse_opts():
 
 
 opts = parse_opts()
-
+rdebug = False
 if opts.debug:
     logging.root.setLevel(logging.DEBUG)
+elif opts.rdebug:
+    logging.root.setLevel(logging.DEBUG)
+    rdebug = True
 elif opts.verbose:
     logging.root.setLevel(logging.INFO)
 # link = opts.link
@@ -325,6 +329,8 @@ class App:
         else:
             self.config = Config(otrvpath.get_config_dir("conf"), configuration)
 
+        if rdebug:
+            self.config.rdebug = True
         self.__search_text = ""
         self.locked = False
 
