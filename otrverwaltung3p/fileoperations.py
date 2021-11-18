@@ -15,7 +15,7 @@
 # END LICENSE
 
 """ Stellt Methoden für Dateioperationen bereit.
-Zeigt bei Fehlern einen gtk.MessageDialog an."""
+Zeigt bei Fehlern einen Gtk.MessageDialog an."""
 
 import logging
 import os
@@ -26,9 +26,6 @@ from gi import require_version
 require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
-
-# TODO: Achten auf :/\* etc. in Dateiname!
-# TODO: Fehler abfangen, fehlerwert zurückgeben, damit das Programm weitermachen kann
 
 log = logging.getLogger(__name__)
 
@@ -65,6 +62,14 @@ def remove_file(filename, error_cb=__error):
     except Exception as e:
         handle_error(error_cb, f"Fehler beim Löschen von {filename} ({e})")
 
+    try:
+        if os.path.isfile(filename + ".ffindex_track00.kf.txt"):
+            os.remove(filename + ".ffindex_track00.kf.txt")
+        if os.path.isfile(filename + ".ffindex_track00.tc.txt"):
+            os.remove(filename + ".ffindex_track00.tc.txt")
+    except Exception as e:
+        handle_error(error_cb, f"Fehler beim Löschen von {filename} ({e}).")
+
 
 def rename_file(old_filename, new_filename, error_cb=__error):
     """ Benennt eine Datei um. Wenn die Datei bereits existiert, wird der neue Name um eine Zahl erweitert. """
@@ -93,6 +98,7 @@ def move_file(filename, target, error_cb=__error, cutlist_move_to=None):
     if os.path.exists(new_filename):
         handle_error(error_cb, f"Umbenennen: Die Datei existiert bereits! ({new_filename})")
         return filename
+    log.debug(f"Move cutlist to: {cutlist_move_to}")
     log.debug(f"Moving {filename} to {target}")
     try:
         os.rename(filename, new_filename)
@@ -101,12 +107,12 @@ def move_file(filename, target, error_cb=__error, cutlist_move_to=None):
         try:
             shutil.move(filename, target)
         except Exception as e:
-            handle_error(
-                error_cb, f"Fehler beim Verschieben von {filename} nach {target} ({e}). ",
-            )
+            handle_error(error_cb, f"Fehler beim Verschieben von {filename} nach {target} ({e}). ")
             return filename
 
     if cutlist_move_to is not None:
+        log.debug(f"Move cutlist to: {cutlist_move_to}")
+        log.debug(f"Cutlist: {filename + '.cutlist'}")
         if os.path.isdir(cutlist_move_to):
             if os.path.isfile(filename + ".cutlist"):
                 move_file(filename + ".cutlist", cutlist_move_to)
@@ -117,9 +123,7 @@ def move_file(filename, target, error_cb=__error, cutlist_move_to=None):
         if os.path.isfile(filename + ".ffindex_track00.tc.txt"):
             os.remove(filename + ".ffindex_track00.tc.txt")
     except Exception as e:
-        handle_error(
-            error_cb, f"Fehler beim Löschen von {filename} nach {target} ({e}). ",
-        )
+        handle_error(error_cb, f"Fehler beim Löschen von {filename} ({e}).")
 
     return new_filename
 

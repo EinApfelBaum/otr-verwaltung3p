@@ -1,8 +1,14 @@
-### 1.0.0b8.post5-WIP
+### 1.0.0b8.post5
+* New option Preferences -> Cutinterface -> "Cutlistsuche automatisch öffnen"
+  automatically searches for a cutlist if there is no local one
 * Fixes duplicate Alt-e shortcut in ConclusionDialog
 * Decoding should not "hang" anymore if errors occur
-* Fixes cutlist rating
+* Better error reporting for CutSmartMKVmerge.__simulate_smart_mkvmerge and unknown video encodings
+* Fixes rating of cutlists (server statuscode is used to check for success)
 * New commandline option reduced debug "--rdebug"
+* Fixes bug in CutAction.LOCAL_CUTLIST
+* LoadCutDialog: Error colums are only expanded when not empty
+* Adds detection of new HD3 format (can only be cut with virtualdub)
 
 ### 1.0.0b8.post4
 * Cutinterface: Cursor is hidden in video window
@@ -91,7 +97,7 @@
 * Files that are processed are now locked in the file view
 * The file treeviews are automatically updated by directory monitors when
   changes occur
-* Implemented a wait-cursor where applicable (eg. Indexing)
+* Implemented a wait-cursor where applicable (e.g. Indexing)
 
 ##### Cutinterface:
 * If there is only one cutlist available, it is automatically
@@ -161,8 +167,7 @@
   (binsky08)
 * Eliminated trailing whitespaces
 * Leaving the Cutinterface via "Cancel" or "Escape" will cause the conclusion
-  button not be shown (i. e. the errormessage "Keine Schnitte angegeben" is
-  suppressed)
+  button not be shown (i.e. the errormessage "Keine Schnitte angegeben" is suppressed)
 * Conclusion button is now colored. YAY :)
 * Fix Syntax warnings
 * CutinterfaceDialog: Cut marker improved
@@ -170,7 +175,7 @@
 
 ### 3.3.2-A, 2019-03-09
 
-* Fixes AES encryption and dbus.glib deprecation warning
+* Fixes AES encryption and `dbus.glib` deprecation warning
 * AddDownloadDialog: libtorrent deactivated. Fixes #80
 * Fix remuxing to mp4 for cutsmartmkvmerge
 
@@ -191,11 +196,11 @@
 
 * CutinterfaceDialog now uses gstreamer's gtksink for video output. Fixes
   "CutInterface with black Screen"
-* Removed option to set the video-sink of CutinterfaceDialog.player
+* Removed option to set the video-sink of `CutinterfaceDialog.player`
 
 ### 3.2.5-A, 2018-07-23
 
-* Add option to set the video-sink of CutinterfaceDialog.player
+* Add option to set the video-sink of `CutinterfaceDialog.player`
 * Cutting mp4 with smartMkvMerge should now work reliable. Changed the encoding
   parameters
 * CutinterfaceDialog: New context menu for label_filename (copy filename)

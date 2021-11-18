@@ -50,9 +50,9 @@ class CutAvidemux(Cut):
         """ read cuts from avidemux 2 and 3
             returns cut_frames und cutlist_error """
 
-        format, ac3_file, bframe_delay, _ = self.get_format(filename)
+        format, ac3_file, bframe_delay, _, _ = self.get_format(filename)
         fps, dar, sar, max_frames, ac3_stream, error = self.analyse_mediafile(filename)
-        if fps == None:
+        if fps is None:
             return None, error
 
         # env
@@ -180,7 +180,7 @@ class CutAvidemux(Cut):
         return cuts_frames, cutlist_error
 
     def __cut_file_avidemux(self, filename, program_config_value, cuts):
-        format, ac3_file, bframe_delay, _ = self.get_format(filename)
+        format, ac3_file, bframe_delay, _, _ = self.get_format(filename)
         # make file for avidemux2.5 scripting engine
         f = open("tmp.js", "w")
 

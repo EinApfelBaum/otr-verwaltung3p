@@ -235,6 +235,9 @@ class PreferencesWindow(Gtk.Window, Gtk.Buildable):
             self.obj("spinbutton_test_cut_offset_secs"), self.app.config, "cutinterface", "test_cut_offset_secs",
         )
         CheckButtonBinding(
+            self.obj("check_autosearch_cutlist"), self.app.config, "cutinterface", "autosearch_cutlist",
+        )
+        CheckButtonBinding(
             self.obj("check_show_tooltips"), self.app.config, "cutinterface", "show_tooltips",
         )
         CheckButtonBinding(

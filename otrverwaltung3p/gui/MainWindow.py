@@ -564,27 +564,27 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
             # displaying methods for treeview_files
 
-    def __tv_files_size(self, column, cell, model, iter, data=None):
-        if model.get_value(iter, self.__ISDIR):
+    def __tv_files_size(self, column, cell, model, iter1, data=None):
+        if model.get_value(iter1, self.__ISDIR):
             cell.set_property("text", "")
         else:
-            cell.set_property("text", self.humanize_size(model.get_value(iter, self.__SIZE)))
+            cell.set_property("text", self.humanize_size(model.get_value(iter1, self.__SIZE)))
 
-    def __tv_files_date(self, column, cell, model, iter, data=None):
+    def __tv_files_date(self, column, cell, model, iter1, data=None):
         cell.set_property(
-            "text", time.strftime("%d.%m.%Y, %H:%M", time.localtime(model.get_value(iter, self.__DATE))),
+            "text", time.strftime("%d.%m.%Y, %H:%M", time.localtime(model.get_value(iter1, self.__DATE))),
         )
 
-    def __tv_files_name(self, column, cell, model, iter, data=None):
-        cell.set_property("text", basename(model.get_value(iter, self.__FILENAME)))
+    def __tv_files_name(self, column, cell, model, iter1, data=None):
+        cell.set_property("text", basename(model.get_value(iter1, self.__FILENAME)))
 
-    def __tv_files_record(self, column, cell, model, iter, data=None):
-        cell.set_property("text", model.get_value(iter, self.__REC_DATE))
+    def __tv_files_record(self, column, cell, model, iter1, data=None):
+        cell.set_property("text", model.get_value(iter1, self.__REC_DATE))
 
-    def __tv_files_pixbuf(self, column, cell, model, iter, data=None):
-        filename = model.get_value(iter, self.__FILENAME)
+    def __tv_files_pixbuf(self, column, cell, model, iter1, data=None):
+        filename = model.get_value(iter1, self.__FILENAME)
 
-        if model.get_value(iter, self.__ISDIR):
+        if model.get_value(iter1, self.__ISDIR):
             cell.set_property("pixbuf", self.__pix_folder)
         else:
             if filename.endswith(".otrkey"):
@@ -597,8 +597,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
     #
 
     @staticmethod
-    def __treeview_planning_title(column, cell, model, iter, data=None):
-        broadcast = model.get_value(iter, 0)
+    def __treeview_planning_title(column, cell, model, iter1, data=None):
+        broadcast = model.get_value(iter1, 0)
 
         if broadcast.datetime < time.time():
             cell.set_property("markup", f"<b>{broadcast.title}</b>")
@@ -606,8 +606,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             cell.set_property("markup", broadcast.title)
 
     @staticmethod
-    def __treeview_planning_datetime(column, cell, model, iter, data=None):
-        broadcast = model.get_value(iter, 0)
+    def __treeview_planning_datetime(column, cell, model, iter1, data=None):
+        broadcast = model.get_value(iter1, 0)
         date_time = time.strftime("%a, %d.%m.%Y, %H:%M", time.localtime(broadcast.datetime))
 
         if broadcast.datetime < time.time():
@@ -616,8 +616,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
             cell.set_property("markup", date_time)
 
     @staticmethod
-    def __treeview_planning_station(column, cell, model, iter, data=None):
-        broadcast = model.get_value(iter, 0)
+    def __treeview_planning_station(column, cell, model, iter1, data=None):
+        broadcast = model.get_value(iter1, 0)
 
         if broadcast.datetime < time.time():
             cell.set_property("markup", f"<b>{broadcast.station}</b>")
@@ -628,8 +628,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         """ Fügt eine geplante Sendung zu treeview_planning hinzu.
              broadcast Instanz von planning.PlanningItem """
 
-        iter = self.builder.get_object("treeview_planning").get_model().append([broadcast])
-        return iter
+        iter1 = self.builder.get_object("treeview_planning").get_model().append([broadcast])
+        return iter1
 
     @staticmethod
     def __tv_planning_sort(model, iter1, iter2, data):
@@ -788,8 +788,8 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
         self.app.perform_action(Action.CUT, cut_action=CutAction.MANUALLY)
 
     def on_treeview_download_row_activated(self, treeview, path, view_colum, data=None):
-        iter = treeview.get_model().get_iter(path)
-        download = treeview.get_model().get_value(iter, 0)
+        iter1 = treeview.get_model().get_iter(path)
+        download = treeview.get_model().get_value(iter1, 0)
         dialog = DownloadPropertiesDialog.new()
         dialog.run(download)
         if dialog.changed:
@@ -895,10 +895,11 @@ class MainWindow(Gtk.Window, Gtk.Buildable):
 
         return False
 
-    def _on_menuFileQuit_activate(self, widget, data=None):
+    @staticmethod
+    def _on_menu_file_quit_activate(*args):
         Gtk.main_quit()
 
-    def _on_menuEditSearch_activate(self, widget, data=None):
+    def _on_menu_edit_search_activate(self, widget, data=None):
         self.search_tool_item.entry.grab_focus()
 
     def _on_menu_bottom_toggled(self, widget, data=None):

@@ -80,6 +80,7 @@ class Format:
     HQ0 = 6  # old HQ 2011, core < 125
     HD0 = 7  # old HD 2011, core < 125
     MP40 = 8  # old mp4 2011, core < 125
+    HD3 = 9  # gcurse:HD3
 
     reverse_dict = {
         0: "AVI",
@@ -91,6 +92,7 @@ class Format:
         6: "HQ0",
         7: "HD0",
         8: "MP40",
+        9: "HD3",
     }
 
     @staticmethod

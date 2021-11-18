@@ -51,7 +51,7 @@ class CutVirtualdub(Cut):
 
         if error is not None:
             return None, error
-        vformat, ac3_file, bframe_delay, _ = self.get_format(filename)
+        vformat, ac3_file, bframe_delay, _, _ = self.get_format(filename)
         cuts_frames, cutlist_error = self.__create_cutlist_virtualdub(
             os.path.join(self.config.get("general", "folder_uncut_avis"), "cutlist.vcf"), vformat,
         )
@@ -59,7 +59,7 @@ class CutVirtualdub(Cut):
         return cuts_frames, cutlist_error
 
     def __cut_file_virtualdub(self, filename, config_value, cuts=None, manually=False):
-        vformat, ac3_file, bframe_delay, _ = self.get_format(filename)
+        vformat, ac3_file, bframe_delay, _, _ = self.get_format(filename)
         fps, dar, sar, max_frames, ac3_stream, error = self.analyse_mediafile(filename)
         if sar is None or dar is None:
             return None, error
@@ -74,7 +74,7 @@ class CutVirtualdub(Cut):
 
         if vformat == Format.HQ or vformat == Format.HQ0:
             if self.config.get("general", "h264_codec") == "ffdshow":
-                if dar == "16:9":
+                if dar == "1.778":
                     comp_data = codec.get_comp_data_h264_169()
                 else:
                     comp_data = codec.get_comp_data_h264_43()
@@ -91,9 +91,9 @@ class CutVirtualdub(Cut):
                     "Codec nicht unterstützt. Nur ffdshow, x264vfw und komisar unterstützt.",
                 )
 
-        elif vformat == Format.HD or vformat == Format.HD2 or vformat == Format.HD0:
+        elif vformat == Format.HD0 or vformat == Format.HD or vformat == Format.HD2 or vformat == Format.HD3:
             if self.config.get("general", "h264_codec") == "ffdshow":
-                if dar == "16:9":
+                if dar == "1.778":
                     comp_data = codec.get_comp_data_hd_169()
                 else:
                     comp_data = codec.get_comp_data_hd_43()

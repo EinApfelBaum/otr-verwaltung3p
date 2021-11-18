@@ -82,6 +82,7 @@ class Cutlist:
         self.withframes = 0
         self.withtime = 0
         self.duration = ""
+        self.duration_hms = ""
         self.errors = ""
         self.othererrordescription = ""
         self.downloadcount = 0
@@ -108,10 +109,10 @@ class Cutlist:
         self.quality = ""
 
     def upload(self, server, cutlist_hash):
-        """ Uploads a cutlist to cutlist.at "
-            Upload code from:  http://code.activestate.com/recipes/146306/
+        """Uploads a cutlist to cutlist.at "
+        Upload code from:  http://code.activestate.com/recipes/146306/
 
-            Returns: error message, otherwise None
+        Returns: error message, otherwise None
         """
 
         clist = open(self.local_filename, "r").read()
@@ -132,10 +133,10 @@ class Cutlist:
             return "Connection timed out!"
 
     def download(self, server, video_filename):
-        """ Downloads a cutlist to the folder where video_filename is.
-            Checks whether cutlist already exists.
+        """Downloads a cutlist to the folder where video_filename is.
+        Checks whether cutlist already exists.
 
-            Returns: error message, otherwise None
+        Returns: error message, otherwise None
         """
         self.local_filename = video_filename
         self.log.debug(f"video_filename: {video_filename}")
@@ -174,15 +175,19 @@ class Cutlist:
             for key, value in qualities.items():
                 if key in self.filename_original:
                     self.quality = value
+            self.read_cuts()
+            duration = sum(j for _, j in self.cuts_seconds)
+            self.duration = str(duration)
+            self.duration_hms = duration_to_hms(duration)
 
         except Exception as e:
             self.log.error(f"Exception: {e}")
             self.log.error(f"Malformed cutlist: {self.local_filename}")
 
     def read_cuts(self):
-        """ Reads cuts from local_filename.
+        """Reads cuts from local_filename.
 
-            Returns: error message, otherwise None
+        Returns: error message, otherwise None
         """
 
         if self.cuts_seconds or self.cuts_frames:
@@ -212,7 +217,7 @@ class Cutlist:
                 duration_seconds = float(config_parser.get(cut, "Duration"))
                 if duration_seconds > 0:
                     self.cuts_seconds.append((start_second, duration_seconds))
-                    self.log.info(f"Append seconds:  {start_second}, {duration_seconds}")
+                    self.log.info(f"Append cut in seconds:  {start_second}, {duration_seconds}")
 
         except configparser.NoSectionError as message:
             return "Fehler in Cutlist: " + str(message)
@@ -220,9 +225,9 @@ class Cutlist:
             return "Fehler in Cutlist: " + str(message)
 
     def rate(self, rating, server):
-        """ Rates a cutlist.
+        """Rates a cutlist.
 
-            Returns: True for success.
+        Returns: True for success.
         """
 
         url = f"{server}rate.php?rate={self.id}&rating={rating}"
@@ -241,18 +246,17 @@ class Cutlist:
             else:
                 status_code = httpobj.status
 
+            self.log.debug(f"Status code: {httpobj.status}: {message}")
             if status_code == 200:
-                self.log.debug(f"Status code: {httpobj.status}")
                 return True, message
             else:
                 return False, message
         except (IOError, TypeError) as e:
             self.log.debug(f"Exception: {e}")
-            # return False, "Keine Internetverbindung oder sonstiger Fehler"
             return False, f"Exception: {e}"
 
     def write_local_cutlist(self, uncut_video, intended_app_name, my_rating):
-        """ Writes a cutlist file to the instance's local_filename. """
+        """Writes a cutlist file to the instance's local_filename."""
         self.log.debug("Function starts")
         try:
             with codecs.open(self.local_filename, "w", "UTF-8") as cutlist:
@@ -306,6 +310,8 @@ class Cutlist:
 
 
 # Other methods
+
+
 def download_cutlists(
     filename,
     server,
@@ -315,15 +321,15 @@ def download_cutlists(
     cutlist_found_cb=None,
     get_all_qualities=None,
 ):
-    """ Downloads all cutlists for the given file.
-            filename            - movie filename
-            server              - cutlist server
-            choose_cutlists_by  - 0 by size, 1 by name
-            cutlist_mp4_as_hq   -
-            error_cb            - callback: an error occurs (message)
-            cutlist_found_cb    - callback: a cutlist is found (Cutlist instance)
+    """Downloads all cutlists for the given file.
+        filename            - movie filename
+        server              - cutlist server
+        choose_cutlists_by  - 0 by size, 1 by name
+        cutlist_mp4_as_hq   -
+        error_cb            - callback: an error occurs (message)
+        cutlist_found_cb    - callback: a cutlist is found (Cutlist instance)
 
-        Returns: error, a list of Cutlist instances
+    Returns: error, a list of Cutlist instances
     """
 
     llog = logging.getLogger(__name__)
@@ -376,21 +382,6 @@ def download_cutlists(
                 error_cb("Keine Cutlists gefunden")
             return f"Keine Cutlists gefunden ({e})", None
 
-        # Homo ludens
-        # for cutlist in range(int(tree_cutlists.attrib["count"])):
-        #     c = Cutlist()
-        #     for tagg in range(len(tree_cutlists[cutlist])):
-        #         exec(f"c.{tree_cutlists[cutlist][tagg].tag} = "
-        #              f"'{tree_cutlists[cutlist][tagg].text}'".replace('c.cuts', 'c.countcuts'))
-        #     for key, value in qualities.items():
-        #         if key in c.filename_original:
-        #             c.quality = value
-        #         ids = [cutlist.id for cutlist in cutlists]
-        #         if c.id not in ids:
-        #             if cutlist_found_cb:
-        #                 cutlist_found_cb(c)
-        #             cutlists.append(c)
-
         for cutlist in dom_cutlists:
 
             c = Cutlist()
@@ -407,6 +398,7 @@ def download_cutlists(
             c.withframes = __read_value(cutlist, "withframes")
             c.withtime = __read_value(cutlist, "withtime")
             c.duration = __read_value(cutlist, "duration")
+            c.duration_hms = duration_to_hms(float(c.duration))
             c.errors = __read_value(cutlist, "errors")
             c.othererrordescription = __read_value(cutlist, "othererrordescription")
             c.downloadcount = __read_value(cutlist, "downloadcount")
@@ -429,6 +421,13 @@ def download_cutlists(
         return None, cutlists
 
 
+def duration_to_hms(seconds):
+    minute, second = divmod(int(seconds), 60)  # discards milliseconds
+    hour, minute = divmod(minute, 60)
+    second = seconds - minute * 60 - hour * 3600  # for the milliseconds
+    return f"{hour:02d}:{minute:02d}:{round(second):02d}"
+
+
 def __read_value(cutlist_element, node_name):
     llog = logging.getLogger(__name__)
     try:
@@ -448,21 +447,21 @@ def __read_value(cutlist_element, node_name):
 
 
 def get_best_cutlist(cutlists):
-    """ Der Algorithmus berücksichtigt die Anzahl der Wertungen.
-     Hat eine Cutlist nur wenige Wertungen erhalten, wird
-     ihre Bewertung etwas heruntergestuft. Existiert auch eine
-     andere Cutlist, die sehr viel mehr Wertungen erhalten hat,
-     wird auf diese Weise auch diese Cutlist als beste genommen.
+    """Der Algorithmus berücksichtigt die Anzahl der Wertungen.
+    Hat eine Cutlist nur wenige Wertungen erhalten, wird
+    ihre Bewertung etwas heruntergestuft. Existiert auch eine
+    andere Cutlist, die sehr viel mehr Wertungen erhalten hat,
+    wird auf diese Weise auch diese Cutlist als beste genommen.
 
-     Beispiel: Cutlist A:
-                   Wertung: 5.00,  Anzahl der Bewerter: 2
-               Cutlist B:
-                   Wertung: 4.88   Anzahl der Bewerter: 24
+    Beispiel: Cutlist A:
+                  Wertung: 5.00,  Anzahl der Bewerter: 2
+              Cutlist B:
+                  Wertung: 4.88   Anzahl der Bewerter: 24
 
-     Der Algorithmus sucht (im Gegensatz zu cutlist.at) Cutlist B
-     als beste heraus.
-     Sind keine Benutzerwertungen vorhanden, wird nach der Autoren-
-     bewertung sortiert.
+    Der Algorithmus sucht (im Gegensatz zu cutlist.at) Cutlist B
+    als beste heraus.
+    Sind keine Benutzerwertungen vorhanden, wird nach der Autoren-
+    bewertung sortiert.
 
     """
 

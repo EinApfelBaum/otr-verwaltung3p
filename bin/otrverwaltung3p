@@ -137,13 +137,13 @@ class App:
 
         self.log = logging.getLogger(self.__class__.__name__)
         self.filenames_locked = []
+        self.file_to_recut = None
         self.gtksettings = Gtk.Settings.get_default()
         # self.gtksettings.props.gtk_application_prefer_dark_theme = False
         # self.gtksettings.props.gtk_theme_name = "Windows-10-3.2"
         # self.gtksettings.props.gtk_icon_theme_name = "Windows-10-1.0"
         # self.gtksettings.props.gtk_font_name = "Segoe UI 14"
         self.last_marked_row = None
-        self.file_to_recut = None
         self.section_info = {}
 
         self.encoding_strings = {
@@ -154,7 +154,7 @@ class App:
                 "weightb=0:weightp=0"
             ),
             "ffmpeg_hd2_x264_options": (
-                "-preset veryfast -tune film -x264opts no-scenecut=1:pic-struct=1:" "sps-id=1:stitchable=1"
+                "-preset veryfast -tune film -x264opts no-scenecut=1:pic-struct=1:sps-id=1:stitchable=1"
             ),
             "ffmpeg_hd_x264_options": (
                 "-preset medium -tune film -x264opts aq-mode=2:b-adapt=2:crf=23:deblock=-1/-1:"
@@ -166,7 +166,7 @@ class App:
                 "weightp=0"
             ),
             "ffmpeg_hq_x264_options": (
-                "-preset medium -tune film -x264opts b-adapt=2:direct=auto:force-cfr=1:" "rc-lookahead=60:weightp=0"
+                "-preset medium -tune film -x264opts b-adapt=2:direct=auto:force-cfr=1:rc-lookahead=60:weightp=0"
             ),
             "ffmpeg_mp4_x264_options": "-preset veryfast -x264opts force-cfr=1:trellis=0",
             "ffmpeg_mp40_x264_options": "-preset medium -x264opts force-cfr=1:trellis=0",
@@ -257,6 +257,7 @@ class App:
             },
             "cutinterface": {
                 "alt_time_frame_conv": True,
+                "autosearch_cutlist": False,
                 "hide_cuts": False,
                 "label_time_colors": [False, "#009900", "#FF9900", "#0064C8", "lightblue", "yellow"],
                 "mouse_hide_over_video": True,

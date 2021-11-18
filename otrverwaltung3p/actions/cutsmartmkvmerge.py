@@ -117,73 +117,52 @@ class CutSmartMkvmerge(Cut):
         # extension = Path(filename).suffix
         x_offset = [0, 0]
         codec_core = -1
-        vformat, ac3_file, bframe_delay, _ = self.get_format(filename)
+        vformat, ac3_file, bframe_delay, codec_core, verror = self.get_format(filename)
 
         if vformat == Format.HQ:
             self.log.debug("vformat: HQ")
             if encoder_engine == "x264":
-                codec, codec_core = self.complete_x264_opts(
-                    shlex.split(self.app.encoding_strings["x264_hq_string"]), filename
-                )
+                codec = self.complete_x264_opts(shlex.split(self.app.encoding_strings["x264_hq_string"]), filename)
             elif encoder_engine == "ffmpeg":
-                codec, codec_core = self.complete_ffmpeg_opts(
-                    self.app.encoding_strings["ffmpeg_hq_x264_options"], filename
-                )
+                codec = self.complete_ffmpeg_opts(self.app.encoding_strings["ffmpeg_hq_x264_options"], filename)
         elif vformat == Format.HQ0:  # HQ 2011/2012 and older
             if encoder_engine == "x264":
-                codec, codec_core = self.complete_x264_opts(
-                    shlex.split(self.app.encoding_strings["x264_hq0_string"]), filename
-                )
+                codec = self.complete_x264_opts(shlex.split(self.app.encoding_strings["x264_hq0_string"]), filename)
             elif encoder_engine == "ffmpeg":
-                codec, codec_core = self.complete_ffmpeg_opts(
-                    self.app.encoding_strings["ffmpeg_hq0_x264_options"], filename
-                )
+                codec = self.complete_ffmpeg_opts(self.app.encoding_strings["ffmpeg_hq0_x264_options"], filename)
             codec_core = 125  # Fake
         elif vformat == Format.HD:
             if encoder_engine == "x264":
-                codec, codec_core = self.complete_x264_opts(
-                    shlex.split(self.app.encoding_strings["x264_hd_string"]), filename
-                )
+                codec = self.complete_x264_opts(shlex.split(self.app.encoding_strings["x264_hd_string"]), filename)
             elif encoder_engine == "ffmpeg":
-                codec, codec_core = self.complete_ffmpeg_opts(
-                    self.app.encoding_strings["ffmpeg_hd_x264_options"], filename
-                )
+                codec = self.complete_ffmpeg_opts(self.app.encoding_strings["ffmpeg_hd_x264_options"], filename)
         elif vformat == Format.HD0:
             if encoder_engine == "x264":
-                codec, codec_core = self.complete_x264_opts(
-                    shlex.split(self.app.encoding_strings["x264_hd0_string"]), filename
-                )
+                codec = self.complete_x264_opts(shlex.split(self.app.encoding_strings["x264_hd0_string"]), filename)
             elif encoder_engine == "ffmpeg":
-                codec, codec_core = self.complete_ffmpeg_opts(
-                    self.app.encoding_strings["ffmpeg_hd0_x264_options"], filename
-                )
+                codec = self.complete_ffmpeg_opts(self.app.encoding_strings["ffmpeg_hd0_x264_options"], filename)
         elif vformat == Format.HD2:
             if encoder_engine == "x264":
-                codec, codec_core = self.complete_x264_opts(
-                    shlex.split(self.app.encoding_strings["x264_hd2_string"]), filename
-                )
+                codec = self.complete_x264_opts(shlex.split(self.app.encoding_strings["x264_hd2_string"]), filename)
             elif encoder_engine == "ffmpeg":
-                codec, codec_core = self.complete_ffmpeg_opts(
-                    self.app.encoding_strings["ffmpeg_hd2_x264_options"], filename
-                )
+                codec = self.complete_ffmpeg_opts(self.app.encoding_strings["ffmpeg_hd2_x264_options"], filename)
+        elif vformat == Format.HD3:  # gcurse:HD3
+            # gcurse: THIS DOES NOT WORK
+            if encoder_engine == "x264":
+                codec = self.complete_x264_opts(shlex.split(self.app.encoding_strings["x264_hd2_string"]), filename)
+            elif encoder_engine == "ffmpeg":
+                codec = self.complete_ffmpeg_opts(self.app.encoding_strings["ffmpeg_hd2_x264_options"], filename)
+                codec[0:0] = ["-bsf:v", "h264_mp4toannexb,dump_extra=keyframe"]  # gcurse:HD3 ??
         elif vformat == Format.MP4:
             if encoder_engine == "x264":
-                codec, codec_core = self.complete_x264_opts(
-                    shlex.split(self.app.encoding_strings["x264_mp4_string"]), filename
-                )
+                codec = self.complete_x264_opts(shlex.split(self.app.encoding_strings["x264_mp4_string"]), filename)
             elif encoder_engine == "ffmpeg":
-                codec, codec_core = self.complete_ffmpeg_opts(
-                    self.app.encoding_strings["ffmpeg_mp4_x264_options"], filename
-                )
+                codec = self.complete_ffmpeg_opts(self.app.encoding_strings["ffmpeg_mp4_x264_options"], filename)
         elif vformat == Format.MP40:
             if encoder_engine == "x264":
-                codec, codec_core = self.complete_x264_opts(
-                    shlex.split(self.app.encoding_strings["x264_mp40_string"]), filename
-                )
+                codec = self.complete_x264_opts(shlex.split(self.app.encoding_strings["x264_mp40_string"]), filename)
             elif encoder_engine == "ffmpeg":
-                codec, codec_core = self.complete_ffmpeg_opts(
-                    self.app.encoding_strings["ffmpeg_mp40_x264_options"], filename
-                )
+                codec = self.complete_ffmpeg_opts(self.app.encoding_strings["ffmpeg_mp40_x264_options"], filename)
                 #    self.config.get('smartmkvmerge', 'ffmpeg_mp4_x264_options').split(' '), filename, quality='MP4')
             codec_core = 125  # Fake
         elif vformat == Format.AVI:
@@ -263,7 +242,7 @@ class CutSmartMkvmerge(Cut):
 
         # video part 2 - simulate smart rendering process
         for frame_start, frames_duration in cutlist.cuts_frames:
-            result = self.__simulate_smart_mkvmerge(int(frame_start), int(frames_duration), keyframes)
+            result, err = self.__simulate_smart_mkvmerge(int(frame_start), int(frames_duration), keyframes)
             if result is not None:
                 videolist += result
             else:
@@ -667,18 +646,18 @@ class CutSmartMkvmerge(Cut):
                     return
                 # copy keyframe to keyframe
                 self.copy_nr += 1
-                return [(False, start + 1, end + 1, "video_copy-{:03}.mkv".format(self.copy_nr),)]
+                return [(False, start + 1, end + 1, "video_copy-{:03}.mkv".format(self.copy_nr),)], None
             else:
                 # copy to keyframe before end
                 try:
                     lt_kf_before_end = self.get_keyframe_in_front_of_frame(keyframes, end)
                 except Exception as e:
-                    self.log.debug(f"{e}")
-                    return None
+                    self.log.warning(f"Exception: {e}")
+                    return None, f"Exception: {e}"
                 if lt_kf_before_end <= start:
                     self.encode_nr += 1
                     encode = [(True, start, duration, "video_encode-{:03}.mkv".format(self.encode_nr),)]
-                    return encode
+                    return encode, None
                 else:
                     self.copy_nr += 1
                     copy = [(False, start + 1, lt_kf_before_end + 1, "video_copy-{:03}.mkv".format(self.copy_nr),)]
@@ -692,29 +671,31 @@ class CutSmartMkvmerge(Cut):
                             "video_encode-{:03}.mkv".format(self.encode_nr),
                         )
                     ]
-                    return copy + encode
+                    return copy + encode, None
         else:
             try:
                 nt_kf_from_start = self.get_keyframe_after_frame(keyframes, start)
             except Exception as e:
                 self.log.warning(f"Exception: {e}")
-                return None
+                return None, f"Exception: {e}"
             duration_nt_kf = nt_kf_from_start - start
             if end <= nt_kf_from_start:
                 self.encode_nr += 1
                 encode = [(True, start, duration, "video_encode-{:03}.mkv".format(self.encode_nr),)]
-                return encode
+                return encode, None
             else:
                 self.encode_nr += 1
                 encode = [(True, start, duration_nt_kf, "video_encode-{:03}.mkv".format(self.encode_nr),)]
                 if duration - duration_nt_kf > 0:
-                    result = self.__simulate_smart_mkvmerge(nt_kf_from_start, duration - duration_nt_kf, keyframes)
+                    result, err = self.__simulate_smart_mkvmerge(
+                        nt_kf_from_start, duration - duration_nt_kf, keyframes
+                    )
                     if result is not None:
-                        return encode + result
+                        return encode + result, None
                     else:
-                        return None
+                        return None, err
                 else:
-                    return encode
+                    return encode, None
 
 
 class ChangeDir:

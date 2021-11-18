@@ -38,6 +38,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         super().__init__(*args, **kwargs)
         self.log = logging.getLogger(self.__class__.__name__)
         self.atfc = None  # alternative time <-> frame conversion
+        self.autosearch_cutlist = None
         self.builder = None
         self.bus = None  # gstreamer bus
         self.buttonClose = False
@@ -51,7 +52,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.filename = None
         self.fileuri = None
         self.format_dict = Cut.format_dict
-        self.fps = 0
+        self.fps = 0.0
         self.frames = 0
         self.framerate_denom, self.framerate_num = 0, 0
         self.frame_timecode, self.timecode_frame = {}, {}
@@ -78,8 +79,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.test_next_marker = False
         self.timelines = [[]]
         self.timeoutcontrol = True
-        self.timer, self.timer2 = None, None
         self.timer_hide_cursor = None
+        self.timer_load_cutlist = None
+        self.timer_tick = None
+        self.timer_update_listview = None
         self.vformat = None
         self.videoheight = 0
         self.videolength = 0
@@ -169,7 +172,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         if filename is not None and os.path.exists(filename):
             cutlist.local_filename = filename
             cutlist.read_from_file()
-            cutlist.read_cuts()
+            # cutlist.read_cuts()
             if (cutlist.cuts_frames and cutlist.filename_original != os.path.basename(self.filename)) or (
                 not cutlist.cuts_frames and cutlist.cuts_seconds
             ):
@@ -199,7 +202,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.initial_cutlist = []
             self.initial_cutlist_in_frames = True
 
-        if self.timer is not None:  # Running
+        if self.timer_tick is not None:  # Running
             self.timelines.append(self.get_cuts_in_frames(self.initial_cutlist, self.initial_cutlist_in_frames))
 
         if self.slider:
@@ -224,7 +227,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.filename = Path(filename)
         self.fileuri = self.filename.as_uri()
 
-        self.vformat, _, _, _ = self.get_format(str(self.filename))
+        self.vformat, _, _, _, _ = self.get_format(str(self.filename))
 
         self.config_update()
 
@@ -278,7 +281,9 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         # Reset cursor MainWindow
         self.app.gui.main_window.get_window().set_cursor(None)
 
-        self.timer2 = GLib.timeout_add(700, self.update_listview)
+        self.timer_update_listview = GLib.timeout_add(800, self.update_listview)
+        if cutlist is None and self.autosearch_cutlist:
+            self.timer_load_cutlist = GLib.timeout_add(800, self.on_load_button_clicked)
 
         if Gtk.ResponseType.OK == self.run():
             self.set_cuts(self.cutlist, self.timelines[-1])
@@ -315,7 +320,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
             self.atfc = False
         else:
             self.atfc = self.config.get("cutinterface", "alt_time_frame_conv")
-        self.nkfs = self.config.get("cutinterface", "new_keyframe_search")
+        self.nkfs = self.config.get("cutinterface", "new_keyframe_search")  # New keyframe search
         self.seek_distance_default = self.config.get("cutinterface", "seek_distance_default") * Gst.SECOND
         self.seek_distance = self.seek_distance_default
         # Setup buttons
@@ -329,9 +334,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.builder.get_object("switch_keyframesearch").set_active(not self.nkfs)
         if not self.config.get("cutinterface", "show_tooltips"):
             self.on_switch_tooltip_state_set(None)
-        if self.nkfs:
+        if self.nkfs:  # New keyframe search
             self.on_switch_keyframesearch_state_set(None)
         self.adjust_volume()
+        self.autosearch_cutlist = self.config.get("cutinterface", "autosearch_cutlist")
 
     def ready_callback(self):
         self.log.debug("Function start")
@@ -340,9 +346,10 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.update_timeline()
         self.update_listview()
 
-        self.timer = GLib.timeout_add(200, self.tick)
+        self.timer_tick = GLib.timeout_add(200, self.tick)
 
     def tick(self):
+        """Called by self.timer_tick every 200 ms"""
         self.update_frames_and_time()
         self.update_slider()
         self.builder.get_object("checkbutton_hide_cuts").set_active(self.hide_cuts)
@@ -640,14 +647,12 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
             cut_duration_secs = sum([duration for start, duration in self.timelines[-1]]) / self.fps
             cut_duration = self.seconds_to_hms(cut_duration_secs).split(".")[0]
+
             self.builder.get_object("lbl_cut_duration").set_text(f"{str(cut_duration)}")
 
             listview.set_model(listmodel)
             if listiter:
                 listselection.select_path(listmodel.get_path(listiter))
-
-            if self.timer2 is not None:
-                return False
 
     def select_cut(self, direction):
         listview = self.builder.get_object("cutsview")
@@ -763,12 +768,13 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
 
     @staticmethod
     def nanoseconds_to_hms(nanoseconds: int) -> str:
-        # Used for display
+        # Used for display only
         second, remainder = divmod(nanoseconds, Gst.SECOND)
         hour, second = divmod(second, 3600)
         minute, second = divmod(second, 60)
 
         decimals = str(int(remainder))[:3].ljust(3, "0")
+
         return f"{hour:02}:{minute:02}:{second:02}.{decimals}"
 
     # #### gstreamer bus signals ####
@@ -819,7 +825,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
     def on_movie_event_box_enter_leave_notify_event(self, widget, event, *args):
         if self.hide_mouse_over_video:
             if event.type == Gdk.EventType.MOTION_NOTIFY:
-                GLib.source_remove(self.timer_hide_cursor)
+                # GLib.source_remove(self.timer_hide_cursor)
                 widget.get_window().set_cursor(None)
                 self.timer_hide_cursor = GLib.timeout_add(
                     2000, widget.get_window().set_cursor, self.app.gui.cursor_blank
@@ -829,7 +835,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
                     2000, widget.get_window().set_cursor, self.app.gui.cursor_blank
                 )
             elif event.type == Gdk.EventType.LEAVE_NOTIFY:
-                GLib.source_remove(self.timer_hide_cursor)
+                # GLib.source_remove(self.timer_hide_cursor)
                 widget.get_window().set_cursor(None)
 
     def on_movie_box_unrealize(self, widget):
@@ -1406,7 +1412,7 @@ class CutinterfaceDialog(Gtk.Dialog, Gtk.Buildable, Cut):
         self.marker_a = -1
         self.marker_b = -1
 
-    def on_load_button_clicked(self, widget):
+    def on_load_button_clicked(self, widget=None):
         self.log.debug("Function start")
         load_dialog = LoadCutDialog.new(self.app)
         load_dialog.set_transient_for(self)

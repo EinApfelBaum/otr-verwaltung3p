@@ -37,7 +37,7 @@ from otrverwaltung3p.actions.cutsmartmkvmerge import CutSmartMkvmerge
 from otrverwaltung3p.actions.cutvirtualdub import CutVirtualdub
 from otrverwaltung3p.conclusions import FileConclusion
 from otrverwaltung3p.constants import Action, CutAction, Program, Status
-from otrverwaltung3p.gui import CutinterfaceDialog
+from otrverwaltung3p.gui import CutinterfaceDialog, LoadCutDialog
 
 
 class DecodeOrCut(Cut):
@@ -453,10 +453,11 @@ class DecodeOrCut(Cut):
 
             elif file_conclusion.cut.cut_action == CutAction.LOCAL_CUTLIST:
                 file_conclusion.cut.cutlist.local_filename = file_conclusion.uncut_video + ".cutlist"
-
                 if not Path(file_conclusion.cut.cutlist.local_filename).is_file():
                     file_conclusion.cut.status = Status.ERROR
                     file_conclusion.cut.message = "Keine lokale Cutlist gefunden."
+                else:
+                    file_conclusion.cut.cutlist.read_from_file()
 
             elif file_conclusion.cut.cut_action == CutAction.ASK:
                 file_conclusion.cut.status = Status.NOT_DONE
@@ -512,7 +513,7 @@ class DecodeOrCut(Cut):
 
         cutlist_error, cuts_frames = None, None
         program, config_value, ac3file = self.get_program(filename, manually=True)
-        _, ac3_file, _, _ = self.get_format(filename)
+        _, ac3_file, _, _, _ = self.get_format(filename)
         fps, dar, sar, max_frames, ac3_stream, error = self.analyse_mediafile(filename)
 
         if error:

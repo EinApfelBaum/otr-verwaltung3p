@@ -1,13 +1,18 @@
-### 1.0.0b8.post5-WIP
+### 1.0.0b8.post5
+* Neue Option Einstellungen -> Cutinterface -> "Cutlistsuche automatisch öffnen"
+  sucht automatisch nach einer Cutlist, wenn keine lokal vorhanden ist
 * Der doppelt vergebene Shortcut "Alt-e" in der Zusammenfassung wurde korrigiert
 * Das Dekodieren sollte nun nicht mehr "hängen" wenn ein Dekoderfehler auftritt
 * Das Bewerten der Cutlists sollte nun wieder funktionieren
 * Neuer Parameter für reduzierte Debug-Ausgabe "--rdebug"
+* Bugfix in CutAction.LOCAL_CUTLIST
+* LoadCutDialog: Fehlerspalten werden nur erweitert, wenn ein Fehler vorliegt
+* Das neue HD-Format der xPlus-Sender wird jetzt erkannt (kann nur mit wine und virtualdub geschnitten werden)
 
 ### 1.0.0b8.post4
 * Cutinterface: Mauszeiger wird im Videofenster ausgeblendet
-* Einstellungen->Hauptfenster: Neue Einstellung Standardsortierung der Dateiliste entweder
-  nach Name oder Aufzeichnungsdatum.
+* Einstellungen->Hauptfenster: Neue Einstellung Standardsortierung der Dateiliste
+  entweder nach Name oder Aufzeichnungsdatum.
 * Wenn "Cutlist nach dem Schneiden löschen" aktiv ist werden Cutlists nicht gelöscht,
   sondern in den internen AVI-Papierkorb verschoben.
 * Zusammenfassung: Snippets können an der Cursor-Position eingefügt werden.
@@ -151,7 +156,7 @@
 
 ### 3.3.2-A, 2019-03-09
 
-* Behebt die AES-Verschlüsselung und die dbus.glib deprecated Meldungen.
+* Behebt die AES-Verschlüsselung und die `dbus.glib` deprecated Meldungen.
 * AddDownloadDialog: libtorrent deaktiviert. Fixes #80
 * "Am Ende automatisch mp4 erzeugen" funktioniert wieder.
 
@@ -173,11 +178,11 @@
 
 * CutinterfaceDialog verwendet jetzt den gtksink von gstreamer für die
   Videoausgabe. Behebt "CutInterface with black screen"
-* Option zum Einstellen des Video-Sinks von CutinterfaceDialog.player entfernt
+* Option zum Einstellen des Video-Sinks von `CutinterfaceDialog.player` entfernt
 
 ### 3.2.5-A, 2018-07-23
 
-* Option zum Festlegen des Video-Sinks von CutinterfaceDialog.player hinzufügen
+* Option zum Festlegen des Video-Sinks von `CutinterfaceDialog.player` hinzufügen
 * Das Schneiden von mp4 mit smartMkvMerge sollte nun zuverlässig funktionieren.
   Die Kodierung wurde geändert.
 * CutinterfaceDialog: Neues Kontextmenü für label_filename (Kopiere Dateinamen)
